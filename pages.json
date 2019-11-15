@@ -263,6 +263,16 @@
 			}
 		},
 		{
+			"path": "pages/My/MyOrder/orderdetail",//订单详情
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "订单详情",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		},
+		{
 			"path": "pages/My/MyBooking/refund/refund",//退款/售后
 			"style": {
 				"navigationBarBackgroundColor":"#FFFFFF",

@@ -38,7 +38,7 @@
 			<view class="flex justify-end padding-bottom margin-top-sm">
 				<!-- <button class="mybooking-button ">评价</button> -->
 				<button class="mybooking-button mybooking-button-colse">查看物流</button>
-				<button class="mybooking-button ">确认收货</button>
+				<button @tap="affirmClick" class="mybooking-button ">确认收货</button>
 				<!-- <button class="mybooking-button mybooking-button-colse">取消订单</button> -->
 				<!-- <button class="mybooking-button ">确认付款</button> -->
 				<!-- <button class="mybooking-button mybooking-button-colse">提醒发货</button> -->
@@ -125,6 +125,12 @@
 		methods:{
 			change(e) {
 				this.currentTab = e.index
+			},
+			//确认收货
+			affirmClick(){
+				uni.navigateTo({
+					url:'orderdetail'
+				})
 			},
 		}
 	}
