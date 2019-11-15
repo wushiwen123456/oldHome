@@ -1,6 +1,27 @@
 <template>
 	<view>
 		<view >
+			<!-- 退款显示 -->
+			<view>
+				<view class="refundMesage-image text-white padding-left padding-top-xl">
+					<view class="text-lg margin-bottom-xs">退款成功</view>
+					<view>2019年10月30日  15:00</view>
+				</view>
+				<view class="bg-white padding-left padding-right margin-top-sm">
+					<view class="flex align-center justify-between refundMesage-txt solid-bottom">
+						<view class="text-wuer text-three">退款金额</view>
+						<view class="text-price text-red">128.9</view>
+					</view>
+					<view class="flex align-center justify-between refundMesage-txt">
+						<view class="text-wuer text-three">退回路径</view>
+						<view class="text-jiujiujiu">花呗</view>
+					</view>
+				</view>
+				
+			</view>
+			
+			
+			
 			<!-- 公共部分 -->
 			<view>
 				<view class="bg-white">
@@ -83,5 +104,14 @@
 	}
 	.text-line-height{
 		line-height: 60upx;
+	}
+	.refundMesage-image{
+		background: url(../../../../static/fukuanga.png);
+		background-size: 100% 100%;
+		width: 100%;
+		height: 200upx;
+	}
+	.refundMesage-txt{
+		height: 96upx;
 	}
 </style>
