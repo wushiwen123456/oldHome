@@ -1,6 +1,6 @@
 <template>
 	<view>
-		<view v-for="(vo,key) in shopList" :key="key" class="bg-white shoopingCart-all">
+		<view v-for="(vo,key) in shopList" :key="key" v-if="isToken" class="bg-white shoopingCart-all">
 			<view class="flex align-center">
 				<view class="lg shoppingCart-title-yuan" @tap="ShopClick(key)" :class="[vo.shopType?'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']"></view>
 				<view class=" flex align-center">
@@ -27,6 +27,9 @@
 				</view>
 			</view>
 		</view>
+		<view class="no-token" v-else>
+			您还未登录哦~
+		</view>
 		<view style="height: 100upx;"></view>
 		<view style="bottom: 100upx;" class="shoopingCart-bottom flex justify-between align-center">
 			<view @tap="shopAllselectClick" class="flex align-center margin-left">
@@ -35,64 +38,111 @@
 			</view>
 			<view class="flex align-center margin-right">
 				<view class="text-price text-red text-lg text-bold">{{sumMoney}}</view>
-				<!-- <view class="shoopingCart-bottom-button shoopingCart-bottom-button-one">结算</view> -->
-				<view class="shoopingCart-bottom-button shoopingCart-bottom-button-two">删除</view>
+				<view class="shoopingCart-bottom-button shoopingCart-bottom-button-one">结算</view>
+				<!-- <view class="shoopingCart-bottom-button shoopingCart-bottom-button-two">删除</view> -->
 			</view>
 		</view>
 	</view>
 </template>
 
 <script>
+	// 导入网络请求方法：
+	import {getShopCartData} from '@/network/shopCart'
 	
+	// 导入vuex
+	import { mapGetters } from 'vuex'
+	
+	// 导入工具类
+	import { replaceImage } from '@/utils/dealUrl'
 	export default{
 		components: {
 			
 		},
+		onShow() {
+			if(!this.isToken){
+				uni.showModal({
+					title:'您还未登录，是否前去登录？',
+					content:'',
+					cancelText:'等会再说',
+					cancelColor:'#333333',
+					confirmText:'去登陆',
+					confirmColor:'#333333',
+					success:(res) => {
+						if(res.confirm){
+							uni.navigateTo({
+								url:'../login/login'
+							})
+						}
+					}
+				})
+			}else{
+				getShopCartData(this.isToken).then(res => {
+					if(res.data.code == 200){
+						const arr =	res.data.data.group
+						console.log(arr)
+						const result = []
+						
+						for (let key in arr){
+							console.log(arr)
+							const obj = {}
+							obj.shopname = arr[key][0].shop_info.shop_name
+							obj.shopAllMessage = []
+							obj.shopType = false, 
+							arr[key].forEach(item =>{
+								const image = replaceImage(item.productInfo.image)
+								console.log(image)
+								obj.shopAllMessage.push({
+									// 对数据进行保存
+									shoptitle:item.productInfo.store_name, //商品名称
+									specification:item.productInfo.attrInfo.suk, //商品种类
+									money:item.productInfo.price,//商品价格
+									image: image,//商品logo
+									num:item.cart_num,//商品数量
+									id:item.id ,//商品id
+									uid:item.uil, //商品uid
+									type:false,
+								})
+							})
+							
+							// 充值购物车信息
+							this.$store.commit('clearCart')
+							
+							// 把数据存放在vuex中
+							this.$store.commit('addCart',obj)
+							
+							
+							console.log(this.$store.state.CartList)
+							this.shopList = this.$store.state.CartList
+						}
+					}
+				})
+			}
+		},
+		
+		// arr.forEach((item,i) => {
+		// 	const obj = {
+		// 		shopname:item.shop_info.shop_name,
+		// 		shopType:false,
+		// 		shopAllMessage:[{
+		// 			shoptitle:item.productInfo.store_name,
+		// 			specification:item.productInfo.attrInfo.suk,
+		// 			money:item.productInfo.price,
+		// 			image:item.productInfo.image,
+		// 			num:item.cart_num,
+		// 			type:false
+		// 		}]
+		// 	}
+		// })
 		data(){
 			return{
 				sumMoney:0,//结算金额
 				allselect:false,//是否全选
 				allselectTxt:'全选',//是否全选文字
-				shopList:[{
-					shopname:'吕梁莲花池特产店',
-					shopType:false,
-					shopAllMessage:[{
-						shoptitle:'夹心特产休闲零食干果美味 江西靖安白茶新茶 江西资溪夹心特产休闲零食干果美味 江西靖安白茶新茶 江西资溪',
-						specification:'黑色；S',
-						money:'99.00',
-						image:'../../static/demo31.png',
-						num:1,
-						type:false,
-					},{
-						shoptitle:'夹心特',
-						specification:'黑色；S',
-						money:'99.00',
-						image:'../../static/demo30.png',
-						num:1,
-						type:false,
-					}]
-					
-				},{
-					shopname:'点购特产店75',
-					shopType:false,
-					shopAllMessage:[{
-						shoptitle:'江西靖安白茶新茶 江西资溪 夹心特产休闲零食干果美味',
-						specification:'250g',
-						money:'30.60',
-						image:'../../static/demo27.png',
-						num:1,
-						type:false,
-					},{
-						shoptitle:'江西靖安白茶新茶 江西资溪',
-						specification:'250g',
-						money:'30.60',
-						image:'../../static/demo24.png',
-						num:1,
-						type:false,
-					}]
-						
-				}]
+				shopList:[]
 			}
+		},
+		computed:{
+			...mapGetters(['isToken'])
 		},
 		methods:{
 			//点击店铺
@@ -370,5 +420,15 @@
 	.shoopingCart-bottom-button-two{
 		border: #CD3233 1px solid;
 		color: #CD3233;
+	}
+	
+	/* 未登录 */
+	.no-token{
+		font-size: 36upx;
+		color: #7f8c8d;
+		text-align: center;
+		position: fixed;
+		width: 100%;
+		top: 500upx;
 	}
 </style>

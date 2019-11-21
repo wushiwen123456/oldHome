@@ -1,0 +1,7 @@
+{
+  "titleNView": false,
+  "usingComponents": {
+    "q-s-tabs": "/components/QS-tabs/QS-tabs",
+    "uni-load-more": "/components/uni-load-more/uni-load-more"
+  }
+}

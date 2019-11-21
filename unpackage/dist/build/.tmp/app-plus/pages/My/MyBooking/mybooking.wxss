@@ -1,0 +1,40 @@
+
+.mybooking-image image{
+	width: 164rpx;
+	height: 164rpx;
+}
+.text-hieed{
+	overflow: hidden;
+	-o-text-overflow: ellipsis;
+	   text-overflow: ellipsis;
+	display:-webkit-box;
+	-webkit-box-orient:vertical;
+	-webkit-line-clamp:2;
+}
+.mybooking-haming{
+	width:48rpx;
+	height:48rpx;
+	border-radius:50%;
+	margin-left: -10rpx;
+	border: 2px solid #FFFFFF;
+}
+.mybooking-haming:nth-child(1){
+	margin-left: 0rpx;
+}
+.mybooking-button{
+	width:180rpx;
+	height:56rpx;
+	line-height: 56rpx;
+	background: none;
+	border:1px solid rgba(205,50,51,1);
+	border-radius:28rpx;
+	color: #CD3233;
+	font-size: 28rpx;
+	margin: 0;
+	margin-right: 30rpx;
+}
+.mybooking-button-colse{
+	border:1px solid rgba(153,153,153,1);
+	color: rgba(153,153,153,1);
+}
+

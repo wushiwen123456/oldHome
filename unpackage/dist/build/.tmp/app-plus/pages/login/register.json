@@ -1,0 +1,9 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "注册",
+  "scrollIndicator": "none",
+  "usingComponents": {
+    "w-button": "/components/watch-login/watch-button",
+    "w-picker": "/components/w-picker/w-picker"
+  }
+}

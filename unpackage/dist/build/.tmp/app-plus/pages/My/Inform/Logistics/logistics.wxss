@@ -1,0 +1,29 @@
+
+.nodata{
+	padding-top: 200rpx;
+}
+.nodata image{
+	width: 100%;
+}
+.logistics-all{
+	margin-top: 10rpx;
+	padding: 24rpx 30rpx 24rpx 24rpx;
+}
+.logistics-left-all{
+}
+.logistics-left-all image{
+	width:228rpx;
+	height:228rpx;
+}
+.logistics-right-all{
+	width: 100%;
+}
+.logistics-right-all-button{
+	width:170rpx;
+	height:58rpx;
+	border:1px solid rgba(207,50,51,1);
+	border-radius:30rpx;
+	color: #CF3233;
+	font-size: 32rpx;
+}
+

@@ -22,14 +22,14 @@
 		</view>
 		<view class="bg-white padding-left">
 			<view class="flex align-center">
-				<view class="text-red-my text-xxxl text-bold">￥159</view>
+				<view class="text-red-my text-xxxl text-bold">{{itemInfo.price}}</view>
 				<view class="bg-red text-xs shopDetails-title-package">红包抵0.1元</view>
 			</view>
-			<view class="shopDetails-title-original">原价￥289</view>
+			<view class="shopDetails-title-original">原价￥{{itemInfo.oldPrice}}</view>
 			<view>
 				<view class="flex align-center justify-between margin-right-sm">
 					<view class="flex align-center margin-top-xs margin-bottom-xs">
-						<view class="cu-tag bg-red-my shopDetails-title-height">店铺红包满149减10</view>
+						<!-- <view class="cu-tag bg-red-my shopDetails-title-height" v-if="">店铺红包满149减10</view> -->
 						<view class="cu-tag bg-red-my shopDetails-title-height">购买得积分</view>
 					</view>
 					<view @tap="outloginClick" class="flex align-center">
@@ -39,15 +39,15 @@
 				</view>
 				
 				<view class="flex align-center margin-top-sm margin-bottom-sm">
-					<view class="flex-four text-three shopDetails-title-name">沃隆每日坚果750g混合装30包干果零食大礼包混合坚果小包装</view>
+					<view class="flex-four text-three shopDetails-title-name">{{itemInfo.name}}</view>
 					<view @tap="outloginSharClick" class="flex-sub flex align-center justify-center shopDetails-title-shar">
 						<view class="lg cuIcon-forward margin-right-xs"></view>
 						<view>转发</view>
 					</view>
 				</view>
 				<view class="flex align-center justify-between padding-bottom-sm margin-right-sm text-jiujiujiu">
-					<view>快递:<text class="margin-left-sm">免运费</text></view>
-					<view>销量11266</view>
+					<view>快递:<text class="margin-left-sm" v-if="itemInfo.isPostage == '1'">免运费</text><text v-else class="margin-left-sm">请选择您的地区</text></view>
+					<view>销量:{{itemInfo.ficti}}</view>
 				</view>
 			</view>
 		</view>
@@ -68,15 +68,15 @@
 			<view class=" flex align-center justify-between shopDetails-baozhanng">
 				<view class="flex text-sm-erliu">
 					<view class="text-jiujiujiu ">选择</view>
-					<view class="margin-left-sm">选择  食品口味 </view>
+					<view class="margin-left-sm">规格 种类 </view>
 				</view>
 				<view class="lg text-jiujiujiu cuIcon-right"></view>
 			</view>
 			<view class="flex align-center shopDetails-select-image">
 				<view class="flex-yidw">
-					<image v-for="(vo,key) in selectimg" :key="key" class="shopDetails-image" :src="vo.img"></image>
+					<image v-for="(vo,key) in selectimg" :key="key" class="shopDetails-image" :src="vo"></image>
 				</view>
-				<view class="flex-sub shopDetails-image-select">共有10中口味可选</view>
+				<view class="flex-sub shopDetails-image-select">共有{{Object.keys(this.itemInfo.totalTypes).length}}中类别可选</view>
 			</view>
 		</view>
 		<!-- 选择 end -->
@@ -105,9 +105,9 @@
 		<view class="bg-white margin-top-xs shop-deleat-all">
 			<view class="flex align-center justify-between margin-bottom-sm">
 				<view class="flex">
-					<image class="shop-introduce-img" src="../../static/demo9.png" ></image>
+					<image class="shop-introduce-img" :src="storeInfo.info.storeLogo" ></image>
 					<view class="margin-left-sm flex flex-direction justify-between">
-						<view class="shop-detal-name">沃隆旗舰店</view>
+						<view class="shop-detal-name">{{storeInfo.info.storeName}}</view>
 						<view class="flex align-center text-xs shop-experience">
 							<view>综合体验</view>
 							<view class="lg text-red-my cuIcon-favorfill"></view>
@@ -121,18 +121,18 @@
 			</view>
 			<view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
 				<view class="flex align-center flex-sub ">
-					<view>宝贝描述</view>
-					<view class="padding-left-xs padding-right-xs">4.9</view>
+					<view>物流评分</view>
+					<view class="padding-left-xs padding-right-xs">{{storeInfo.info.expressageFen}}</view>
 					<view class="shop-pingfen" >平</view>
 				</view>
 				<view class="flex align-center flex-sub ">
-					<view>宝贝描述</view>
-					<view class="padding-left-xs padding-right-xs">4.9</view>
+					<view>商品评分</view>
+					<view class="padding-left-xs padding-right-xs">{{storeInfo.info.produceFen}}</view>
 					<view class="shop-pingfen" >平</view>
 				</view>
 				<view class="flex align-center flex-sub ">
-					<view>宝贝描述</view>
-					<view class="padding-left-xs padding-right-xs">4.9</view>
+					<view>服务评分</view>
+					<view class="padding-left-xs padding-right-xs">{{storeInfo.info.serviceFen}}</view>
 					<view class="shop-pingfen" >平</view>
 				</view>
 			</view>
@@ -150,20 +150,10 @@
 				</view>
 			</view>
 			<view class="flex align-center padding-left padding-right">
-				<view class="flex-sub">
-					<image class="tuijian-shop-three-image" src="../../static/demo4.png"></image>
-					<view class="text-sm-erliu text-black">【预售】沃隆每日坚果750g混合装...</view>
-					<view class="text-red-my text-sm-erliu margin-top-sm margin-bottom-sm">￥159</view>
-				</view>
-				<view class="flex-sub">
-					<image class="tuijian-shop-three-image" src="../../static/demo4.png"></image>
-					<view class="text-sm-erliu text-black">【预售】沃隆每日坚果750g混合装...</view>
-					<view class="text-red-my text-sm-erliu">￥159</view>
-				</view>
-				<view class="flex-sub">
-					<image class="tuijian-shop-three-image" src="../../static/demo4.png"></image>
-					<view class="text-sm-erliu text-black">【预售】沃隆每日坚果750g混合装...</view>
-					<view class="text-red-my text-sm-erliu">￥159</view>
+				<view class="flex-sub" v-for="(item,index) in recommend" :key="index">
+					<image class="tuijian-shop-three-image" :src="item.image"></image>
+					<view class="text-sm-erliu text-black">{{item.store_name}}</view>
+					<view class="text-red-my text-sm-erliu margin-top-sm margin-bottom-sm">￥{{item.price}}</view>
 				</view>
 			</view>
 		</view>
@@ -174,7 +164,7 @@
 		
 		<!-- 商品介绍 -->
 		<view>
-			<image src="../../static/demo7.png" mode="widthFix" style="width: 100%;"></image>
+			<image :src="itemInfo.image" mode="widthFix" style="width: 100%;"></image>
 		</view>
 		<!-- 商品介绍end -->
 		
@@ -213,7 +203,7 @@
 				<view class="text-jiujiujiu text-df">促销</view>
 				<view class="flex align-center margin-top margin-bottom-xl">
 					<view class="bg-red-my text-xs shopDetails-bottom-popups-jifen">积分</view>
-					<view class="text-sm-erliu">购买可得24积分</view>
+					<view class="text-sm-erliu">购买可得{{itemInfo.count}}积分</view>
 				</view>
 				<view class="text-jiujiujiu text-df margin-bottom">领券</view>
 				<view class="flex align-center justify-between shopDetails-bottom-popups-backone text-red-my">
@@ -257,22 +247,23 @@
 			<view class="popupbottom-all">
 				<view class="flex justify-between solid-bottom">
 					<view class="flex align-end margin-bottom-lg ">
-						<image class="popupbottom-shop-img" src="../../static/demo1.png"></image>
+						<image class="popupbottom-shop-img" :src="showImgUrl"></image>
 						<view class="margin-left-sm">
-							<view class="text-price text-red text-bold text-xl">50</view>
-							<view class="text-sm" style="color: #828282;">库存14455件</view>
-							<view class="text-sm">选择  食品口味</view>
+							<view class="text-price text-red text-bold text-xl">{{itemInfo.price}}</view>
+							<view class="text-sm" style="color: #828282;">库存{{itemInfo.stock}}件</view>
+							<view class="text-sm">已选择 {{isChooseType}}</view>
 						</view>
 					</view>
 					<view class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos"></view>
 				</view>
-				<view class="padding-bottom-sm solid-bottom">
-					<view class=" margin-top-lg margin-bottom">食品口味</view>
+				<view class="padding-bottom-sm solid-bottom" v-for="(item,index) in list" :key="index">
+					<view class=" margin-top-lg margin-bottom">{{item.attr_name}}</view>
 					<view class="flex flex-wrap">
-						<block v-for="(vo,key) in list" :key="key">
-							<view @tap="selectShopClick(vo.type,key)" :class="[vo.type?'popupbottom-shop-type-select':'']" class="popupbottom-shop-type-all">{{vo.title}}</view>
+						<block v-for="(vo,key) in item.attr_value" :key="key">
+							<view ref="t" @tap="selectShopClick(vo,key,index)" :class="[vo.check ? 'popupbottom-shop-type-select':'']" class="popupbottom-shop-type-all">{{vo.attr}}</view>
 						</block>
 					</view>
+					
 				</view>
 				<view class="flex align-center justify-between solid-bottom shopDetails-num">
 					<view>购物数量</view>
@@ -281,7 +272,7 @@
 					</view>
 				</view>
 				<view class="flex align-center popupbottom-all-top">
-					<view class="shopDetails-bottom-button popupbottom-all-button button-left">加入购物车</view>
+					<view class="shopDetails-bottom-button popupbottom-all-button button-left"	@tap="addCart">加入购物车</view>
 					<view @tap="nowBuyClick" class="shopDetails-bottom-button popupbottom-all-button button-right">立即购买</view>
 				</view>
 			</view>
@@ -293,6 +284,20 @@
 <script>
 	import tuiNumberbox from "@/components/numberbox/numberbox"
 	import uniPopup  from "@/components/uni-popup/uni-popup"
+	// 导入vuex
+	import { mapGetters } from 'vuex'
+	
+	// 引入网络模块
+	import {getDetailData} from '@/network/detail' 
+	
+	// 加购方法
+	import { getAddCart } from '@/network/detail'
+	// 购买方法
+	import { payNow } from '@/network/detail'
+	
+	// 导入工具类
+	import {replaceImages,replaceImage,replaceList} from '@/utils/dealUrl'
+	
 	export default{
 		components: {
 			uniPopup,
@@ -301,89 +306,173 @@
 		data(){
 			return{
 				payimgType:true,//图片或者视频
-				swiperNum:1,//当前所在滑块
+				swiperNum:0,//当前所在滑块
 				videoUrl:'',
-				swiperList: [{
-					id: 0,
-					type: 'video',
-					url: 'http://baobab.kaiyanapp.com/api/v1/playUrl?vid=164016&resourceType=video&editionType=high&source=aliyun&playUrlType=url_oss'
-				},{
-					id: 0,
-					type: 'image',
-					url: '../../static/demo2.png'
-				}, {
-					id: 1,
-					type: 'image',
-					url: '../../static/demo2.png',
-				}, {
-					id: 2,
-					type: 'image',
-					url: '../../static/demo2.png'
-				}, {
-					id: 3,
-					type: 'image',
-					url: '../../static/demo2.png'
-				}],
-				selectimg:[{
-					img:'../../static/demo10.png'
-				},{
-					img:'../../static/demo11.png'
-				},{
-					img:'../../static/demo12.png'
-				},{
-					img:'../../static/demo13.png'
-				}],
-				shareList:[{
-					img:'../../static/weixn.png',
-					name:'微信好友'
-				},{
-					img:'../../static/pengyouq.png',
-					name:'朋友圈'
-				}],
-				list:[{
-					id:'0',
-					title:'成人款A750g*1盒',
-					type:false,
-				},{
-					id:'0',
-					title:'儿童款B750g*1盒',
-					type:false,
-				},{
-					id:'0',
-					title:'混合款（15A+15B）750g*1盒',
-					type:false,
-				}],
+				swiperList: [],
+				getCurrentList:[],  //当前选中的商品 
+				list:[],	//商品种类
 				value:1,//步进器
+				shareList:[],
+				//商品详情数据
+				itemInfo:{    
+					price:'',//现价
+					oldPrice:'',//原价
+					count:'' ,//积分
+					ficti:'' ,// 虚拟销量
+					sales:0 ,  //真实销量
+					cost:'' , // 成本价格
+					isHot:'' , //是否土特产
+					isPostage:false ,//是否包邮
+					isSeckill:false , //是否开启秒杀
+					isGroup:false,  //是否拼团
+					userCollect:false, //用户是否收藏
+					count:'' ,// 积分
+					name:'' ,// 商品名称
+					type:[]  ,//用户选中的种类 
+					count:0   ,//用户选中的数量
+					totalTypes:[] ,//所有种类
+					image:'' ,//默认图片
+					id:''   	,//商品id
+					stock:''  ,//商品库存
+					unique:''  //商品唯一识别id
+				},
+					
+				//商店数据	
+				storeInfo:{  
+					info:{
+						expressageFen:'' ,//物流评分
+						produceFen:'' ,//商品评分
+						serviceFen:'' ,// 服务评分
+						totalFen:'' ,  // 总评分
+						storeName:'' , //店铺名称
+						storeLogo:'' , //店铺logo
+						storeId:''  ,  //店铺id
+					},
+					shopFans:''  , //粉丝数量
+					isUserCollect:false // 当前用户是否收藏
+				},
+				
+				//推荐商品数据
+				recommend:[]
 			}
+			
+		},
+		// 根据商品id获取商品数据
+		onLoad(option) {
+			this._getDetailData(option.id)
 		},
 		methods:{
+
+			// 获取商品商店数据
+			_getDetailData(id){
+				getDetailData(id).then(res => {
+					const data = res.data.data.storeInfo
+					const arr = replaceImages(data.slider_image)
+					console.log(res)
+					arr.forEach((item,i) => {
+						this.swiperList.push({
+							url:item,
+							id:i,
+							type:'image'
+						})
+					})
+					// 获取顶部数据
+					this.itemInfo.id = data.id
+					this.itemInfo.price = data.price
+					this.itemInfo.oldPrice = data.ot_price
+					this.itemInfo.count =  parseInt(data.give_integral)
+					this.itemInfo.ficti = data.ficti
+					this.itemInfo.cost = data.cost
+					this.itemInfo.isHot = data.is_hot
+					this.itemInfo.isPostage = data.is_postage
+					this.itemInfo.isSeckill = data.is_seckill
+					this.itemInfo.isGroup = data.is_group
+					this.itemInfo.userCollect = data.userCollect
+					this.itemInfo.name = data.store_name
+					this.itemInfo.sales = data.sales
+					this.itemInfo.image = replaceImage(data.image)
+					this.itemInfo.stock = data.stock
+					
+					// 获取并处理选择规格数据
+						this.list = [...res.data.data.productAttr]
+					// 获取商品的所有种类
+					this.itemInfo.totalTypes = res.data.data.productValue
+					
+					// 获取商店数据
+					const store = res.data.data.shop_info
+					this.storeInfo.info.expressageFen = store.expressage_score
+					this.storeInfo.info.produceFen = store.product_score
+					this.storeInfo.info.serviceFen = store.service_score
+					this.storeInfo.info.storeId = store.shop_id
+					this.storeInfo.info.storeLogo =  replaceImage(store.shop_logo)
+					this.storeInfo.info.storeName = store.shop_name
+					this.storeInfo.info.totalFen = store.zong
+					
+					
+					// 获取推荐商品数据
+					this.recommend = res.data.data.recommend_goods
+					const recommendImg = replaceList(res.data.data.recommend_goods)
+					this.recommend.forEach(item => {
+						item.image = replaceImage(item.image)
+					})
+
+				})
+			},
 			//选择商品属性
-			selectShopClick(type,key){
-				if(type){
-					this.list[key].type = false
+			selectShopClick(el,key,index){
+				if(el.check){
+					el.check = false
 				}else{
-					this.list[key].type = true
+					this.list[index].attr_value.forEach(item => {
+						item.check = false
+					})
+					el.check = true
+				}
+				this.itemInfo.type = []
+				this.getCurrent()
+				
+			},
+			getCurrent(){
+				if(this.list){
+					const arr = this.list.map(item => {
+						return item.attr_value.filter(item => {
+							 return item.check
+						})
+					})
+					arr.forEach((item) => {
+						if(!!item.length){
+							this.itemInfo.type.push(item[0].attr) 
+						}
+					})
+				}else{
+					return []
 				}
 			},
 			//选择图片
 			selectimageClick(){
-				this.payimgType = true
-				this.swiperNum = 1
+				if(this.isVideo){
+					this.payimgType = true
+					this.swiperNum = 1
+				}
 			},
 			//选择视频
 			selectPlayClick(){
-				this.payimgType = false
-				this.swiperNum = 0
+				if(this.isVideo){
+					this.payimgType = false
+					this.swiperNum = 0
+				}
 			},
 			//滑块的change
 			swiperChange(e){
 				this.swiperNum = e.target.current
-				if(this.swiperNum == 0){
-					this.payimgType = false
-				}else{
-					this.payimgType = true
+				if(this.isVideo){
+					if(this.swiperNum == 0){
+						this.payimgType = false
+					}else{
+						this.payimgType = true
+					}
 				}
-				console.log(e.target.current)
+				// console.log(e.target.current)
 			},
 			//点击kefu
 			serviceClick(shopname){
@@ -397,9 +486,88 @@
 			},
 			//立即购买
 			nowBuyClick(){
-				uni.navigateTo({
-					url:'affirm/affirmOrder'
-				})
+				// 判断是否有token
+				if(this.isToken){
+					// 判断是否有商品种类
+					if(!!Object.keys(this.itemInfo.totalTypes).length){
+						// 用户选择的种类
+						const isUserChoose = this.itemInfo.totalTypes[this.itemInfo.type]
+						// 判断用户是否选择了每个种类
+						if(isUserChoose!==undefined){
+							// 保存种类唯一识别id
+							this.itemInfo.unique = isUserChoose.unique
+							//保存选择的属性
+							const obj = {
+								productId:this.itemInfo.id,
+								cartNum:this.value,
+								shop_id:this.storeInfo.info.storeId,
+								uniqueId:this.itemInfo.unique,
+								combinationId:'',
+								secKillId:'',
+								bargainId:''
+							}
+							
+							// 发送ajax处理请求
+							payNow(obj,this.isToken).then(res => {
+								console.log(res)
+								if(res.data.code == 200){
+									// 发送到vuex中进行存储
+									this.$store.commit('keepCartId',res.data.data.cartId)
+									uni.navigateTo({
+										url:"affirm/affirmOrder"
+									})
+								}else if(res.data.code == 400){
+									uni.showToast({
+										title:'商品不存在或已删除',
+										icon:"none"
+									})
+								}
+								
+							})
+						}else{
+							uni.showToast({
+								title:"请选择商品种类",
+								icon:"none",
+							})
+						}
+					}else{
+						
+						this.itemInfo.unique = ''
+						const obj = {
+							productId:this.itemInfo.id,
+							cartNum:this.value,
+							shop_id:this.storeInfo.info.storeId,
+							uniqueId:this.itemInfo.unique,
+							combinationId:'',
+							secKillId:'',
+							bargainId:''
+						}
+						
+						// 发送ajax处理请求
+						payNow(obj,this.isToken).then(res => {
+							if(res.data.code == 200){
+								// 发送到vuex中进行存储
+								this.$store.commit('keepCartId',res.data.data.cartId)
+								uni.navigateTo({
+									url:"affirm/affirmOrder"
+								})
+							}else if(res.data.code == 400){
+								uni.showToast({
+									title:'商品不存在或已删除',
+									icon:"none"
+								})
+							}
+							
+						})
+					}
+						
+					
+					
+				}else{
+					uni.navigateTo({
+						url:'../login/login'
+					})
+				}
 			},
 			//点击收藏
 			collectClick(id){
@@ -435,6 +603,113 @@
 			closePopupsShopClick(){
 				this.$refs.popupbottom.close()
 			},
+			// 添加购物车
+			addCart(){
+				// 判断是否有token
+				if(this.isToken){
+					// 判断是否有商品种类
+					if(!!Object.keys(this.itemInfo.totalTypes).length){
+						// 用户选择的种类
+						const isUserChoose = this.itemInfo.totalTypes[this.itemInfo.type]
+						// 判断用户是否选择了每个种类
+						if(isUserChoose!==undefined){
+							// 保存种类唯一识别id
+							this.itemInfo.unique = isUserChoose.unique
+							//保存选择的属性
+							const GoodsInfo = {
+								productId: this.itemInfo.id,
+								cartNum: this.value,
+								uniqueId: this.itemInfo.unique,
+								shop_id: this.storeInfo.info.storeId
+							}
+							// 发送加入购物车请求
+							getAddCart(GoodsInfo,this.isToken)
+							.then(res => {
+								console.log(res)
+								if(res.data.code == 200){
+									uni.showToast({
+										title:"添加成功",
+										icon:"none",
+									})
+									// 把商品信息添加进vuex中
+									this.$store.commit('addCart',GoodsInfo)
+								}
+							})
+							this.$refs.popupbottom.close()
+						}else{
+							uni.showToast({
+								title:"请选择商品种类",
+								icon:"none",
+							})
+						}
+					}else{
+						this.itemInfo.unique = ''
+						const GoodsInfo = {
+							productId: this.itemInfo.id,
+							cartNum: this.value,
+							uniqueId: this.itemInfo.unique,
+							shop_id: this.storeInfo.info.storeId
+						}
+						// 发送加入购物车请求
+						getAddCart(GoodsInfo,this.isToken)
+						.then(res => {
+							console.log(res)
+							if(res.data.code == 200){
+								uni.showToast({
+									title:"添加成功",
+									icon:"none",
+								})
+								// 把商品信息添加进vuex中
+								this.$store.commit('addCart',GoodsInfo)
+							}
+						})
+						this.$refs.popupbottom.close()
+					}
+				}else{
+					uni.navigateTo({
+						url:'../login/login'
+					})
+				}
+			}
+		},
+		computed:{
+			// 判断用户token
+			...mapGetters(['isToken']),
+			
+			// 是否显示视频
+			isVideo(){
+				return !this.swiperList.every(item => item.type == 'image')
+			},
+			// 选择框预览的照片
+			showImgUrl(){
+				if(this.itemInfo.totalTypes){
+					if(!!this.itemInfo.type.length){
+						
+						 if(!!this.itemInfo.totalTypes[this.itemInfo.type.join(',')]){
+							 return replaceImage(this.itemInfo.totalTypes[this.itemInfo.type.join(',')].image)
+						 }else{
+							 return replaceImage(this.itemInfo.image)
+						 }
+					}else{
+						return  replaceImage(this.itemInfo.image)
+					}
+				}
+			},
+			
+			// 列表预览的图片
+			selectimg(){
+				let arr = []
+				Object.keys(this.itemInfo.totalTypes).forEach(item => {
+					arr.push(replaceImage(this.itemInfo.totalTypes[item].image))
+				})
+				return arr.splice(0,4)
+			},
+			isChooseType(){
+				const arr = this.list.map(item => {
+					return item.attr_name
+				})
+				return arr.join(' '+' ')
+			}
 		}
 	}
 </script>

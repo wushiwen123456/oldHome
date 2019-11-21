@@ -1,0 +1,113 @@
+
+.shoppingCart-image-all{
+	width:188rpx;
+	height: 188rpx;
+}
+.shoppingCart-title-yuan{
+	font-size: 40rpx;
+}
+.shoppingCart-title-shop{
+	font-size: 36rpx;
+	margin-left: 30rpx;
+	margin-right: 20rpx;
+}
+.shoopingCart-all{
+	margin-top: 10rpx;
+	padding: 26rpx 23rpx 36rpx 24rpx;
+}
+.shopping-teichang{
+	background: #CD3233;
+	color: #FFFFFF;
+	border-radius: 24rpx;
+	padding: 0 10rpx;
+}
+.shoopingCart-right{
+	width: 100%;
+}
+.shoopingCart-right-title{
+	overflow:hidden;
+	-o-text-overflow:ellipsis;
+	   text-overflow:ellipsis; 
+	display:-webkit-box; 
+	-webkit-box-orient:vertical; 
+	-webkit-line-clamp:2; 
+	font-size: 26rpx;
+}
+.shoopingCart-right-guige{
+	font-size: 22rpx;
+	color: #999999;
+	background: #F9F9F9;
+	height:40rpx;
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-align: center;
+	-webkit-align-items: center;
+	    -ms-flex-align: center;
+	        align-items: center;
+	-webkit-box-pack: center;
+	-webkit-justify-content: center;
+	    -ms-flex-pack: center;
+	        justify-content: center;
+	margin: 20rpx 0;
+	width: 100rpx;
+	border-radius: 10rpx;
+}
+.shoopingCart-input{
+	width: 50rpx;
+	height: 40rpx;
+	text-align: center; 
+	background: #EBEBEB; 
+	border-radius: 6rpx;
+	margin: 0 10rpx;
+	font-size: 22rpx;
+}
+.shoopingCart-input-add{
+	font-size: 34rpx;
+}
+.shoopingCart-bottom{
+	width: 100%;
+	height: 100rpx;
+	background: #FFFFFF;
+	z-index: 99;
+	position: fixed;
+	bottom: 0;
+}
+.shoopingCart-bottom-button{
+	width:192rpx;
+	height:80rpx;
+	border-radius:40px;
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-align: center;
+	-webkit-align-items: center;
+	    -ms-flex-align: center;
+	        align-items: center;
+	-webkit-box-pack: center;
+	-webkit-justify-content: center;
+	    -ms-flex-pack: center;
+	        justify-content: center;
+	font-size: 32rpx;
+	margin-left: 30rpx;
+}
+.shoopingCart-bottom-button-one{
+	background: #CD3233;
+	color: #FFFFFF;
+}
+.shoopingCart-bottom-button-two{
+	border: #CD3233 1px solid;
+	color: #CD3233;
+}
+/* 未登录 */
+.no-token{
+	font-size: 36rpx;
+	color: #7f8c8d;
+	text-align: center;
+	position: fixed;
+	width: 100%;
+	top: 500rpx;
+}
+

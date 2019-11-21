@@ -22,21 +22,26 @@
 		</view>
 		
 		<!-- 购买商品种类 循环开始 -->
-		<view  class=" affirmOrder-main" >
+		
+		<view  class=" affirmOrder-main" v-for="(item,index) in cartInfo" :key='index'>
 			<view class="flex align-center margin-bottom">
 				<view style="font-size: 40upx;" class="lg cuIcon-shop margin-right-xs"></view>
-				<view>沃隆旗舰店</view>
+				<!-- 商铺名称 -->
+				<view>{{item.shop_info.shop_name}}</view>
 			</view>
-			<view class="dis-flex">
-				<image src="../../../static/demo2.png"></image>
+			<view class="dis-flex" v-for="(item2,index2) in item.cartInfo" :key="index2">
+				<!-- 商品图片 -->
+				<image :src="dealImg(item2.productInfo.image)"></image>
 				<view class="affirmOrder-main-right">
 					<view class="dis-flex flex-jus-space">
-						<view class="text-wuer text-sm" >沃隆每日坚果750g混合装30包干果零食大礼包混合坚果小包装</view>
-						<view>￥98</view>
+						<!-- 商品名称 -->
+						<view class="text-wuer text-sm" >{{item2.productInfo.store_name}}</view>
+						<!-- 商品价格 -->
+						<view>￥{{item2.productInfo.price}}</view>
 					</view>
 					<view class="affirmOrder-main-right-bottom dis-flex flex-jus-space">
-						<view>味口:成人版A750g/盒</view>
-						<view>×1</view>
+						<view>类型：{{!!item2.productInfo.attrInfo ? item2.productInfo.attrInfo.suk : '暂无'}}</view>
+						<view>×{{item2.cart_num}}</view>
 					</view>
 				</view>
 			</view>
@@ -45,7 +50,7 @@
 		<view>
 			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
 				<view>运费</view>
-				<view style="color: #959494;">包邮</view>
+				<view style="color: #959494;">{{post}}</view>
 			</view>
 			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
 				<view>买家留言</view>
@@ -82,7 +87,7 @@
 		<view class="affirmOrder-bottom">
 			<view class="flex align-center">
 				<view >合计:</view>
-				<view class="text-price text-red text-xxl">80</view>
+				<view class="text-price text-red text-xxl">{{totalPrice}}</view>
 			</view>
 			<button @tap="submitOrderClick" >提交订单</button>
 		</view>
@@ -105,6 +110,15 @@
 
 <script>
 	import uniPopup  from "@/components/uni-popup/uni-popup"
+	
+	// 导入账单信息和收货地址
+	import { getAffirmInfo,getAddress,getAllAddress } from '@/network/affirm'
+	
+	// 导入工具类
+	import { replaceImage } from '@/utils/dealUrl.js'
+	
+	// 导入vuex
+	import { mapGetters } from 'vuex'
 	export default{
 		components:{
 			uniPopup
@@ -116,16 +130,57 @@
 				mark:'',//买家留言
 				isCard:true,//true用红包  false 不用红包
 				discountsType:true,//优惠券选择
+				count:'',
+				cartId:'',
+				token:'',
+				cartInfo:[],
 			}
 		},
 		onReady() {
 			
 		},
-		onLoad(e) {
+		onLoad() {
 			
 		},
 		onShow() {
-			
+			if(this.isToken){
+				if(this.$store.state.cartId == ''){
+					uni.showToast({
+						title:'未知错误',
+						icon:"none",
+					})
+					uni.switchTab({
+						url:"../../Home/home"
+					})
+				}else{
+					this.cartId = this.$store.state.cartId
+					getAffirmInfo(this.cartId,this.isToken)
+					.then(res => {
+						if(res.data.code == 200){
+							this.cartInfo = res.data.data.cartInfo
+							console.log(this.cartInfo)
+							
+							// 获取用户收货地址并判断
+							this.userddress(this.isToken)
+						}else{
+							uni.showToast({
+								title:'未知错误'
+							})
+						}
+					})
+					
+				}
+				
+			}else{
+				uni.showToast({
+					title:'未知错误',
+					icon:"none",
+					
+				})
+				uni.navigateTo({
+					url:"../../login/login"
+				})
+			}
 		},
 		methods:{
 			//列表详情
@@ -137,8 +192,49 @@
 				
 			},
 			//获取用户默认地址
-			userddress(){
-				
+			userddress(token){
+				getAddress(token)
+				.then(res => {
+					console.log(res)
+					if(res.data.code == 200){
+						if(res.data.data = []){
+							// uni.showModal({
+							// 	title:'您还没有设置默认地址，快去设置吧',
+							// 	cancelColor:"#333333",
+							// 	confirmColor:"#333333",
+							// 	showCancel:false,
+							// 	confirmText:"立即设置",
+							// 	success(res) {
+							// 		if(res.confirm){
+							// 			uni.navigateTo({
+							// 				url:"../../My/address/addAddress"
+							// 			})
+							// 		}
+							// 	}
+							// })
+							// 获取用户所有地址
+							getAllAddress(this.token)
+							.then(res => {
+								if(res.data.code == 402){
+									uni.showModal({
+										title:res.data.msg,
+										cancelColor:"#333333",
+										confirmColor:"#333333",
+										confirmText:"立即登录",
+										showCancel:false,
+										success:(res)=> {
+											if(res.confirm){
+												uni.navigateTo({
+													url:"../../login/login"
+												})
+											}
+										}
+									})
+								}
+							})
+						}
+					}
+				})
 			},
 			//优惠券选择
 			getDiscountClick(key){
@@ -175,6 +271,30 @@
 			IsCard(e) {
 				this.isCard = e.detail.value
 			},
+			dealImg(image){
+				return replaceImage(image)
+			}
+		},
+		computed:{
+			// 判断用户token
+			...mapGetters(['isToken']),
+			
+			// 判断是否包邮
+			post(){
+				return this.cartInfo.reduce((prev,x) => {
+					return prev*1 + x.cartInfo.reduce((prev,x) => {
+						return (prev + x.productInfo.postage)*1
+					},0)
+				},0).toFixed(2) + '元'
+			},
+			//总价 
+			totalPrice(){
+				return this.cartInfo.reduce((prev,x) => {
+					return prev*1 + x.cartInfo.reduce((prev,x) => {
+						return prev + x.productInfo.price*x.cart_num
+					},0)
+				},0).toFixed(2) + '元'
+			}
 		}
 	}
 </script>

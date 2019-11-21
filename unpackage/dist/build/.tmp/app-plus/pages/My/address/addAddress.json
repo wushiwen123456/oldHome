@@ -1,0 +1,17 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "添加地址",
+  "scrollIndicator": "none",
+  "titleNView": {
+    "buttons": [
+      {
+        "text": "保存",
+        "color": "#CD3233",
+        "fontSize": "16px"
+      }
+    ]
+  },
+  "usingComponents": {
+    "w-picker": "/components/w-picker/w-picker"
+  }
+}

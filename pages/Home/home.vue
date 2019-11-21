@@ -21,9 +21,9 @@
 					animationMode="line2" 
 					activeColor="#CD3233" 
 					autoCenterMode="window" 
-					defaultStyle="#525253"
+					defaultStyle="#525253"	
 					:tabs="tabs_3" 
-					width="130" 
+					width="150" 
 					@change="change($event, '3')"
 				/>
 			</view>
@@ -41,7 +41,7 @@
 			interval="5000" 
 			duration="500">
 				<swiper-item v-for="(item,index) in swiperList" :key="index">
-					<image :src="item.url" mode="aspectFill"></image>
+					<image :src="item.pic" mode="aspectFill"></image>
 				</swiper-item>
 		</swiper>
 		
@@ -57,8 +57,8 @@
 		<view class="bg-white margin-top-xs flex align-center home-new-all">
 			<image class="home-new-image" src="../../static/newimg.png"></image>
 			<swiper vertical autoplay circular interval="3000" class="tui-swiper margin-right">
-				<swiper-item v-for="(item,index) in newsList" :key="index" class="tui-swiper-item">
-					<view class="tui-news-item" @tap='detail'>{{item}}</view>
+				<swiper-item v-for="(item,index) in newsList" :key="item.id" class="tui-swiper-item">
+					<view class="tui-news-item" @tap='detail(item.url)'>{{item.info}}</view>
 				</swiper-item>
 			</swiper>
 		</view>
@@ -87,14 +87,14 @@
 				<block v-for="(item,index) in productList" :key="index" v-if="(index+1)%2!=0">
 					<!-- <template is="productItem" data="{{item,index:index,isList:isList}}" /> -->
 					<!--商品列表-->
-					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(1)">
-						<image src="../../static/demo4.png" class="tui-pro-img" mode="widthFix" />
+					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(item.id)">
+						<image :src="item.image" class="tui-pro-img" mode="widthFix" />
 						<view class="tui-pro-content">
-							<view class="tui-pro-tit">{{item.name}}</view>
+							<view class="tui-pro-tit">{{item.store_name}}</view>
 							<view class="flex align-center justify-between">
-								<view class="tui-sale-price">￥{{item.sale}}</view>
-								<view class="tui-pro-pay">销量{{item.payNum}}</view>
-							</view>
+								<view class="tui-sale-price">￥{{item.price}}</view>
+								<view class="tui-pro-pay">销量{{item.sales}}</view>
+							</view>	
 						</view>
 					</view>
 					<!--商品列表-->
@@ -104,13 +104,13 @@
 				<block v-for="(item,index) in productList" :key="index" v-if="(index+1)%2==0">
 					<!-- <template is="productItem" data="{{item,index:index}}" /> -->
 					<!--商品列表-->
-					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(1)">
-						<image src="../../static/demo6.png" class="tui-pro-img" mode="widthFix" />
+					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(item.id)">
+						<image :src="item.image" class="tui-pro-img" mode="widthFix" />
 						<view class="tui-pro-content">
-							<view class="tui-pro-tit">{{item.name}}</view>
+							<view class="tui-pro-tit">{{item.store_name}}</view>
 							<view class="flex align-center justify-between">
-								<view class="tui-sale-price">￥{{item.sale}}</view>
-								<view class="tui-pro-pay">销量{{item.payNum}}</view>
+								<view class="tui-sale-price">￥{{item.price}}</view>
+								<view class="tui-pro-pay">销量{{item.sales}}</view>
 							</view>
 						</view>
 					</view>
@@ -129,6 +129,13 @@
 <script>
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
 	import QSTabs from '@/components/QS-tabs/QS-tabs.vue';
+	
+	// 网络处理
+	import { getHomeData,getDetailData } from '@/network/Home'
+	// 变量
+	import { HOST } from '@/common/const'
+	// 工具类
+	import { replaceImage } from '@/utils/dealUrl'
 	export default{
 		components: {
 			QSTabs,
@@ -138,35 +145,10 @@
 			return{
 				loadingimg:true,//login加载
 				loadingType:1,//login状态
-				newsList: [
-					"致力发展负责任的人工智能 中国发布八大治理原则",
-					"格兰仕暗示拜访拼多多后遭天猫打压，拼多多高层赞其有勇气",
-					"阿里计划将每股普通股拆为8股，增加筹资灵活性"
-				],
-				tabs_3: ['tab-1', 'tab-2', 'tab-3', 'tab-4', 'tab-5', 'tab-6', 'tab-7', 'tab-8'],
+				newsList: [], // 新闻
+				tabs_3: [], //tabBar
 				current_3: 0,
-				swiperList: [{
-					id: 0,
-					url: '../../static/banner1.png'
-				}, {
-					id: 1,
-					url: '../../static/banner1.png'
-				}, {
-					id: 2,
-					url: '../../static/banner1.png'
-				}, {
-					id: 3,
-					url: '../../static/banner1.png'
-				}, {
-					id: 4,
-					url: '../../static/banner1.png'
-				}, {
-					id: 5,
-					url: '../../static/banner1.png'
-				}, {
-					id: 6,
-					url: '../../static/banner1.png'
-				}],
+				swiperList: [], // 头部轮播
 				homeTitle:[{
 					id:0,
 					name:'老家特产',
@@ -200,80 +182,14 @@
 					name:'更多',
 					image:'../../static/homeg.png'
 				}],
-				productList: [{
-						img: 1,
-						name: "欧莱雅（LOREAL）奇焕光彩粉嫩透亮修颜霜 30ml（欧莱雅彩妆 BB霜 粉BB 遮瑕疵 隔离）",
-						sale: 599,
-						factory: 899,
-						payNum: 2342
-					},
-					{
-						img: 2,
-						name: "德国DMK进口牛奶  欧德堡（Oldenburger）超高温处理全脂纯牛奶1L*12盒",
-						sale: 29,
-						factory: 69,
-						payNum: 999
-					},
-					{
-						img: 3,
-						name: "【第2支1元】柔色尽情丝柔口红唇膏女士不易掉色保湿滋润防水 珊瑚红",
-						sale: 299,
-						factory: 699,
-						payNum: 666
-					},
-					{
-						img: 4,
-						name: "百雀羚套装女补水保湿护肤品",
-						sale: 1599,
-						factory: 2899,
-						payNum: 236
-					},
-					{
-						img: 5,
-						name: "百草味 肉干肉脯 休闲零食 靖江精制猪肉脯200g/袋",
-						sale: 599,
-						factory: 899,
-						payNum: 2399
-					},
-					{
-						img: 6,
-						name: "短袖睡衣女夏季薄款休闲家居服短裤套装女可爱韩版清新学生两件套 短袖粉色长颈鹿 M码75-95斤",
-						sale: 599,
-						factory: 899,
-						payNum: 2399
-					},
-					{
-						img: 1,
-						name: "欧莱雅（LOREAL）奇焕光彩粉嫩透亮修颜霜",
-						sale: 599,
-						factory: 899,
-						payNum: 2342
-					},
-					{
-						img: 2,
-						name: "德国DMK进口牛奶",
-						sale: 29,
-						factory: 69,
-						payNum: 999
-					},
-					{
-						img: 3,
-						name: "【第2支1元】柔色尽情丝柔口红唇膏女士不易掉色保湿滋润防水 珊瑚红",
-						sale: 299,
-						factory: 699,
-						payNum: 666
-					},
-					{
-						img: 4,
-						name: "百雀羚套装女补水保湿护肤品",
-						sale: 1599,
-						factory: 2899,
-						payNum: 236
-					}
-				],
+				productList: [], // 商品列表
 			}
 		},
 		onLoad(){
+			// 获取主页上面数据
+			this._getHomeData()
+			// 获取主页商品列表数据
+			this._getDetailData()
 			
 		},
 		methods:{
@@ -304,8 +220,14 @@
 					})
 				}else if(num == 4){
 					//政府新闻
+					uni.navigateTo({
+						url:'Government/government'
+					})
 				}else if(num == 5){
 					//公益信息
+					uni.navigateTo({
+						url:'PublicMessage/publicmessage'
+					})
 				}else if(num == 6){
 					//易物平台
 				}else if(num == 7){
@@ -318,6 +240,37 @@
 					url:'../ShopDetails/shopDetails?id=' + id
 				})
 			},
+			// 获取上面数据
+			_getHomeData(){
+				getHomeData().then(res => {
+					if(res.statusCode == 200){
+						this.swiperList = res.data.data.banner
+						this.newsList = res.data.data.roll
+						this.tabs_3 = res.data.data.cate
+					}
+				})
+			},
+			// 获取商品列表数据
+			_getDetailData(){
+				getDetailData().then(res => {
+					if(res.statusCode == 200){
+						const arr = res.data.data.map(item => {
+							return replaceImage(item.image)
+						})
+						this.productList = res.data.data
+						this.productList.forEach((item,i) => {
+							item.image = arr[i]
+						})
+					}
+				})
+			},
+			// 跳转到新闻详情页，路径暂时有问题
+			detail(url){
+				url = `../..${url}`
+				uni.navigateTo({
+					url:url
+				})
+			}
 		}
 	}
 </script>

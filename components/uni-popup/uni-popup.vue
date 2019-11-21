@@ -105,7 +105,7 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 99999;
+  z-index: 100;
   overflow: hidden;
 
   &__mask {
@@ -114,7 +114,7 @@ export default {
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 998;
+    z-index: 99;
     background: rgba(0, 0, 0, 0.4);
     opacity: 0;
 
@@ -131,7 +131,7 @@ export default {
 
   &__wrapper {
     position: absolute;
-    z-index: 999;
+    z-index: 99;
     box-sizing: border-box;
 
     &.ani {

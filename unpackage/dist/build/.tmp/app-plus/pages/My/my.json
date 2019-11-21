@@ -1,0 +1,23 @@
+{
+  "navigationBarBackgroundColor": "#CD3233",
+  "scrollIndicator": "none",
+  "titleNView": {
+    "buttons": [
+      {
+        "text": "",
+        "fontSrc": "/static/chunlei-video/iconfont.ttf",
+        "color": "#FFFFFF",
+        "fontSize": "24",
+        "width": "30px"
+      },
+      {
+        "text": "",
+        "fontSrc": "/static/chunlei-video/iconfont.ttf",
+        "color": "#FFFFFF",
+        "fontSize": "26",
+        "width": "30px"
+      }
+    ]
+  },
+  "usingComponents": {}
+}

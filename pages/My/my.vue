@@ -1,37 +1,41 @@
 <template>
 	<view>
-		<view class="my-title-background">
-			<view class="bg-white  margin-left margin-right my-one-all">
+		<view v-if="mytrue" class="my-title-background">
+			<view  class="bg-white  margin-left margin-right my-one-all">
 				<view class="flex align-end justify-between margin-left-lg">
 					<view class="flex align-center">
-						<image class="my-head-image" src="../../static/头像2.png"></image>
-						<view class="text-xl text-bold margin-left-sm">我们de地方</view>
+						<image class="my-head-image" :src="avatar"></image>
+						<view class="text-xl text-bold margin-left-sm">{{username}}</view>
 					</view>
 					<view class="my-one-jifen flex align-center justify-center">
 						<image src="../../static/jifenw.png"></image>
-						<view class="margin-left-xs">红包100</view>
+						<view class="margin-left-xs">红包{{now_money}}</view>
 					</view>
 				</view>
 				<view class="flex align-center justify-around margin-top">
 					<view @tap="collectClick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">699</view>
+						<view class="margin-bottom-xs text-lg">{{product_collect}}</view>
 						<view class="text-sm">商品收藏</view>
 					</view>
 					<view @tap="attrntionClick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">48</view>
+						<view class="margin-bottom-xs text-lg">{{shop_collect}}</view>
 						<view class="text-sm">店铺收藏</view>
 					</view>
 					<view @tap="integralShopCick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">42</view>
+						<view class="margin-bottom-xs text-lg">{{integral}}</view>
 						<view class="text-sm">积分</view>
 					</view>
 					<view class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">89</view>
+						<view class="margin-bottom-xs text-lg">{{visit}}</view>
 						<view class="text-sm">我的足迹</view>
 					</view>
 				</view>
 			</view>
 		</view>
+		<view v-else class="Nologin">
+			<view @tap="loginClick" class="Nologin-button">登录/注册</view>
+		</view>
+		
 		
 		<view class="my-two-three-all">
 			<view class="bg-white border-all ">
@@ -110,10 +114,59 @@
 </template>
 
 <script>
+	import { getProfileData } from '@/network/getProfileData'
+	
+	// 导入vuex
+	import { mapGetters } from 'vuex'
+	// 导入工具类
+	import { addUrl } from '@/utils/dealUrl'
+	
 	export default{
 		data(){
 			return{
-				
+				mytrue:false,//是否登录
+				username:"",
+				avatar:"",
+				integral:"",
+				now_money:"",
+				sex:"",
+				product_collect:"",
+				shop_collect:"",
+				visit:""
+			}
+		},
+		onShow() {
+			console.log(this.isToken)
+			console.log()
+			if(this.isToken){
+				getProfileData(this.isToken).then(res => {
+					const data = res.data
+					if(data.code == 400){
+						uni.showToast({
+							title:'登录失败',
+							icon:'none'
+						})
+					}else if(data.code == 401){
+						uni.showToast({
+							title:'登录超时',
+							icon:'none'
+						})
+					}else if(data.code == 200){
+						this.mytrue = true
+						console.log(data)
+						this.avatar = addUrl(data.data.avatar)
+						this.username = data.data.nickname
+						this.integral = data.data.integral
+						this.now_money = data.data.now_money
+						this.sex = data.data.sex
+						this.product_collect = data.data.product_collect
+						this.shop_collect = data.data.shop_collect
+						this.visit = data.data.visit
+					}
+					
+				})
+			}else{
+				console.log('您还未登录')
 			}
 		},
 		onNavigationBarButtonTap(e){
@@ -132,6 +185,12 @@
 			}
 		},
 		methods:{
+			//点击登录
+			loginClick(){
+				uni.navigateTo({
+					url:'../login/login'
+				})
+			},
 			//商品收藏
 			collectClick(){
 				uni.navigateTo({
@@ -198,15 +257,21 @@
 					url:'Discounts/DiscpuntsCentent'
 				})
 			}
+		},
+		computed:{
+			...mapGetters(['isToken'])
+			
 		}
+		
 	}
 </script>
 
 <style>
 	.my-title-background{
-		height:156upx;
-		background:rgba(205,50,51,1);
-		position: absolute;
+		margin-bottom: 20upx;
+		height:280upx;
+		background: url(../../static/nologin.png) no-repeat;
+		background-size: 100% 50%;
 		width: 100%;
 	}
 	.my-head-image{
@@ -233,7 +298,7 @@
 		height:40upx;
 	}
 	.my-two-three-all{
-		padding: 310upx 30upx 0 30upx;
+		padding: 10upx 30upx 0 30upx;
 	}
 	.border-all{
 		border-radius: 14upx;
@@ -255,5 +320,25 @@
 	}
 	.my-two-bootom{
 		padding-bottom: 76upx;
+	}
+	.Nologin{
+		height:280upx;
+		width: 100%;
+		background: url(../../static/nologin.png) no-repeat;
+		background-size: 100% 100%;
+		padding-top: 80upx;
+		padding-left: 200upx;
+	}
+	.Nologin-button{
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width:238upx;
+		height:70upx;
+		background:rgba(255,255,255,1);
+		border-radius:35upx;
+		color: #CD3233;
+		font-size: 32upx;
+		font-weight: bold;
 	}
 </style>

@@ -1,0 +1,8 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "登录",
+  "scrollIndicator": "none",
+  "usingComponents": {
+    "w-button": "/components/watch-login/watch-button"
+  }
+}

@@ -516,7 +516,7 @@ radio.white.checked .uni-radio-input {
 }
 
 .solid-left::after {
-	border-left: 1upx solid rgba(0, 0, 0, 0.1);
+	border-left: 2upx solid rgba(0, 0, 0, 0.3);
 }
 
 .solids::after {
@@ -3201,7 +3201,9 @@ scroll-view.cu-steps .cu-item {
 .padding-top-xl {
 	padding-top: 50upx;
 }
-
+.padding-top-xxl{
+	padding-top: 60upx;
+}
 .padding-right-xs {
 	padding-right: 10upx;
 }

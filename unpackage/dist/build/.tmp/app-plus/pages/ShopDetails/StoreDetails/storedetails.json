@@ -1,0 +1,12 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "店铺详情",
+  "titlePenetrate": "YES",
+  "scrollIndicator": "none",
+  "titleNView": {
+    "type": "transparent"
+  },
+  "usingComponents": {
+    "uni-load-more": "/components/uni-load-more/uni-load-more"
+  }
+}

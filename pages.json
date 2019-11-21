@@ -19,6 +19,16 @@
 			}
 		},
 		{
+			"path": "pages/Home/Native/address",//特产馆
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "特产馆",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		},
+		{
 			"path": "pages/Home/Seckilltime/seckilltime",//限时秒杀
 			"style": {
 				"navigationBarBackgroundColor":"#FFFFFF",
@@ -68,6 +78,128 @@
 				}
 			}
 		},
+		{
+			"path": "pages/Home/Government/government",//政府新闻
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"app-plus": {
+					"titleNView": {
+						// "type": "transparent",//透明渐变导航栏
+						"searchInput": {
+							"backgroundColor": "#F1F1F1",
+							"align":"left",
+							"borderRadius": "6px", //输入框圆角
+							"placeholder": "搜索新闻标题",
+							"disabled": false //disable时点击输入框不置焦，可以跳到新页面搜索
+						},
+						"buttons": [ //原生标题栏按钮配置,
+							{
+								"text": "  " ,
+								"color":"#FFFFFF",
+								"fontSize":"24",
+								"width":"30px"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"path": "pages/Home/Government/articless",//新闻详情
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "新闻详情",
+				"app-plus":{
+					"scrollIndicator":"none",//不显示滚动条
+					"titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+							{
+								"type":"share"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"path": "pages/Home/PublicMessage/publicmessage",//公益信息
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "公益信息",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		},
+		{
+			"path": "pages/Home/PublicMessage/invite/invite",//招聘信息
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "招聘信息",
+				"app-plus":{
+					"scrollIndicator":"none",//不显示滚动条
+					"titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+							{
+								"text": "发布" ,//原生标题栏增加分享按钮，点击事件可通过页面的 onNavigationBarButtonTap 函数进行监听
+								"color":"#D14243",
+								"fontSize":"14"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"path": "pages/Home/PublicMessage/invite/issueinvite",//招聘信息
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "发布",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		},
+		{
+			"path": "pages/Home/PublicMessage/supply/supply",//供求信息
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "供求信息",
+				"app-plus":{
+					"scrollIndicator":"none",//不显示滚动条
+					"titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+							{
+								"text": "发布" ,//原生标题栏增加分享按钮，点击事件可通过页面的 onNavigationBarButtonTap 函数进行监听
+								"color":"#D14243",
+								"fontSize":"14"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"path": "pages/Home/PublicMessage/supply/issuesupply",//供求信息
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "发布",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		},
+		{
+			"path": "pages/Home/PublicMessage/publicdetail",//信息详情
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "信息详情",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		},
+		
 		{
 			"path": "pages/Classify/classify",//分类
 			"style": {
@@ -273,6 +405,16 @@
 			}
 		},
 		{
+			"path": "pages/My/MyOrder/refund",//申请退款
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "申请退款",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		},
+		{
 			"path": "pages/My/MyBooking/refund/refund",//退款/售后
 			"style": {
 				"navigationBarBackgroundColor":"#FFFFFF",
@@ -414,7 +556,48 @@
 					"scrollIndicator":"none"//不显示滚动条
 				}
 			}
+		},
+		{
+			"path": "pages/login/login",//登录
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "登录",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		},
+		{
+			"path": "pages/login/register",//注册
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "注册",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		},
+		{
+			"path": "pages/login/forget",//忘记密码
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "忘记密码",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
 		}
+		// {
+		// 	"path": "pages/sing/sing",//政府新闻
+		// 	"style": {
+		// 		"navigationBarBackgroundColor":"#FFFFFF",
+		// 		"app-plus": {
+		// 			"titleNView": {
+		// 				"type": "transparent"//透明渐变导航栏
+		// 			}
+		// 		}
+		// 	}
+		// }
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

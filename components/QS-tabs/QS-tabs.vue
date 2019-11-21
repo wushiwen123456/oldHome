@@ -20,7 +20,7 @@
 				 v-for="(item, index) in getTabs" :key="index" @tap="emit(index)">
 					<!-- line1 -->
 					<view v-if="animationMode==='line1'" class="boxStyle" :style="getDurationStyle +( index===getCurrent?getActiveStyle:getDefaultStyle)"></view>
-					{{item.name || item}}
+					{{item.cate_name || item}}
 				</view>
 				<!-- itemBackground -->
 				<view v-if="hasItemBackground" class="itemBackgroundBox" :style="getItemBackgroundBoxStyle">
@@ -57,7 +57,7 @@
 			},
 			width: { //单个tab的宽度
 				type: [String, Number],
-				default: 250
+				default: 300
 			},
 			fontSize: { //字体大小
 				type: [String, Number],
