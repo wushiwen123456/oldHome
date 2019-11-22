@@ -1,4 +1,8 @@
 import { HOST,HOSTWWW } from '@/common/const'
+// 导入地区文件
+import area from '@/components/w-picker/city-data/area' //区
+import city from '@/components/w-picker/city-data/city'  //市
+import province from '@/components/w-picker/city-data/province' //省
 
 // 替换单个Url的路径
 export function replaceImage(str){
@@ -50,4 +54,26 @@ export function addUrl(path){
 	console.log(path)
 	console.log(HOST+'/'+path)
 	return HOST+'/'+path
+}
+
+
+// 省市区拆分
+export function splitAddress(str){
+	const arr = []
+	
+}
+
+
+// 对地区文件进行处理返回数据格式
+export function getAddress(area,city,province){
+	const arr = []
+	province.forEach((item,index) => {
+		item.children = city[index]
+		
+		item.children.forEach((t,i) => {
+			t.children = area[index][i]
+		})
+		arr.push(item)
+	})
+	return arr
 }

@@ -22,7 +22,7 @@ export function getAddress(token){
 	return http({
 		url:replaceImage('http://www.test.com/ebapi/user_api/user_default_address'),
 		header:{
-			token
+			token:token
 		},
 		method:"GET"
 	})
@@ -33,7 +33,7 @@ export function getAllAddress(token){
 	return http({
 		url:replaceImage('http://www.test.com/ebapi/user_api/user_address_list'),
 		header:{
-			token
+			token:token
 		},
 		method:'GET'
 	})

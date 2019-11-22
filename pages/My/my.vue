@@ -136,8 +136,6 @@
 			}
 		},
 		onShow() {
-			console.log(this.isToken)
-			console.log()
 			if(this.isToken){
 				getProfileData(this.isToken).then(res => {
 					const data = res.data

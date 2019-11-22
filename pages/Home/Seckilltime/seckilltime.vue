@@ -11,7 +11,7 @@
 		</scroll-view>
 		<view class="container-timeOut">
 			<view class="container-timeOut-txt">距结束仅剩</view>
-			<tui-countdown :time="timeList[0]" :colonSize="40" color="#fff" :width="44" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
+			<tui-countdown :time="timeList[currentTab]" :colonSize="40" color="#fff" :width="60" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
 		</view>
 		<swiper class="tab-content" :current="currentTab" duration="300" @change="switchTab" :style="{height:winHeight+'px'}">
 			<swiper-item v-for="(page,page_indx) in tabbar " :key="page_indx">
@@ -48,6 +48,9 @@
 
 <script>
 	import tuiCountdown from "@/components/countdown/countdown"
+	
+	// 获取秒杀页面的数据
+	import { secKillData,getSecKillData } from '@/network/Home.js'
 	export default {
 		components:{
 			tuiCountdown
@@ -55,25 +58,7 @@
 		data() {
 			return {
 				width:'50%',//进度条的长度
-				tabbar:[{
-					time:'5:00',
-					state:'已结束'
-				},{
-					time:'5:00',
-					state:'已结束'
-				},{
-					time:'5:00',
-					state:'已结束'
-				},{
-					time:'5:00',
-					state:'已结束'
-				},{
-					time:'5:00',
-					state:'已结束'
-				},{
-					time:'5:00',
-					state:'已结束'
-				}],
+				tabbar:[],
 				winHeight: "", //窗口高度
 				currentTab: 0, //预设当前项的值
 				scrollLeft: 0 ,//tab标题的滚动条位置
@@ -100,7 +85,6 @@
 					ot_price:12
 				}],//秒杀商品列表
 				typeTime:1,//当前状态
-				timeList: [1000, 2000, 3000, 19, 240000],//倒计时
 				loadingPlan:80,
 			}
 		},
@@ -113,9 +97,43 @@
 					that.winHeight = calc;
 				}
 			});
+			
+		},
+		onShow() {
+			// 加载秒杀数据
+			this.secKillData()
+			
+			// 获取秒杀列表
+			this.getSecKillData()
+		},
+		computed:{
+			timeList(){
+				return this.tabbar.map(item => {
+					if(item.state == '已结束'){
+						return 0
+					}else{
+						return parseInt(item.stop)/1000
+					}
+				})
+			},
 		},
 		methods: {
+			// 加载秒杀数据
+			secKillData(){
+				// secKillData()
+			},
 			
+			// 获取秒杀列表
+			getSecKillData(){
+				getSecKillData()
+				.then(res => {
+					console.log(res)
+					if(res.data.code == 200){
+						 this.tabbar = res.data.data.seckillTime
+						console.log(this.tabbar)
+					}
+				})
+			},
 			
 			//秒杀详情
 			timeSeckillClick(key){

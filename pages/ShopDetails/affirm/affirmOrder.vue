@@ -14,8 +14,8 @@
 			<view class="dis-flex flex-item-cent">
 				<image class="title-img-one" src="../../../static/address.png"></image>
 				<view class="affirmOrder-title-dizhi">
-					<view class="affirmOrder-title-nickname">王开心 15729284038</view>
-					<view>河南省郑州市二七区  一马路陇海路欢乐湖童装4楼2街</view>
+					<view class="affirmOrder-title-nickname">{{address.real_name}}  {{address.phone}}</view>
+					<view>{{address.detail}}</view>
 				</view>
 			</view>
 			<image class="title-img-two"  ></image>
@@ -59,7 +59,7 @@
 			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
 				<view>优惠券</view>
 				<view class="dis-flex flex-item-cent">
-					<view @tap="uniPopupClick" class="affirmOrder-message-youhui">没有可用的优惠券</view>
+					<view @tap="uniPopupClick" class="affirmOrder-message-youhui">选择优惠券</view>
 					<view class="lg cuIcon-right margin-left-sm"></view>
 				</view>
 			</view>
@@ -99,7 +99,7 @@
 				<view class="text-center text-three margin-top" style="margin-bottom: 80upx;">店铺优惠</view>
 				<view class="flex align-center justify-between shareShow-all">
 					<view class="text-three">不使用优惠券</view>
-					<view style="font-size: 40upx;"  :class="[discountsType?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']"></view>
+					<view style="font-size: 40upx;"  :class="[discountsType?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']" @tap="getDiscountClick"></view>
 				</view>
 				<button @tap="shareShowclose" class="shareShow-button">完成</button>
 			</view>
@@ -112,7 +112,10 @@
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	
 	// 导入账单信息和收货地址
-	import { getAffirmInfo,getAddress,getAllAddress } from '@/network/affirm'
+	import { getAffirmInfo,getAddress } from '@/network/affirm'
+	
+	// 导入用户优惠信息
+	import { getUserDiscount } from '@/network/getProfileData.js'
 	
 	// 导入工具类
 	import { replaceImage } from '@/utils/dealUrl.js'
@@ -126,14 +129,16 @@
 		data(){
 			return{
 				shareShow:false,
-				Noaddress:false,//是否存在默认地址
+				Noaddress:true,//是否存在默认地址
 				mark:'',//买家留言
 				isCard:true,//true用红包  false 不用红包
-				discountsType:true,//优惠券选择
+				discountsType:false,//优惠券选择
 				count:'',
 				cartId:'',
 				token:'',
 				cartInfo:[],
+				address:{},//地址信息
+				disCountList:[]
 			}
 		},
 		onReady() {
@@ -153,21 +158,14 @@
 						url:"../../Home/home"
 					})
 				}else{
+					// 获取用户默认收货地址
+					this.userAddresss(this.isToken)
+					// 订单id
 					this.cartId = this.$store.state.cartId
-					getAffirmInfo(this.cartId,this.isToken)
-					.then(res => {
-						if(res.data.code == 200){
-							this.cartInfo = res.data.data.cartInfo
-							console.log(this.cartInfo)
-							
-							// 获取用户收货地址并判断
-							this.userddress(this.isToken)
-						}else{
-							uni.showToast({
-								title:'未知错误'
-							})
-						}
-					})
+					// 获取订单信息				
+					this.getAffirmInfo(this.cartId,this.isToken)
+					// 获取用户优惠券 1表示未使用
+					this.getUserDiscount(1,this.isToken)
 					
 				}
 				
@@ -192,12 +190,31 @@
 				
 			},
 			//获取用户默认地址
-			userddress(token){
+			userAddresss(token){
 				getAddress(token)
 				.then(res => {
-					console.log(res)
+						
 					if(res.data.code == 200){
-						if(res.data.data = []){
+						console.log(res)
+						if(res.data.data == []){
+							uni.showModal({
+								title:'您还没有设置默认地址，快去设置吧',
+								cancelColor:"#333333",
+								confirmColor:"#333333",
+								showCancel:false,
+								confirmText:"立即设置",
+								success(res) {
+									if(res.confirm){
+										uni.navigateTo({
+											url:"../../My/address/addAddress"
+										})
+									}
+								}
+							})
+						}else{
+							this.Noaddress = false
+						}
+						this.address= res.data.data
 							// uni.showModal({
 							// 	title:'您还没有设置默认地址，快去设置吧',
 							// 	cancelColor:"#333333",
@@ -213,32 +230,70 @@
 							// 	}
 							// })
 							// 获取用户所有地址
-							getAllAddress(this.token)
-							.then(res => {
-								if(res.data.code == 402){
-									uni.showModal({
-										title:res.data.msg,
-										cancelColor:"#333333",
-										confirmColor:"#333333",
-										confirmText:"立即登录",
-										showCancel:false,
-										success:(res)=> {
-											if(res.confirm){
-												uni.navigateTo({
-													url:"../../login/login"
-												})
-											}
-										}
-									})
-								}
-							})
-						}
+							// getAllAddress(this.isToken)
+							// .then(res => {
+							// 	if(res.data.code == 402){
+							// 		uni.showModal({
+							// 			title:res.data.msg,
+							// 			cancelColor:"#333333",
+							// 			confirmColor:"#333333",
+							// 			confirmText:"立即登录",
+							// 			showCancel:false,
+							// 			success:(res)=> {
+							// 				if(res.confirm){
+							// 					uni.navigateTo({
+							// 						url:"../../login/login"
+							// 					})
+							// 				}
+							// 			}
+							// 		})
+							// 	}else if(res.data.code == 200){
+							// 		console.log(res)
+							// 		if(res.data.data = []){
+							// 			uni.showModal({
+							// 				title:'您还没有设置收货地址哦',
+							// 				cancelColor:"#333333",
+							// 				confirmColor:"#333333",
+							// 				confirmText:"立即设置",
+							// 				showCancel:false,
+							// 				success:(res)=> {
+							// 					if(res.confirm){
+							// 						uni.navigateTo({
+							// 							url:"../../My/address/addAddress"
+							// 						})
+							// 					}
+							// 				}
+							// 			})
+							// 		}else{
+							// 			console.log('-----')
+							// 		}
+							// 	}
+							// })
+						
+					}
+				})
+				.catch(err => {
+					console.log(err)
+				})
+			},
+			
+			// 获取订单信息
+			getAffirmInfo(cartId,token){
+				getAffirmInfo(cartId,token)
+				.then(res => {
+					if(res.data.code == 200){
+						this.cartInfo = res.data.data.cartInfo
+					}else{
+						uni.showToast({
+							title:'未知错误'
+						})
 					}
 				})
 			},
+			
 			//优惠券选择
 			getDiscountClick(key){
-				
+				this.discountsType = !this.discountsType
 			},
 			uniPopupClick(){
 				this.$refs.shareShow.open()
@@ -273,6 +328,15 @@
 			},
 			dealImg(image){
 				return replaceImage(image)
+			},
+			// 获取用户优惠信息
+			getUserDiscount(types,token){
+				getUserDiscount(types,token)
+				.then(res => {
+					if(res.data.code == 200){
+						this.disCountList = res.data.data
+					}
+				})
 			}
 		},
 		computed:{

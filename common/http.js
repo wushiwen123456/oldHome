@@ -1,7 +1,4 @@
 const http = (options) => {
-	
-	const arr = Object.keys(options)
-
 	console.log(options)
 	return new Promise((resolve,reject) => {
 		uni.showLoading({
@@ -15,6 +12,7 @@ const http = (options) => {
 			data:options.data,
 			header:options.header,
 			success:(res) => {
+				// console.log(JSON.stringify(res)+'_______________________________')
 				resolve(res)
 			},
 			fail:(res) => {
