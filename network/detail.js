@@ -50,3 +50,33 @@ export function payNow(option,token){
 		}
 	})
 }
+
+
+// 根据商铺id获取优惠信息
+// id:商铺id
+export function getShopDiscount(id,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/coupons_api/get_shop_coupon'),
+		data:{
+			limit:20,
+			page:1,
+			shop_id:id
+		},
+		header:{
+			token
+		}
+	})
+}
+
+// 优惠券领取接口
+export function getDisCount(couponId,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/coupons_api/user_get_coupon'),
+		data:{
+			couponId,//购物券id
+		},
+		header:{
+			token
+		}
+	})
+}

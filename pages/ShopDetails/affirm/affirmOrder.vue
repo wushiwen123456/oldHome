@@ -1,7 +1,7 @@
 <template>
 	<view>
 		<!-- 没有添加收货地址 -->
-		<view v-if="Noaddress" @tap="addAddressClick()" class="affirmOrder-title dis-flex flex-item-cent flex-jus-space">
+		<view v-if="!Noaddress" @tap="addAddressClick()" class="affirmOrder-title dis-flex flex-item-cent flex-jus-space">
 			<view class="dis-flex flex-item-cent">
 				<image class="title-img-ones" src="../../../static/editaddress.png" ></image>
 				<view>新增收货地址</view>
@@ -10,7 +10,7 @@
 		</view>
 		
 		<!-- 存在收货地址 -->
-		<view v-if="!Noaddress" @tap="shippingAddressClick" class="affirmOrder-titles dis-flex flex-item-cent flex-jus-space">
+		<view v-if="Noaddress" @tap="shippingAddressClick" class="affirmOrder-titles dis-flex flex-item-cent flex-jus-space">
 			<view class="dis-flex flex-item-cent">
 				<image class="title-img-one" src="../../../static/address.png"></image>
 				<view class="affirmOrder-title-dizhi">
@@ -45,7 +45,7 @@
 					</view>
 				</view>
 			</view>
-		</view>
+		
 		
 		<view>
 			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
@@ -59,7 +59,7 @@
 			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
 				<view>优惠券</view>
 				<view class="dis-flex flex-item-cent">
-					<view @tap="uniPopupClick" class="affirmOrder-message-youhui">选择优惠券</view>
+					<view @tap="uniPopupClick(item)" :disabled="!!item.usableCoupon" class="affirmOrder-message-youhui">选择优惠券</view>
 					<view class="lg cuIcon-right margin-left-sm"></view>
 				</view>
 			</view>
@@ -82,7 +82,7 @@
 				<view class="lg cuIcon-right margin-left-sm"></view>
 			</view>
 		</view>
-		
+		</view>
 		<!-- 底部合计 -->
 		<view class="affirmOrder-bottom">
 			<view class="flex align-center">
@@ -97,7 +97,16 @@
 		<uni-popup ref="shareShow" type="bottom">
 			<view class="margin-left-xl margin-right-xl">
 				<view class="text-center text-three margin-top" style="margin-bottom: 80upx;">店铺优惠</view>
+				<!-- 请选择您的优惠券 -->
+				<view class="margin-bottom-sm"><text>请选择您的优惠券</text></view>
+				<view v-for="(item,index) in disCountList" :key="index" class="flex align-center justify-between shareShow-all">
+					<view></view>
+					<text>优惠券{{item.title}}</text>
+					<view style="font-size: 40upx;"  :class="[item.used?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']" @tap="disCountClick(item)"></view>
+				</view>
+				
 				<view class="flex align-center justify-between shareShow-all">
+					<view></view>
 					<view class="text-three">不使用优惠券</view>
 					<view style="font-size: 40upx;"  :class="[discountsType?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']" @tap="getDiscountClick"></view>
 				</view>
@@ -112,10 +121,11 @@
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	
 	// 导入账单信息和收货地址
-	import { getAffirmInfo,getAddress } from '@/network/affirm'
+	import { getAffirmInfo } from '@/network/affirm.js'
+	import { getAddress } from '@/network/getProfileData'
 	
 	// 导入用户优惠信息
-	import { getUserDiscount } from '@/network/getProfileData.js'
+	// import { getUserDiscount } from '@/network/getProfileData.js'
 	
 	// 导入工具类
 	import { replaceImage } from '@/utils/dealUrl.js'
@@ -129,7 +139,7 @@
 		data(){
 			return{
 				shareShow:false,
-				Noaddress:true,//是否存在默认地址
+				Noaddress:false,//是否存在默认地址
 				mark:'',//买家留言
 				isCard:true,//true用红包  false 不用红包
 				discountsType:false,//优惠券选择
@@ -138,7 +148,15 @@
 				token:'',
 				cartInfo:[],
 				address:{},//地址信息
-				disCountList:[]
+				disCountList:[
+					{used:false,title:'xxx店铺'},
+					{used:false,title:'xxx店铺'},
+					{used:false,title:'xxx店铺'},
+					{used:false,title:'xxx店铺'},
+					{used:false,title:'xxx店铺'},
+					{used:false,title:'xxx店铺'},
+					{used:false,title:'xxx店铺'}
+				]  //优惠券列表
 			}
 		},
 		onReady() {
@@ -165,7 +183,7 @@
 					// 获取订单信息				
 					this.getAffirmInfo(this.cartId,this.isToken)
 					// 获取用户优惠券 1表示未使用
-					this.getUserDiscount(1,this.isToken)
+					// this.getUserDiscount(1,this.isToken)
 					
 				}
 				
@@ -189,11 +207,14 @@
 			getCouponOrder(){
 				
 			},
+			// 选择优惠券
+			disCountClick(item){
+				item.used = !item.used
+			},
 			//获取用户默认地址
 			userAddresss(token){
 				getAddress(token)
 				.then(res => {
-						
 					if(res.data.code == 200){
 						console.log(res)
 						if(res.data.data == []){
@@ -212,63 +233,12 @@
 								}
 							})
 						}else{
-							this.Noaddress = false
+							this.Noaddress = true
+							this.address= res.data.data
+							
 						}
-						this.address= res.data.data
-							// uni.showModal({
-							// 	title:'您还没有设置默认地址，快去设置吧',
-							// 	cancelColor:"#333333",
-							// 	confirmColor:"#333333",
-							// 	showCancel:false,
-							// 	confirmText:"立即设置",
-							// 	success(res) {
-							// 		if(res.confirm){
-							// 			uni.navigateTo({
-							// 				url:"../../My/address/addAddress"
-							// 			})
-							// 		}
-							// 	}
-							// })
-							// 获取用户所有地址
-							// getAllAddress(this.isToken)
-							// .then(res => {
-							// 	if(res.data.code == 402){
-							// 		uni.showModal({
-							// 			title:res.data.msg,
-							// 			cancelColor:"#333333",
-							// 			confirmColor:"#333333",
-							// 			confirmText:"立即登录",
-							// 			showCancel:false,
-							// 			success:(res)=> {
-							// 				if(res.confirm){
-							// 					uni.navigateTo({
-							// 						url:"../../login/login"
-							// 					})
-							// 				}
-							// 			}
-							// 		})
-							// 	}else if(res.data.code == 200){
-							// 		console.log(res)
-							// 		if(res.data.data = []){
-							// 			uni.showModal({
-							// 				title:'您还没有设置收货地址哦',
-							// 				cancelColor:"#333333",
-							// 				confirmColor:"#333333",
-							// 				confirmText:"立即设置",
-							// 				showCancel:false,
-							// 				success:(res)=> {
-							// 					if(res.confirm){
-							// 						uni.navigateTo({
-							// 							url:"../../My/address/addAddress"
-							// 						})
-							// 					}
-							// 				}
-							// 			})
-							// 		}else{
-							// 			console.log('-----')
-							// 		}
-							// 	}
-							// })
+						
+							
 						
 					}
 				})
@@ -283,6 +253,7 @@
 				.then(res => {
 					if(res.data.code == 200){
 						this.cartInfo = res.data.data.cartInfo
+						console.log(res)
 					}else{
 						uni.showToast({
 							title:'未知错误'
@@ -295,7 +266,10 @@
 			getDiscountClick(key){
 				this.discountsType = !this.discountsType
 			},
-			uniPopupClick(){
+			uniPopupClick(item){
+				if(!!item.usableCoupon){
+					
+				}
 				this.$refs.shareShow.open()
 			},
 			
@@ -318,9 +292,20 @@
 			},
 			//提交订单
 			submitOrderClick(){
-				uni.reLaunch({
-					url:'../../PayOrder/payOrderMessage/payorderMessage'
-				})
+				// uni.reLaunch({
+				// 	url:'../../PayOrder/payOrderMessage/payorderMessage'
+				// })
+				let data = []
+				data.status = this.isCard
+				const obj = {}
+				// obj.addressId = this.address
+				// obj.couponId = this.disCountList.id
+				// obj.mark = this.mark
+				// obj.combinationId = this.combinationId || ''
+				// obj.pinkId = this.pinkId || ''
+				// obj.seckill_id = this.seckill_id || ''
+				// obj.bargainId = this.bargainId || ''
+				// obj.key = this.
 			},
 			//是用红包
 			IsCard(e) {
@@ -330,14 +315,14 @@
 				return replaceImage(image)
 			},
 			// 获取用户优惠信息
-			getUserDiscount(types,token){
-				getUserDiscount(types,token)
-				.then(res => {
-					if(res.data.code == 200){
-						this.disCountList = res.data.data
-					}
-				})
-			}
+			// getUserDiscount(types,token){
+			// 	getUserDiscount(types,token)
+			// 	.then(res => {
+			// 		if(res.data.code == 200){
+			// 			this.disCountList = res.data.data
+			// 		}
+			// 	})
+			// }
 		},
 		computed:{
 			// 判断用户token

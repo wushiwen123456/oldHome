@@ -123,7 +123,14 @@
 							title:'登录成功',
 							icon:'none'
 						})
-						uni.navigateBack()
+						const pages  = getCurrentPages()
+						if(pages.length == 1){
+							uni.switchTab({
+								url:"../Home/home"
+							})
+						}else{
+							uni.navigateBack()
+						}
 					}
 				})
 			},

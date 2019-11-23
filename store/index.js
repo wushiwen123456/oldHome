@@ -14,7 +14,8 @@ const store = new Vuex.Store({
 		// 购物车信息
 		CartList:[],
 		// 结算面板购物车ID储存
-		cartId:''
+		cartId:'',
+		shopId:'' //商品id
 	},
 	mutations:{
 		// 登录方法
@@ -42,6 +43,10 @@ const store = new Vuex.Store({
 		keepCartId(state,cartId){
 			state.cartId = cartId
 			return 
+		},
+		// 保存商品id
+		keepShopId(state,id){
+			state.shopId = id
 		}
 	},
 	getters:{

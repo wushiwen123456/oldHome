@@ -86,6 +86,7 @@
 				}],//秒杀商品列表
 				typeTime:1,//当前状态
 				loadingPlan:80,
+				skllTime:''//秒杀时间
 			}
 		},
 		onLoad: function() {
@@ -99,11 +100,8 @@
 			});
 			
 		},
-		onShow() {
-			// 加载秒杀数据
-			this.secKillData()
-			
-			// 获取秒杀列表
+		onShow() {		
+			// 获取秒杀时间列表和商品列表
 			this.getSecKillData()
 		},
 		computed:{
@@ -119,18 +117,25 @@
 		},
 		methods: {
 			// 加载秒杀数据
-			secKillData(){
-				// secKillData()
+			secKillData(option){
+				secKillData(option).then(res => {
+					console.log(res)
+				})
 			},
 			
-			// 获取秒杀列表
+			// 获取秒杀时间列表
 			getSecKillData(){
 				getSecKillData()
 				.then(res => {
 					console.log(res)
 					if(res.data.code == 200){
 						 this.tabbar = res.data.data.seckillTime
+						this.tabbar.forEach(x => {
+							this.$set(x,'pages',1)
+						})
 						console.log(this.tabbar)
+						// 加载秒杀数据
+						this.secKillData(this.tabbar[2])
 					}
 				})
 			},

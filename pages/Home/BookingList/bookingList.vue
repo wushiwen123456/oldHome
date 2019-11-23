@@ -29,15 +29,29 @@
 </template>
 
 <script>
-	import {getCombinationListBanner,getBookingListData} from '@/network/getCombinationListBanner'
-	import { replaceImage,resDealImage } from '@/utils/dealUrl'
+	import {getCombinationListData} from '@/network/Home'
 	export default{
 		data(){
 			return{
 				bookingList:[],
 				windowHeight:652,//屏幕高度
-				bookingBanner:''
+				bookingBanner:'',
+				shopList:{
+					pages:1,
+					limit:[]
+				}
 			}
+		},
+		onShow() {
+			var that = this
+			uni.getSystemInfo({
+			    success: function (res) {
+					that.windowHeight = res.windowHeight
+			        console.log('屏幕高度为'+res.windowHeight);
+			    }
+			});
+			// 获取拼团数据
+			this.getCombinationListData(this.shopList.pages)
 		},
 		methods:{
 			//去拼团
@@ -46,27 +60,14 @@
 					url:'../../ShopDetails/groubBooking'
 				})
 			},
-		},
-		onLoad() {
-			var that = this
-			uni.getSystemInfo({
-			    success: function (res) {
-					that.windowHeight = res.windowHeight
-			        console.log('屏幕高度为'+res.windowHeight);
-			    }
-			});
-			// 获取拼团banner
-			getCombinationListBanner().then(result => {
-				const [err,res] = result
-				const str = res.data.data.url
-				this.bookingBanner = replaceImage(str)
-			})
 			// 获取拼团数据
-			getBookingListData().then(result => {
-				const [err,res] = result
-				this.bookingList = resDealImage(res,this.bookIngList)
-			})
+			getCombinationListData(pages){
+				getCombinationListData(pages).then(res => {
+					console.log(res)
+				})
+			}
 		},
+		
 	}
 </script>
 

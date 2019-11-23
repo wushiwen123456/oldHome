@@ -206,27 +206,18 @@
 					<view class="text-sm-erliu">购买可得{{itemInfo.count}}积分</view>
 				</view>
 				<view class="text-jiujiujiu text-df margin-bottom">领券</view>
-				<view class="flex align-center justify-between shopDetails-bottom-popups-backone text-red-my">
+				<view class="flex align-center justify-between text-red-my" 
+					:class="[isCountClass(item) ? 'shopDetails-bottom-popups-backone':'	shopDetails-bottom-popups-backtwo']"
+					v-for="(item,index) in discount" :key="index">
 					<view>
 						<view class="flex align-center">
-							<view class="text-price text-xxxl text-red margin-right-xs">80</view>
+							<view class="text-price text-xxxl text-red margin-right-xs">{{item.coupon_price}}</view>
 							<view class="text-df">商品优惠券</view>
 						</view>
-						<view class="text-sm">满39使用</view>
-						<view class="text-sm">有效期2019.10.18-2019.11.10</view>
+						<view class="text-sm">满{{item.use_min_price}}使用</view>
+						<view class="text-sm">{{item.end_time == '不限时'?item.end_time : '有效期'+item.start_time + '-' + item.end_time}}</view>
 					</view>
-					<view class="text-three text-bold">立即领取</view>
-				</view>
-				<view class="flex align-center justify-between shopDetails-bottom-popups-backtwo text-red-my">
-					<view>
-						<view class="flex align-center">
-							<view class="text-price text-xxxl text-red margin-right-xs">80</view>
-							<view class="text-df">商品优惠券</view>
-						</view>
-						<view class="text-sm">满39使用</view>
-						<view class="text-sm">有效期2019.10.18-2019.11.10</view>
-					</view>
-					<view class="text-three text-bold">立即领取</view>
+					<view class="text-three text-bold" @tap="goLingqu(item)">{{isCount(item)}}</view>
 				</view>
 			</view>
 		</uni-popup>
@@ -249,8 +240,8 @@
 					<view class="flex align-end margin-bottom-lg ">
 						<image class="popupbottom-shop-img" :src="showImgUrl"></image>
 						<view class="margin-left-sm">
-							<view class="text-price text-red text-bold text-xl">{{itemInfo.price}}</view>
-							<view class="text-sm" style="color: #828282;">库存{{itemInfo.stock}}件</view>
+							<view class="text-price text-red text-bold text-xl">{{is_UserChoose.price || itemInfo.price}}</view>
+							<view class="text-sm" style="color: #828282;">库存{{is_UserChoose.stock || itemInfo.stock}}件</view>
 							<view class="text-sm">已选择 {{isChooseType}}</view>
 						</view>
 					</view>
@@ -288,12 +279,7 @@
 	import { mapGetters } from 'vuex'
 	
 	// 引入网络模块
-	import {getDetailData} from '@/network/detail' 
-	
-	// 加购方法
-	import { getAddCart } from '@/network/detail'
-	// 购买方法
-	import { payNow } from '@/network/detail'
+	import {getDetailData,getAddCart,payNow,getShopDiscount,getDisCount} from '@/network/detail' 
 	
 	// 导入工具类
 	import {replaceImages,replaceImage,replaceList} from '@/utils/dealUrl'
@@ -334,7 +320,8 @@
 					image:'' ,//默认图片
 					id:''   	,//商品id
 					stock:''  ,//商品库存
-					unique:''  //商品唯一识别id
+					unique:''  ,//商品种类唯一识别id
+					id:''	//商品id
 				},
 					
 				//商店数据	
@@ -353,19 +340,43 @@
 				},
 				
 				//推荐商品数据
-				recommend:[]
+				recommend:[],
+				// 店铺折扣信息
+				discount:{}
 			}
 			
 		},
-		// 根据商品id获取商品数据
+		// 根据商品id获取商品数据，并且根据token获取优惠券信息
 		onLoad(option) {
-			this._getDetailData(option.id)
+			if(!!option.id){
+				this.$store.commit('keepShopId',option.id)
+				console.log(this.$store.state.shopId)
+			}
+		},
+		onShow() {
+			// 当返回时判断是否重新加载
+			if(this.$store.state.shopId == ""){
+				uni.navigateTo({
+					url:"../Home/home"
+				})
+				return 
+			}else{
+				this._getDetailData(this.$store.state.shopId)
+			}
 		},
 		methods:{
-
 			// 获取商品商店数据
 			_getDetailData(id){
-				getDetailData(id).then(res => {
+				if(!this.isToken){
+					this.$store.commit('keepShopId',id)
+					uni.navigateTo({
+						url:"../login/login"
+					})
+					return 
+				}
+			
+				getDetailData(id)
+				.then(res => {
 					const data = res.data.data.storeInfo
 					const arr = replaceImages(data.slider_image)
 					console.log(res)
@@ -415,7 +426,10 @@
 					this.recommend.forEach(item => {
 						item.image = replaceImage(item.image)
 					})
-
+					
+					
+					// 根据商铺id获取优惠券信息
+					this.getShopDiscount(this.storeInfo.info.storeId,this.isToken)
 				})
 			},
 			//选择商品属性
@@ -670,6 +684,51 @@
 						url:'../login/login'
 					})
 				}
+			},
+			
+			// 获取商铺折扣信息
+			getShopDiscount(id,token){
+				getShopDiscount(id,token).then(res => {
+					if(res.data.code == 200) {
+						console.log(res)
+						 this.discount = res.data.data
+						console.log(this.discount)
+					}
+				})
+			},
+			isCountClass(item){
+				if(item.is_use){
+					return true
+				}else {
+					return false
+				}
+			},
+			// 判断优惠券的库存
+			isCount(item){
+				if(item.is_use){
+					return '已领取'
+				}else if(parseInt(item.remain_count) == 0){
+					return '已抢光'
+				}else{
+					return '立即领取'
+				}
+			},
+			goLingqu(item){
+				if(this.isCount(item) == '立即领取'){
+					// 发送领取优惠券请求
+					getDisCount(item.id,this.isToken)
+					.then(res => {
+						if(res.data.code == 200){
+							item.is_use = true
+							uni.showToast({
+								title:res.data.msg,
+								icon:"none"
+							})
+						}
+					})
+				}else{
+					
+				}
 			}
 		},
 		computed:{
@@ -709,6 +768,20 @@
 					return item.attr_name
 				})
 				return arr.join(' '+' ')
+			},
+			
+			// 是否有种类可选
+			is_UserChoose(){
+				if(!!Object.keys(this.itemInfo.totalTypes).length){
+					const isUserChoose = this.itemInfo.totalTypes[this.itemInfo.type]
+					if(isUserChoose!==undefined){
+						return isUserChoose
+					}else{
+						return false
+					}
+				}else{
+					return false
+				}
 			}
 		}
 	}

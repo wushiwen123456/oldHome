@@ -22,9 +22,11 @@ export function secKillData(option){
 	return http({
 		url:replaceImage('http://www.test.com/ebapi/seckill_api/seckill_list'),
 		data:{
-			offset:option.offset,
-			limit:option.limit
-		}
+			time:option.id,
+			offset:'',
+			limit:5
+		},
+		method:"POST"
 	})
 }
 
@@ -32,5 +34,18 @@ export function secKillData(option){
 export function getSecKillData(){
 	return http({
 		url:replaceImage('http://www.test.com/ebapi/seckill_api/seckill_index')
+	})
+}
+
+
+// 获取拼团数据
+export function getCombinationListData(pages){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/pink_api/get_combination_list'),
+		method:"POST",
+		data:{
+			limit:5,
+			offset:(pages-1)*5
+		}
 	})
 }

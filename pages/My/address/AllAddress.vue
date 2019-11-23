@@ -4,15 +4,15 @@
 			<image src="../../../static/morendizhi.png"></image>
 		</view>
 		<view v-else >
-			<view class="shippingaddress-main">
+			<view class="shippingaddress-main" v-for="(item,index) in addressList" :key="index">
 				<view class="flex shippingaddress-main-nickname">
-					<view>王开心</view>
-					<view class="shippingaddress-main-phone">15729284038</view>
+					<view>{{item.real_name}}</view>
+					<view class="shippingaddress-main-phone">{{item.phone}}</view>
 				</view>
-				<view class="shippingaddress-main-address">河南省郑州市管城回族区金城国贸1902</view>
+				<view class="shippingaddress-main-address">{{item.detail}}</view>
 				<view class="flex justify-between align-center">
-					<view @tap="selsctClick()" class="flex align-center">
-						<view style="font-size: 36upx;" class="lg text-gray cuIcon-roundcheckfill"></view>
+					<view class="flex align-center">
+						<view @click="isSetDefaultAddress(item.is_default,item.id,item)" style="font-size: 36upx;" class="lg text-gray cuIcon-roundcheckfill" :class="{defalutIndex : parseInt(item.is_default) === 1 }"></view>
 						<view class="shippingaddress-bottom-text">设为默认地址</view>
 					</view>
 					<view class="flex align-center shippingaddress-main-buttom-caoz">
@@ -34,6 +34,11 @@
 
 <script>
 	import Modal from '@/components/x-modal/x-modal'
+	
+	import { mapGetters } from 'vuex'
+	
+	// 获取用户所有地址方法
+	import {getProfileAllAddress,setDefaultAddress} from '@/network/getProfileData'
 	export default{
 		components:{
 			Modal
@@ -43,6 +48,7 @@
 				show: false,//弹窗打开隐藏
 				nodata:false,//暂无数据
 				windowHeight:652,//屏幕高度
+				addressList:[]
 			}
 		},
 		onNavigationBarButtonTap() {
@@ -58,17 +64,68 @@
 			});
 		},
 		onShow() {
-			this.userAddressList()
+			if(this.isToken){
+				// 获取用户所有收货地址
+				this.userAddressList(this.isToken)
+			}
+			else{
+				uni.navigateTo({
+					url:"../../login/login"
+				})
+			}
+		},
+		computed:{
+			...mapGetters(['isToken'])
 		},
 		methods:{
 			//获取用户所有地址
-			userAddressList(){
-				
+			userAddressList(token){
+				getProfileAllAddress(token)
+					.then(res => {
+						if(res.data.code == 200){
+							this.addressList = res.data.data
+							if(res.data.data == 0) this.nodata = true
+						}
+					})
 			},
-			//选择默认地址
-			selsctClick(key,id){
-				
-				
+			
+			
+			// 设置默认收货地址
+			isSetDefaultAddress(isDefalut,id,item){
+				const val = parseInt(isDefalut)
+				const that = this
+				if(val != 1){
+					uni.showModal({
+						title:'是否设置为默认收货地址？',
+						content:'',
+						cancelText:"我再想想",
+						cancelColor:'#333333',
+						confirmColor:'#333333',
+						confirmText:'确定',
+						success(res) {
+							if(res.confirm){
+								that.setDefaultAddress(id,that.isToken,item)
+							}
+						}
+						
+					})
+				}
+			},
+			// 设置用户的默认地址
+			setDefaultAddress(id,token,item){
+				setDefaultAddress(id,token)
+				.then(res => {
+					if(res.data.code == 200){
+						uni.showToast({
+							title:"设置成功",
+							icon:'none'
+						})
+						// 全部地址为不默认
+						this.allAddressNot(this.addressList)
+						
+						item.is_default = 1
+					}
+				})
 			},
 			//新增地址
 			addAddressClick(){
@@ -76,6 +133,11 @@
 					url:'addAddress'
 				})
 			},
+			allAddressNot(list){
+				list.forEach(x => {
+					x.is_default = 0
+				})
+			},	
 			//删除
 			delClick(id,key){
 				this.show = true
@@ -167,5 +229,7 @@
 		color:#e8e8e8;
 		font-size:40upx
 	}
-	
+	.defalutIndex::before{
+		color:rgb(229,77,66);	
+	}
 </style>

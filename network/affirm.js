@@ -17,24 +17,4 @@ export function getAffirmInfo(cartId,token){
 	})
 }
 
-// 获取用户默认收货地址
-export function getAddress(token){
-	return http({
-		url:replaceImage('http://www.test.com/ebapi/user_api/user_default_address'),
-		header:{
-			token:token
-		},
-		method:"GET"
-	})
-}
 
-// 获取用户所有收货地址
-export function getAllAddress(token){
-	return http({
-		url:replaceImage('http://www.test.com/ebapi/user_api/user_address_list'),
-		header:{
-			token:token
-		},
-		method:'GET'
-	})
-}
