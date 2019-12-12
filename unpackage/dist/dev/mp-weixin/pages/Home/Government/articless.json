@@ -1,0 +1,7 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "新闻详情",
+  "usingComponents": {
+    "parser": "/components/jyf-Parser/index"
+  }
+}

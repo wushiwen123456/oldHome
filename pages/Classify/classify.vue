@@ -1,50 +1,41 @@
 <template>
 	<view class="margin-top-xs">
-		<scroll-view scroll-y scroll-with-animation class="tab-view" :scroll-top="scrollTop" :style="{height:height+'px',top:top+'px'}">
+		<scroll-view scroll-y scroll-with-animation class="tab-view" :scroll-top="scrollTop">
 			<view v-for="(item,index) in tabbar" :key="index" class="tab-bar-item" :class="[currentTab==index ? 'active' : '']"
 			 :data-current="index" @tap.stop="swichNav">
-				<text>{{item}}</text>
+				<text>{{item.cate_name}}</text>
 			</view>
 		</scroll-view>
-		<block v-for="(item,index) in tabbar" :key="index">
-			<scroll-view scroll-y class="right-box" :style="{height:height+'px',top:top+'px'}" v-if="currentTab==index">
-				<!--内容部分 start 自定义可删除-->
+		<block>
+			<scroll-view scroll-y class="right-box" >
 				<view class="class-item">
-					<view class="class-name">{{item}}</view>
-					<view class="g-container">
-						<view class="g-box" @tap.stop="productList" data-key="高价回收">
-							<image src="../../static/demo18.png" class="g-image" />
-							<view class="g-title">高价回收</view>
-						</view>
-						<view class="g-box" @tap.stop="productList" data-key="好物优选">
-							<image src="../../static/demo19.png" class="g-image" />
-							<view class="g-title">好物优选</view>
-						</view>
-						<view class="g-box" @tap.stop="productList" data-key="iphone X">
-							<image src="../../static/demo20.png" class="g-image" />
-							<view class="g-title">iphone X</view>
-						</view>
-						<view class="g-box" @tap.stop="productList" data-key="电动牙刷" v-if="index%2===0">
-							<image src="../../static/demo21.png" class="g-image" />
-							<view class="g-title">电动牙刷</view>
+					<view class="grid text-center col-3">
+						<view @tap="classifyClick(item.id,item.cate_name)" v-for="(item,index) in List" :key="index" class="padding-top-xxl">
+							<image :src="item.pic" class="g-image" />
+							<view class="g-title margin-top-xs">{{item.cate_name}}</view>
 						</view>
 					</view>
 				</view>
-				<!--内容部分 end 自定义可删除-->
 			</scroll-view>
 		</block>
 	</view>
 </template>
 
 <script>
+	// 获取分类接口
+	import {getCategory} from '@/network/category'
+	
+	// 导入工具类
+	import { replaceImage } from '@/utils/dealUrl.js'
 	export default {
 		data() {
 			return {
-				tabbar: ["推荐分类", "进口超市", "国际名牌", "奢侈品", "海囤全球", "男装", "女装", "男鞋"],
+				tabbar: [],
 				height: 0, //scroll-view高度
 				top: 0,
 				currentTab: 0, //预设当前项的值
-				scrollTop: 0 //tab标题的滚动条位置
+				scrollTop: 0 ,//tab标题的滚动条位置
+				List:[],//二级导航栏
 			}
 		},
 		onLoad: function(options) {
@@ -61,6 +52,21 @@
 					}
 				});
 			}, 50)
+			// 获取分类信息
+			getCategory().then(res => {
+				if(res.data.code == 200){
+					const arr = res.data.data
+					arr.forEach(x => {
+						x.child.forEach(y => {
+							const str = y.pic
+							y.pic = replaceImage(str)
+						})
+					})
+					this.tabbar = arr
+					this.List = this.tabbar[0].child
+					console.log(this.List)
+				}
+			})
 		},
 		methods: {
 			// 点击标题切换当前页时改变样式
@@ -70,6 +76,7 @@
 					return false;
 				} else {
 					this.currentTab = cur;
+					this.List = this.tabbar[cur].child
 					this.checkCor();
 				}
 			},
@@ -90,17 +97,23 @@
 					url: '../extend-view/productDetail/productDetail'
 				})
 			},
-			productList(e) {
-				let key = e.currentTarget.dataset.key;
+			productList(item,index) {
 				uni.navigateTo({
-					url: '../extend-view/productList/productList?searchKey=' + key
+					url:`../ShopDetails/shopDetails?id=${item.id}`
 				})
 			},
-			search: function() {
+			//点击二级分类
+			classifyClick(id,name){
 				uni.navigateTo({
-					url: '../extend-view/news-search/news-search'
+					url:'../HM-search/HM-searchList?cid=' + id + '&search=' + name + '&id=' + name
 				})
 			}
+			
+			// search: function() {
+			// 	uni.navigateTo({
+			// 		url: '../extend-view/news-search/news-search'
+			// 	})
+			// }
 		}
 	}
 </script>
@@ -253,38 +266,13 @@
 
 	/* #endif */
 
-	.slide-image {
-		width: 100%;
-		height: 220upx;
-	}
-
 	.class-item {
 		background: #fff;
 		width: 100%;
 		min-height: 100vh;
 		box-sizing: border-box;
-		padding: 20upx;
 		margin-bottom: 20upx;
 		border-radius: 12upx;
-	}
-
-	.class-name {
-		font-size: 22upx;
-	}
-
-	.g-container {
-		/* padding-top: 20upx; */
-		display: flex;
-		display: -webkit-flex;
-		justify-content: flex-start;
-		flex-direction: row;
-		flex-wrap: wrap;
-	}
-
-	.g-box {
-		width: 33.3333%;
-		text-align: center;
-		padding-top: 40upx;
 	}
 
 	.g-image {

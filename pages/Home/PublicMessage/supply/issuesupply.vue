@@ -55,7 +55,7 @@
 					</view>
 					<view class="flex align-start solid-top padding-top-sm">
 						<view class="flex-sub text-bold text-three">内容</view>
-						<textarea class="flex-treble text-three" maxlength="-1" v-model="content" @input="textareaBInput" placeholder="请输入详细内容"></textarea>
+						<textarea class="flex-treble text-three" maxlength="-1" v-model="content" placeholder="请输入详细内容"></textarea>
 					</view>
 				</view>
 				
@@ -100,12 +100,12 @@
 					</view>
 					<view class="flex align-start solid-top padding-top-sm">
 						<view class="flex-sub text-bold text-three">内容</view>
-						<textarea class="flex-treble text-three" maxlength="-1" v-model="content" @input="textareaBInput" placeholder="请输入详细内容"></textarea>
+						<textarea class="flex-treble text-three" maxlength="-1" v-model="content" placeholder="请输入详细内容"></textarea>
 					</view>
 				</view>
 			</view>
 		</view>
-		<button class="issueinvite-button">发布</button>
+		<button class="issueinvite-button" @click="publicPush">发布</button>
 		<w-picker
 			mode="date" 
 			startYear="2017" 
@@ -123,6 +123,8 @@
 
 <script>
 	import wPicker from "@/components/w-picker/w-picker.vue";
+	
+	import { pushPublish } from '@/network/invite'
 	export default{
 		components:{
 			wPicker
@@ -154,10 +156,18 @@
 			//点击企业招聘
 			leftClick(){
 				this.type = 0
+				this.phone = ''
+				this.name = ''
+				this.title = ''
+				this.content = ''
 			},
 			//求职
 			rightClick(){
 				this.type = 1
+				this.phone = ''
+				this.name = ''
+				this.title = ''
+				this.content = ''
 			},
 			//是否面议
 			discussClick(){
@@ -170,6 +180,28 @@
 			//点击男
 			sexnanClick(){
 				this.sex =  0
+			},
+			publicPush(){
+				if(!(/^1[3456789]\d{9}$/.test(this.phone))){
+					uni.showToast({
+						title:'手机号格式有误',
+						icon:'none'
+					})
+					return
+				}
+				const obj = {
+					cate:this.type*1+1,
+					phone:this.phone,
+					name:this.name,
+					title:this.title
+				}
+				pushPublish(obj,this.$store.getters.isToken).then(res => {
+					if(res.data.code == 200){
+						uni.redirectTo({
+							url:"../invite/success"
+						})
+					}
+				})
 			}
 		}
 	}

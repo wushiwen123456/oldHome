@@ -1,145 +1,160 @@
 <template>
-	<view>
-		<canvas v-if="shade" :style="{height:windowHeight + 'px'}" class="bg-white text-width" disable-scroll="true">
-			<view class="flex flex-direction justify-center align-center">
-				<image @tap="enterTypeClick(0)" mode="aspectFit" src="../../../static/enterb.png"></image>
-				<image @tap="enterTypeClick(1)" mode="aspectFit" src="../../../static/entera.png"></image>
-			</view>
-		</canvas>
-		
-		
-		<view>
-			<view class=" bg-white margin-top-xs">
-				<view class="flex align-center justify-between enter-all-heigth enter-border-bootom  margin-left">
-					<view class="flex flex-twice align-center">
-						<view class="enter-left-image margin-right-sm">
-							<image src="../../../static/enterc.png"></image>
-						</view>
-						<view class="text-wuer text-lg">商户名称</view>
-					</view>
-					<view class="flex-treble enter-all-right ">
-						<input class="text-jiujiujiu text-sm-erliu" v-model="shopName" placeholder="商户名称	" confirm-type="done"/>
-					</view>
+	<view class="page-1">
+		<view v-if="!isSubmit">
+			<canvas v-if="shade" :style="{height:windowHeight + 'px'}" class="bg-white text-width" disable-scroll="true">
+				<view class="flex flex-direction justify-center align-center">
+					<image @tap="enterTypeClick(0)" mode="aspectFit" src="../../../static/enterb.png"></image>
+					<image @tap="enterTypeClick(1)" mode="aspectFit" src="../../../static/entera.png"></image>
 				</view>
-				<view class="flex align-center justify-between enter-all-heigth enter-border-bootom  margin-left">
-					<view class="flex flex-twice align-center">
-						<view class="enter-left-image margin-right-sm">
-							<image src="../../../static/enterd.png"></image>
-						</view>
-						<view class="text-wuer text-lg">主营分类</view>
-					</view>
-					<view class="flex-treble enter-all-right ">
-						<input class="text-jiujiujiu text-sm-erliu" v-model="shoptype" placeholder="例如鞋帽，化妆品等	" confirm-type="done"/>
-					</view>
-				</view>
-			</view>
+			</canvas>
 			
-			<view class=" bg-white margin-top-xs">
-				<view class="flex align-center justify-between enter-all-heigth enter-border-bootom  margin-left">
-					<view class="flex flex-twice align-center">
-						<view class="enter-left-image margin-right-sm">
-							<image src="../../../static/enterf.png"></image>
-						</view>
-						<view class="text-wuer text-lg">管理人姓名</view>
-					</view>
-					<view class="flex-treble enter-all-right ">
-						<input class="text-jiujiujiu text-sm-erliu" v-model="adminName" placeholder="您的称呼	" confirm-type="done"/>
-					</view>
-				</view>
-				<view class="flex align-center justify-between enter-all-heigth enter-border-bootom   margin-left">
-					<view class="flex flex-twice align-center">
-						<view class="enter-left-image margin-right-sm">
-							<image src="../../../static/enterg.png"></image>
-						</view>
-						<view class="text-wuer text-lg">手机号码</view>
-					</view>
-					<view class="flex-treble enter-all-right ">
-						<input type="number" class="text-jiujiujiu text-sm-erliu" v-model="phone" placeholder="输入手机号码" confirm-type="done"/>
-					</view>
-				</view>
-				<view class="flex align-center justify-between enter-all-heigth enter-border-bootom  margin-left">
-					<view class="flex flex-twice align-center">
-						<view class="enter-left-image margin-right-sm">
-							<image src="../../../static/enterh.png"></image>
-						</view>
-						<view class="text-wuer text-lg">手机验证码</view>
-					</view>
-					<view class="flex-treble flex align-center enter-all-right ">
-						<input type="number" class="text-jiujiujiu text-sm-erliu" v-model="code" placeholder="输入验证码" confirm-type="done"/>
-						<view class="entercode-button flex align-center justify-center">发送验证码</view>
-					</view>
-				</view>
-			</view>
 			
-			<view class="flex align-center padding-left enter-all-heigth bg-white margin-top-sm margin-bottom-sm text-wuer text-bold text-lg">上传身份证件</view>
-			
-			<view class="flex align-center margin-top-sm bg-white padding">
-				<view class="flex-sub margin-right-sm">
-					<view class="margin-bottom-lg text-lg"><text class="text-red">*</text>身份证头像面</view>
-					<view class="enterNumber-all">
-						<image src=""></image>
-					</view>
-				</view>
-				<view class="flex-sub margin-left-sm">
-					<view class="margin-bottom-lg text-lg"><text class="text-red">*</text>身份证国徽面</view>
-					<view class="enterNumber-all">
-						<image></image>
-					</view>
-				</view>
-			</view>
-			
-			<view v-if="enterType == 1">
-				<view class="flex align-center padding-left enter-all-heigth bg-white margin-top-sm margin-bottom-sm text-wuer text-bold text-lg">上传营业执照</view>
-				<view class="flex-sub padding bg-white">
-					<view class="margin-bottom-lg text-lg"><text class="text-red">*</text>营业执照</view>
-					<view style="width: 50%;"  class="enterNumber-all">
-						<image></image>
-					</view>
-				</view>
-				
-				<view class="flex align-center padding-left enter-all-heigth bg-white margin-top-sm margin-bottom-sm text-wuer text-bold text-lg">商标信息上传<text class="text-jiujiujiu" >(非必填)</text></view>
-				<view class="bg-white">
-					<view class="flex align-center enter-all-heigth enter-border-bootom  margin-left">
+			<view>
+				<view class=" bg-white margin-top-xs">
+					<view class="flex align-center justify-between enter-all-heigth enter-border-bootom  margin-left">
 						<view class="flex flex-twice align-center">
-							<view class="text-wuer text-lg">商品商标</view>
+							<view class="enter-left-image margin-right-sm">
+								<image src="../../../static/enterc.png"></image>
+							</view>
+							<view class="text-wuer text-lg">商户名称</view>
 						</view>
 						<view class="flex-treble enter-all-right ">
-							<input class="text-jiujiujiu text-sm-erliu" v-model="adminName" placeholder="如：自有商标/授权商标" confirm-type="done"/>
+							<input class="text-jiujiujiu text-sm-erliu" v-model="shopName" placeholder="商户名称	" confirm-type="done"/>
 						</view>
 					</view>
-					<view class="flex align-center enter-all-heigth enter-border-bootom  margin-left">
+					<view class="flex align-center justify-between enter-all-heigth enter-border-bootom  margin-left">
 						<view class="flex flex-twice align-center">
-							<view class="text-wuer text-lg">商标注册号</view>
+							<view class="enter-left-image margin-right-sm">
+								<image src="../../../static/enterd.png"></image>
+							</view>
+							<view class="text-wuer text-lg">主营分类</view>
 						</view>
 						<view class="flex-treble enter-all-right ">
-							<input class="text-jiujiujiu text-sm-erliu" v-model="adminName" placeholder="请输入商标注册号" confirm-type="done"/>
+							<input class="text-jiujiujiu text-sm-erliu" v-model="shoptype" placeholder="例如鞋帽，化妆品等	" confirm-type="done"/>
 						</view>
 					</view>
 				</view>
 				
-				
-				<view class="flex align-center padding-left enter-all-heigth bg-white margin-top-sm margin-bottom-sm text-wuer text-bold text-lg">商标注册证明</view>
-				<view class="flex-sub padding bg-white">
-					<view class="margin-bottom-lg text-lg">上传商标证明</view>
-					<view style="width: 50%;"  class="enterNumber-all">
-						<image></image>
+				<view class=" bg-white margin-top-xs">
+					<view class="flex align-center justify-between enter-all-heigth enter-border-bootom  margin-left">
+						<view class="flex flex-twice align-center">
+							<view class="enter-left-image margin-right-sm">
+								<image src="../../../static/enterf.png"></image>
+							</view>
+							<view class="text-wuer text-lg">管理人姓名</view>
+						</view>
+						<view class="flex-treble enter-all-right ">
+							<input class="text-jiujiujiu text-sm-erliu" v-model="adminName" placeholder="您的称呼	" confirm-type="done"/>
+						</view>
 					</view>
+					<view class="flex align-center justify-between enter-all-heigth enter-border-bootom   margin-left">
+						<view class="flex flex-twice align-center">
+							<view class="enter-left-image margin-right-sm">
+								<image src="../../../static/enterg.png"></image>
+							</view>
+							<view class="text-wuer text-lg">手机号码</view>
+						</view>
+						<view class="flex-treble enter-all-right ">
+							<input type="number" class="text-jiujiujiu text-sm-erliu" v-model="phone" placeholder="输入手机号码" confirm-type="done"/>
+						</view>
+					</view>
+					<view class="flex align-center justify-between enter-all-heigth enter-border-bootom  margin-left">
+						<view class="flex flex-twice align-center">
+							<view class="enter-left-image margin-right-sm">
+								<image src="../../../static/enterh.png"></image>
+							</view>
+							<view class="text-wuer text-lg">手机验证码</view>
+						</view>
+						<view class="flex-treble flex align-center enter-all-right ">
+							<input type="number" class="text-jiujiujiu text-sm-erliu" v-model="code" placeholder="输入验证码" confirm-type="done"/>
+							<view class="entercode-button flex align-center justify-center" @tap="getCode">{{codeTip}}</view>
+						</view>
+					</view>
+				</view>
+				
+				<view class="flex align-center padding-left enter-all-heigth bg-white margin-top-sm margin-bottom-sm text-wuer text-bold text-lg">上传身份证件</view>
+				
+				<view class="flex align-center margin-top-sm bg-white padding">
+					<view class="flex-sub margin-right-sm">
+						<view class="margin-bottom-lg text-lg"><text class="text-red">*</text>身份证头像面</view>
+						<view class="enterNumber-all" @click="openPhone('idCardOne')">
+							<image :src="idCardOne" mode="aspectFit"></image>
+						</view>
+					</view>
+					<view class="flex-sub margin-left-sm">
+						<view class="margin-bottom-lg text-lg"><text class="text-red">*</text>身份证国徽面</view>
+						<view class="enterNumber-all" @click="openPhone('idBei')">	
+							<image :src="idBei" mode="aspectFit"></image>
+						</view>
+					</view>
+				</view>
+				
+				<view v-if="enterType == 2">
+					<view class="flex align-center padding-left enter-all-heigth bg-white margin-top-sm margin-bottom-sm text-wuer text-bold text-lg">上传营业执照</view>
+					<view class="flex-sub padding bg-white">
+						<view class="margin-bottom-lg text-lg"><text class="text-red">*</text>营业执照</view>
+						<view style="width: 50%;" @click="openPhone('businessLicense')" class="enterNumber-all">
+							<image :src="businessLicense"></image>
+						</view>
+					</view>
+					
+					<view class="flex align-center padding-left enter-all-heigth bg-white margin-top-sm margin-bottom-sm text-wuer text-bold text-lg">商标信息上传<text class="text-jiujiujiu" >(非必填)</text></view>
+					<view class="bg-white">
+						<view class="flex align-center enter-all-heigth enter-border-bootom  margin-left">
+							<view class="flex flex-twice align-center">
+								<view class="text-wuer text-lg">商品商标</view>
+							</view>
+							<view class="flex-treble enter-all-right ">
+								<input class="text-jiujiujiu text-sm-erliu" v-model="brand" placeholder="如：自有商标/授权商标" confirm-type="done"/>
+							</view>
+						</view>
+						<view class="flex align-center enter-all-heigth enter-border-bootom  margin-left">
+							<view class="flex flex-twice align-center">
+								<view class="text-wuer text-lg">商标注册号</view>
+							</view>
+							<view class="flex-treble enter-all-right ">
+								<input class="text-jiujiujiu text-sm-erliu" v-model="adminCard" placeholder="请输入商标注册号" confirm-type="done"/>
+							</view>
+						</view>
+					</view>
+					
+					
+					<view class="flex align-center padding-left enter-all-heigth bg-white margin-top-sm margin-bottom-sm text-wuer text-bold text-lg">商标注册证明</view>
+					<view class="flex-sub padding bg-white">
+						<view class="margin-bottom-lg text-lg">上传商标证明</view>
+						<view style="width: 50%;" @click="openPhone('trademark')"  class="enterNumber-all">
+							<image :src="trademark"></image>
+						</view>
+					</view>
+				</view>
+				
+				<view class="flex align-center padding-left enter-all-heigth bg-white solid-top margin-bottom-sm text-wuer text-df">
+					<view @tap="readClick" :class="[readtype?'text-red-my cuIcon-squarecheckfill':'text-gray cuIcon-squarecheck']" style="font-size: 40upx;" class="lg margin-right-sm"></view>
+					<view>我已经阅读并了解了<text class="text-red-my">【入驻申请协议】</text></view>
 				</view>
 			</view>
 			
-			<view class="flex align-center padding-left enter-all-heigth bg-white solid-top margin-bottom-sm text-wuer text-df">
-				<view @tap="readClick" :class="[readtype?'text-red-my cuIcon-squarecheckfill':'text-gray cuIcon-squarecheck']" style="font-size: 40upx;" class="lg margin-right-sm"></view>
-				<view>我已经阅读并了解了<text class="text-red-my">【入驻申请协议】</text></view>
-			</view>
+			<button class="enter-button" @tap="submit">提交申请</button>
+			<Modal v-model="Modalshow" title='提示' text='退出后将不保留填写的信息,确定要退出吗？' @confirm="delAddressClcik" />
 		</view>
-		
-		<button class="enter-button">提交申请</button>
-		<Modal v-model="Modalshow" title='提示' text='退出后将不保留填写的信息,确定要退出吗？' @confirm="delAddressClcik" />
+		<view v-else class="is-submit">
+			<text>您的提交已经再受理中，请耐心等待审核~~~~</text>
+		</view>
 	</view>
 </template>
 
 <script>
 	import Modal from '@/components/x-modal/x-modal'
+	
+	// 导入网络请求
+	import {sendCode} from '@/network/login'
+	import { isStatus } from '@/network/getProfileData'
+	import { upload } from '@/network/sign'
+	
+	// 商家入驻申请
+	import {enterShop} from '@/network/getProfileData'
+	
+	
 	export default{
 		components:{
 			Modal
@@ -155,7 +170,20 @@
 				adminName:'',//管理人姓名
 				phone:'',//手机号码
 				code:'',//手机验证码
-				readtype:true,//是否阅读协议
+				idCardOne:'',//身份证正面
+				readtype:false,//是否阅读协议
+				codeTip:"获取验证码",
+				currentTime: '60', //倒数计时
+				getCodebutton:false,//防止重复提交
+				idBei:'',  //身份证背面 	
+				businessLicense:"", //营业执照
+				trademark:'' ,//商标图
+				brand:'', //商标名称
+				adminCard:'',//商标注册号
+				token:'',
+				isSubmit:'',
+				Obj:{}
+				
 			}
 		},
 		onLoad() {
@@ -166,6 +194,23 @@
 			        console.log('屏幕高度为'+res.windowHeight);
 			    }
 			});
+			if(this.$store.getters.isToken){
+				this.token = this.$store.getters.isToken
+				this.isStatus(this.token)
+			}else{
+				uni.showModal({
+					title:'您还没有登录哦',
+					content:'是否立即去登录',
+					success(res) {
+						if(res.confirm){
+							uni.navigateTo({
+								url:'../../login/login'
+							})
+						}
+					}
+				})
+			}
+			
 		},
 		onBackPress(){
 			if(!this.shade){
@@ -177,20 +222,158 @@
 			
 		},
 		methods:{
+			// 判断当前用户身份
+			isStatus(token){
+				isStatus(token).then(res => {
+					const status  = res.data.data.status
+					if(status == '未申请'){
+						this.isSubmit = false
+					}else{
+						this.isSubmit = true
+					}
+				})
+			},
+			// 获取验证码倒计时
+			getCode(){
+				var that = this;
+				var currentTime = that.currentTime;
+				if((/^1[3456789]\d{9}$/).test(that.phone)){
+					if(that.getCodebutton){ return }
+					that.getCodebutton = true
+					
+					// 发送验证码
+					sendCode(that.phone).then(res => {
+						if(res.data.code == 200){
+							var interval = setInterval(function() {
+								that.codeTip = (currentTime - 1) + 's'
+								currentTime--;
+								if (currentTime <= 0) {
+									clearInterval(interval)
+									that.codeTip = '获取验证码'
+									that.getCodebutton = false
+								}
+							}, 1000)
+						}
+					})
+					
+				}else{
+					uni.showToast({
+						title:'请输入正确的手机号',
+						icon:'none'
+					})
+				}
+			},
+			// 提交申请
+			submit(){
+				if(this.readtype){
+					if(!this.shopName){
+						uni.showToast({
+							title:'请输入您的商户名称',
+							
+						})
+						return false
+					}
+					if(!this.adminName){
+						uni.showToast({
+							title:'请输入您的姓名',
+							
+						})
+						return false
+					}
+					if(!this.phone){
+						uni.showToast({
+							title:'电话',
+							
+						})
+						return false
+					}
+					if(!this.code){
+						uni.showToast({
+							title:'请输入您的验证码',
+							
+						})
+						return false
+					}
+					if(!this.businessLicense){
+						uni.showToast({
+							title:'请上传您的营业执照',
+							
+						})
+						return false
+					}
+					if(!this.idCardOne){
+						uni.showToast({
+							title:'请上传您的身份证人像面',
+							
+						})
+						return false
+					}
+					if(!this.idBei){
+						uni.showToast({
+							title:'请上传您的身份证国徽面',
+							
+						})
+						return false
+					}
+					// 发送请求
+					const obj = {
+						shop_name:this.shopName,
+						shop_leal:this.adminName,
+						shop_tel:this.phone,
+						shop_business_license:this.Obj.businessLicense,
+						card_photo:this.Obj.idCardOne,
+						card_coat:this.Obj.idBei,
+						brand:this.brand || '',
+						brand_code:this.adminCard || '',
+						brand_img:this.Obj.trademark || '',
+						type:this.enterType,
+						shop_cate:this.shoptype,
+						code:this.code
+					}
+					// 发送提交审核请求
+					enterShop(obj,this.token).then(res => {
+						if(res.data.code == 200){
+							uni.showToast({
+								title:'提交成功'
+							})
+							this.$store.commit('setUserIsSubmit',true)
+						}
+						this.isSubmit = true
+					})
+					
+				}else{
+					uni.showToast({
+						title:'请认真阅读协议哦',
+						icon:'none'
+					})
+				}
+			},
 			//选择商家入驻类型
 			enterTypeClick(num){
 				if(num == 0){
-					this.enterType = 0
+					this.enterType = 1
 					uni.setNavigationBarTitle({
 					    title: '个人入驻'
 					});
 				}else if(num == 1){
-					this.enterType = 1
+					this.enterType = 2
 					uni.setNavigationBarTitle({
 					    title: '企业入驻'
 					});
 				}
 				this.shade = false
+			},
+			// 发起手机相册请求
+			openPhone(item){
+				uni.chooseImage({
+					count:1,
+					success:(res) => {
+						this[item] = res.tempFilePaths[0]
+						upload(res.tempFilePaths[0]).then(res => {
+							this.Obj[item] = res.url
+						})
+					}
+				})
 			},
 			//确认退出
 			delAddressClcik(){
@@ -204,7 +387,7 @@
 	}
 </script>
 
-<style>
+<style lang="scss">
 	.enter-all-heigth{
 		height: 100upx;
 	}
@@ -240,5 +423,20 @@
 		border-radius: 50upx;
 		color: #FFFFFF;
 		font-size: 32upx;
+	}
+	page{
+		height: 100%;
+	}
+	.page-1{
+		height: 100%;
+	}
+	.is-submit{
+		width: 100%;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		color: $uni-text-color;
+		font-size:$uni-font-size-lg ;
 	}
 </style>

@@ -1,0 +1,31 @@
+
+.booking-title-image{
+	height: 256rpx;
+	width: 100%;
+}
+.booking-shop-image{
+	width: 186rpx;
+	height: 186rpx;
+}
+.booking-shop-booking-img{
+	width: 30rpx;
+	height: 30rpx;
+}
+.booking-mian-all{
+	padding: 26rpx 24rpx 14rpx 24rpx;
+}
+.booking-shop-right{
+	width: 100%;
+	min-height: 186rpx;
+}
+.booking-button{
+	width:140rpx;
+	height:54rpx;
+	line-height: 54rpx;
+	text-align: center;
+	background:rgba(205,50,51,1);
+	border-radius:26rpx;
+	color: #FFFFFF;
+	font-size: 30rpx;
+}
+

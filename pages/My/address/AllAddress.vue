@@ -9,18 +9,19 @@
 					<view>{{item.real_name}}</view>
 					<view class="shippingaddress-main-phone">{{item.phone}}</view>
 				</view>
+				<view class="shippingaddress-main-address">{{item.province}} {{item.city}} {{item.district}} </view>
 				<view class="shippingaddress-main-address">{{item.detail}}</view>
 				<view class="flex justify-between align-center">
-					<view class="flex align-center">
-						<view @click="isSetDefaultAddress(item.is_default,item.id,item)" style="font-size: 36upx;" class="lg text-gray cuIcon-roundcheckfill" :class="{defalutIndex : parseInt(item.is_default) === 1 }"></view>
+					<view class="flex align-center" @click="setD(index)" >
+						<view  style="font-size: 36upx;" class="lg text-gray cuIcon-roundcheckfill" :class="{defalutIndex : parseInt(item.is_default) === 1 }"></view>
 						<view class="shippingaddress-bottom-text">设为默认地址</view>
 					</view>
 					<view class="flex align-center shippingaddress-main-buttom-caoz">
-						<view @tap="editClick()" class="flex align-center">
+						<view @tap="editClick(item)" class="flex align-center">
 							<image class="shippingaddress-main-oneimg" src="../../../static/edit.png"></image>
 							<view>编辑</view>
 						</view>
-						<view @tap="delClick()" class="flex align-center">
+						<view @tap="delClick(index)" class="flex align-center">
 							<view style="font-size: 34upx;" class="lg text-gray cuIcon-delete margin-left-xl margin-right-xs"></view>
 							<view>删除</view>
 						</view>
@@ -29,6 +30,8 @@
 			</view>
 		</view>
 		<Modal v-model="show" title='提示' text='确定要删除这个地址吗' @confirm="delAddressClcik" />
+		
+		<Modal v-model="show1" title='提示' text='是否设置为默认地址' @confirm="setDClick" />
 	</view>
 </template>
 
@@ -37,8 +40,8 @@
 	
 	import { mapGetters } from 'vuex'
 	
-	// 获取用户所有地址方法
-	import {getProfileAllAddress,setDefaultAddress} from '@/network/getProfileData'
+	// 获取用户所有地址方法,删除地址方法
+	import {getProfileAllAddress,setDefaultAddress,removeAddress} from '@/network/getProfileData'
 	export default{
 		components:{
 			Modal
@@ -48,7 +51,11 @@
 				show: false,//弹窗打开隐藏
 				nodata:false,//暂无数据
 				windowHeight:652,//屏幕高度
-				addressList:[]
+				addressList:[],
+				removeIndex:'',
+				show1:false,
+				currentIndex:0,
+				key:-1,//设为默认地址的数据下标
 			}
 		},
 		onNavigationBarButtonTap() {
@@ -82,38 +89,40 @@
 			userAddressList(token){
 				getProfileAllAddress(token)
 					.then(res => {
+						
 						if(res.data.code == 200){
 							this.addressList = res.data.data
+							this.currentIndex = this.addressList.every(x => {
+								return parseInt(x.is_default)
+							})
 							if(res.data.data == 0) this.nodata = true
 						}
 					})
 			},
-			
-			
+			// 设置默认地址()
+			setD(key){
+				this.show1 = true
+				this.key = key
+				// this.currentIndex = 
+				// if(e.confirm){
+				// 	that.setDefaultAddress(this.currentIndex)
+				// }
+				// console.log()
+			},
+			setDClick(){
+				this.setDefaultAddress()
+			},
 			// 设置默认收货地址
 			isSetDefaultAddress(isDefalut,id,item){
 				const val = parseInt(isDefalut)
 				const that = this
-				if(val != 1){
-					uni.showModal({
-						title:'是否设置为默认收货地址？',
-						content:'',
-						cancelText:"我再想想",
-						cancelColor:'#333333',
-						confirmColor:'#333333',
-						confirmText:'确定',
-						success(res) {
-							if(res.confirm){
-								that.setDefaultAddress(id,that.isToken,item)
-							}
-						}
-						
-					})
-				}
 			},
 			// 设置用户的默认地址
-			setDefaultAddress(id,token,item){
-				setDefaultAddress(id,token)
+			setDefaultAddress(){
+				console.log(this.addressList)
+				let id = this.addressList[this.key].id
+				// const obj = this.userAddressList[this.currentIndex]
+				setDefaultAddress(id,this.isToken)
 				.then(res => {
 					if(res.data.code == 200){
 						uni.showToast({
@@ -123,7 +132,7 @@
 						// 全部地址为不默认
 						this.allAddressNot(this.addressList)
 						
-						item.is_default = 1
+						this.addressList[this.key].is_default = 1
 					}
 				})
 			},
@@ -139,12 +148,19 @@
 				})
 			},	
 			//删除
-			delClick(id,key){
+			delClick(index){
 				this.show = true
+				this.removeIndex = index
 			},
 			//确认删除
 			delAddressClcik(){
-				
+				console.log(this.removeIndex)
+				removeAddress(this.addressList[this.removeIndex].id,this.isToken)
+					.then(res => {
+						if(res.data.code == 200){
+							this.addressList.splice(this.removeIndex,1)
+						}
+					})
 			},
 			show6() {
 				
@@ -157,9 +173,10 @@
 			},
 			
 			//编辑
-			editClick(){
+			editClick(item){
+				this.$store.commit('setAddress',item)
 				uni.navigateTo({
-					url:'addAddress'
+					url:"addAddress"
 				})
 			},
 		}

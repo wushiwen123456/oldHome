@@ -1,28 +1,36 @@
 <template>
 	<view class="margin-top-xs">
 		<scroll-view scroll-y scroll-with-animation class="tab-view" :scroll-top="scrollTop" :style="{height:height+'px',top:top+'px'}">
-			<view v-for="(item,index) in tabbar" :key="index" class="tab-bar-item" :class="[currentTab==index ? 'active' : '']"
-			 :data-current="index" @tap.stop="swichNav">
-				<text>{{item}}</text>
+			<view v-for="(item,index) in tabbar" :key="index" class="tab-bar-item" :class="{'active':currentTab==index}"
+			 :data-current="index" @tap.stop="swichNav(item,index)">
+				<text>{{item.label}}</text>
 			</view>
 		</scroll-view>
-		<block v-for="(item,index) in tabbar" :key="index">
-			<scroll-view scroll-y class="right-box" :style="{height:height+'px',top:top+'px'}" v-if="currentTab==index">
+		<block>
+			<scroll-view scroll-y class="right-box" :style="{height:height+'px',top:top+'px'}">
 				<!--内容部分 start 自定义可删除-->
+					
 				<view class="class-item">
-					<view class="class-name">全部县</view>
+					<view class="class-name">全部县</view>																	
+					<!-- 县区遍历 -->
 					<view class="g-container">
-						<view class="g-box">
-							<view class="g-title">高价回收</view>
+						<view class="g-box" v-for="(vo,key) in currentList" :key="key">
+							<view   @click="xianClick(vo,key)" class="g-title" :class="{'xian-curry' : key==xianCurry}">{{vo.label}}</view>
+						</view>	
+					</view>
+					
+					<!-- 商品遍历 -->
+					<view  v-if="hotList.length" @tap='itemClick(item,index)' class="flex align-center bg-white padding margin-top-xs" v-for="(item,index) in hotList" :key = 'index'>
+						<view class="native-list-image">
+							<image :src="item.image"></image>
 						</view>
-						<view class="g-box" >
-							<view class="g-title">好物优选</view>
-						</view>
-						<view class="g-box" >
-							<view class="g-title">iphone X</view>
-						</view>
-						<view class="g-box" v-if="index%2===0">
-							<view class="g-title">电动牙刷</view>
+						<view class="margin-left-sm text-width">
+							<view class="text-sm-erliu text-black text-hide"><text class="bg-grey text-xs padding-lr-xs margin-right-sm native-txt-red">{{item.procince}}特产</text>{{item.store_name}}</view>
+							<view class="navtive-center">200g</view>
+							<view class="flex align-center justify-between">
+								<view class="text-price text-bold text-red text-lg" >{{item.price}}</view>
+								<view class="text-jiujiujiu text-sm">销量{{item.stock}}</view>
+							</view>
 						</view>
 					</view>
 				</view>
@@ -33,6 +41,16 @@
 </template>
 
 <script>
+	// 获取城市
+	import  citys  from '@/components/w-picker/city-data/city'
+	// 获取县区
+	import area from '@/components/w-picker/city-data/area'
+	
+	// 获取数据
+	import { getDetailData } from '@/network/Home'
+	
+	// 转换数据工具
+	import { replaceImage } from '@/utils/dealUrl'
 	export default {
 		data() {
 			return {
@@ -40,11 +58,17 @@
 				height: 0, //scroll-view高度
 				top: 0,
 				currentTab: 0, //预设当前项的值
-				scrollTop: 0 //tab标题的滚动条位置
+				scrollTop: 0 ,//tab标题的滚动条位置
+				name:''  ,//当前场景name
+				xianCurry:0,
+				page:1,
+				hotList:[],
+				procince:""
 			}
 		},
 		onLoad: function(options) {
 			console.log(options)
+			 this.province = options.name
 			uni.setNavigationBarTitle({
 			    title: options.name
 			});
@@ -61,17 +85,40 @@
 					}
 				});
 			}, 50)
+			// 根据addressId获取城市
+			this.getCitys(options.id)	
+			// 默认加载第一页数据
+			this.getDetailData(options.name,this.tabbar[this.currentTab].label,this.currentArea.label)
 		},
 		methods: {
-			// 点击标题切换当前页时改变样式
-			swichNav: function(e) {
-				let cur = e.currentTarget.dataset.current;
-				if (this.currentTab == cur) {
-					return false;
-				} else {
-					this.currentTab = cur;
-					this.checkCor();
-				}
+			// 获取城市
+			getCitys(id){
+				const arr = []
+				citys.forEach(x => {
+					 x.forEach(x => {
+						const a = x.value.slice(0,2)
+						if(a == id){
+							arr.push(x)
+						}
+					})
+				})
+				this.tabbar = arr
+			},
+			
+			
+			
+			// 点击县标签切换样式
+			xianClick(vo,key){
+				this.xianCurry = key
+				// 请求数据
+				// 点击不同县进行加载数据
+				this.getDetailData(this.province,this.tabbar[this.currentTab].label,this.currentArea.label)
+			},
+			
+			// 点击标题切换当前页时改变样式,并加载数据
+			swichNav(item,index){
+				this.currentTab = index
+				this.getDetailData(this.province,this.tabbar[this.currentTab].label,this.currentArea.label)	
 			},
 			//判断当前滚动超过一屏时，设置tab标题滚动条。
 			checkCor: function() {
@@ -100,6 +147,73 @@
 				uni.navigateTo({
 					url: '../extend-view/news-search/news-search'
 				})
+			},
+			// 根据区名加载数据
+			getDetailData(province,city,area){
+				console.log(province,city,area)
+				getDetailData({
+					is_hot:1,
+					province:province.replace('馆',''),
+					city,
+					area,
+					page:1
+				})
+				.then(res => {
+					if(res.data.code == 200){
+						// this.hotList = res.data.data.length ? res.data.data : []
+						if(res.data.data.length){
+							const obj = res.data.data
+							
+							obj.forEach(x => {
+								x.image = replaceImage(x.image)
+							})
+							this.hotList = obj
+						}else{
+							this.hotList = []
+						}
+						
+					}
+				})
+			},
+			// 点击数据跳转到详情页
+			itemClick(item,index) {
+				if(!this.$store.getters.isToken){
+					uni.showModal({
+						title:'请先去登录',
+						content:'',
+						success: (res)=>  {
+							if(res.confirm){
+								uni.navigateTo({
+									url:'../../login/login'
+								})
+							}
+						}
+					})
+				}else{
+					uni.navigateTo({
+						url:`../../ShopDetails/shopDetails?id=${item.id}`
+					})
+				}
+			}
+		},
+		computed:{
+			// 获取当前县级数据
+			currentList(){
+				const arr = []
+				area.forEach(x => {
+					x.forEach(y => {
+						y.forEach(z => {
+							const a = z.value.slice(0,4)
+							if(a == this.tabbar[this.currentTab].value)
+							arr.push(z)
+						})
+					})
+				})			
+				return  arr
+			},
+			// 获取当前选中的县区id
+			currentArea(){
+				return this.currentList[this.xianCurry]
 			}
 		}
 	}
@@ -110,7 +224,29 @@
 	/* 左侧导航布局 start*/
 
 	/* 隐藏scroll-view滚动条*/
-
+	.native-list-image image{
+		height: 180upx;
+		width: 180upx;
+	}
+	.native-txt-red{
+		width:86upx;
+		height:40upx;
+		background:rgba(205,50,51,1);
+		border-radius:16upx;
+		font-size: 20upx;
+	}
+	.navtive-center{
+		width: auto;
+		display:inline-block !important;
+		display:inline;
+		height: 40upx;
+		line-height: 40upx;
+		margin: 16upx 0;
+		padding: 0 10upx;
+		background: #F9F9F9;
+		color: #999999;
+		font-size: 22upx;
+	}
 	::-webkit-scrollbar {
 		width: 0;
 		height: 0;
@@ -170,6 +306,11 @@
 		border-left: 8upx solid #E41F19;
 		height: 100%;
 		left: 0;
+	}
+
+	.xian-curry{
+		background: #CD3233!important;
+		color: #FFF;
 	}
 
 	/* 左侧导航布局 end*/

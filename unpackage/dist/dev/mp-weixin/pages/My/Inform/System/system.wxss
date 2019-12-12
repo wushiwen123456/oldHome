@@ -1,0 +1,21 @@
+
+.nodata{
+	padding-top: 200rpx;
+}
+.nodata image{
+	width: 100%;
+}
+.system-all{
+	height: 144rpx;
+}
+.system-left-image image{
+	width:84rpx;
+	height:84rpx;
+}
+.text-color{
+	color: #838383;
+}
+.text-max-width{
+	max-width: 560rpx;
+}
+

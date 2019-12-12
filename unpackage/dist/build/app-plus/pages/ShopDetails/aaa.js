@@ -1,0 +1,2 @@
+setCssToHead([".",[1],"screen-swiper { min-height: ",[0,375],"; }\n.",[1],"screen-swiper wx-image, .",[1],"screen-swiper wx-video{ width: 100%; display: block; height: 100%; margin: 0; pointer-events: none; }\n",],undefined,{path:"./pages/ShopDetails/aaa.wxss"})();
+document.dispatchEvent(new CustomEvent("generateFuncReady", { detail: { generateFunc: $gwx('./pages/ShopDetails/aaa.wxml') } }));

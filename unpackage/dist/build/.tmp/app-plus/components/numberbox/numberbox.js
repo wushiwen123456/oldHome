@@ -7,4 +7,4 @@
         })
     },
     [['components/numberbox/numberbox-create-component']]
-]);                
+]);

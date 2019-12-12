@@ -59,7 +59,7 @@
 			//是否带箭头
 			arrow:{
 				type: [Boolean, String],
-				default: true
+				default: false
 			},
 			//箭头颜色
 			arrowColor:{
@@ -82,7 +82,7 @@
 		},
 		methods: {
 			updateCurrentChange() {
-				this.isOpen = this.index == this.current
+				this.isOpen = true
 			},
 			handleClick() {
 				if (this.disabled) return;

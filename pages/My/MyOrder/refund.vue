@@ -7,12 +7,12 @@
 				</view>
 				<view class="text-width margin-left-sm ">
 					<view class="flex align-center justify-between">
-						<view class="flex-five text-hieed">沃隆每日坚果750g混合装30包干果零食大礼包混合坚果小包装坚果小包装坚果小包装</view>
-						<view class="text-price text-red flex-sub text-center">139</view>
+						<view class="flex-five text-hieed">{{itemInfo.productInfo.store_name}}</view>
+						<view class="text-price text-red flex-sub text-center">{{itemInfo.productInfo.attrInfo ? itemInfo.productInfo.attrInfo.price : itemInfo.productInfo.price}}</view>
 					</view>
 					<view class="flex align-center justify-between margin-top-xs">
-						<view class="flex-five text-jiujiujiu text-sm">口味：成人款A750g*1盒</view>
-						<view class="flex-sub text-center">x1</view>
+						<view class="flex-five text-jiujiujiu text-sm">规格： {{itemInfo.productInfo.attrInfo ? itemInfo.productInfo.attrInfo.suk : '默认类型'}}</view>
+						<view class="flex-sub text-center">x{{itemInfo.cart_num}}</view>
 					</view>
 				</view>
 			</view>
@@ -27,11 +27,11 @@
 			</view>
 			<view class="flex align-center refund-heigth">
 				<view class="text-wuer margin-right-lg">退款金额</view>
-				<view class="text-price text-red">128.9</view>
+				<view class="text-price text-red">{{itemInfo.productInfo.attrInfo ? itemInfo.productInfo.attrInfo.price : itemInfo.productInfo.price}}</view>
 			</view>
 			<view class="flex align-center refund-heigth">
 				<view class="text-wuer margin-right-lg">联系电话</view>
-				<view>15225162623</view>
+				<view>{{itemInfo.phone}}</view>
 			</view>
 		</view>
 		<button @tap="issuebutton" class="refund-button">发布申请</button>
@@ -39,7 +39,7 @@
 		<uni-popup ref="popup" type="bottom" >
 			<view>
 				<view style="color: #000000;" class="flex align-center justify-center text-lg refund-heigth-two">退款原因</view>
-				<view v-for="(vo,key) in list" :key="key" class="margin-lr-sm">
+				<view v-for="(vo,key) in list" :key="key" @click="listItemCLick(vo,key)" class="margin-lr-sm">
 					<view class="flex align-center justify-between refund-heigth-two">
 						<view class="text-black text-bold text-three text-lg">{{vo.title}}</view>
 						<view :class="[vo.type?'cuIcon-roundcheckfill text-red-my':'cuIcon-round  text-gray']" style="font-size: 40upx;" class="lg"></view>
@@ -66,8 +66,12 @@
 		components: {
 			uniPopup,
 		},
+		onLoad() {
+			this.itemInfo = this.$store.state.tProduct
+		},
 		data(){
 			return{
+				itemInfo:{},
 				cause:'请选择退款原因',
 				list:[{
 					title:'拍错/多拍/不想要',
@@ -95,7 +99,11 @@
 			
 			//返回首页
 			backClick(){
-				uni.navigateBack({})
+				// 执行网络请求
+				
+				uni.switchTab({
+					url:'../../Home/home'
+				})
 			},
 			//退款弹出
 			outloginSharClick(){
@@ -113,6 +121,16 @@
 			closeSharClick(){
 				this.$refs.popups.close()
 			},
+			// 点击退款原因
+			listItemCLick(vo){
+				if(!vo.type){
+					this.list.forEach(x => {
+						x.type = false
+					})
+					vo.type = true
+					this.cause = vo.title
+				}
+			}
 		}
 	}
 </script>

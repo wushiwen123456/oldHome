@@ -1,0 +1,10 @@
+
+.height-all{
+	height: 96rpx;
+}
+.rule-image{
+	width: 20rpx;
+	height: 20rpx;
+	margin-right: 20rpx;
+}
+

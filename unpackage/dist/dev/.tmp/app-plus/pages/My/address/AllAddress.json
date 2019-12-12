@@ -1,0 +1,17 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "我的地址",
+  "scrollIndicator": "none",
+  "titleNView": {
+    "buttons": [
+      {
+        "text": "",
+        "fontSrc": "/static/chunlei-video/iconfont.ttf",
+        "color": "#525253"
+      }
+    ]
+  },
+  "usingComponents": {
+    "modal": "/components/x-modal/x-modal"
+  }
+}

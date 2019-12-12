@@ -1,20 +1,20 @@
 <template>
 	<view>
 		<view v-for="(vo,key) in recordList" :key="key" class="flex align-center bg-white margin-top-xs recordList-all">
-			<image class="recordList-image" src="../../../static/demo23.png"></image>
+			<image class="recordList-image" :src="vo.image"></image>
 			<view class="margin-left-sm recordList-main-all flex flex-direction justify-between">
-				<view class="recordList-main">兑换欧55件套兑换欧55件套兑换欧55件套兑换欧55件套兑换欧55件套兑换欧55件套</view>
+				<view class="recordList-main">{{vo.store_name}}</view>
 				<view class="bg-red recordList-main-centent">买过的店</view>
 				<view class="flex align-center justify-between">
 					<view class="text-sm-erliu flex align-center text-jiujiujiu">
-						<view class="text-price text-xxl text-red text-bold">6.9</view>
-						<view class="margin-left-sm">销量1920</view>
+						<view class="text-price text-xxl text-red text-bold">{{vo.price}}</view>
+						<view class="margin-left-sm">销量{{vo.sales}}</view>
 					</view>
 					<view @tap="onLongPress(key)" style="font-size: 40upx;" class="lg cuIcon-more"></view>
 				</view>
 			</view>
 			<view v-show="vo.popu" @tap="delListClick" class="recordList-all-popu">
-				<view>取消收藏</view>
+				<view @click="unCollect(vo,key)">取消收藏</view>
 			</view>
 		</view>
 		<view v-show="winSize" @tap="winSizeClick" class="winSize-zehzaho" :style="{ height: windowHeight + 'px'}"></view>
@@ -24,28 +24,65 @@
 </template>
 
 <script>
+	import {profileCollect} from '@/network/getProfileData.js'
+	import {unCollectProduct2} from '@/network/detail'
+	import { mapGetters } from 'vuex'
 	export default {
 		data() {
 			return {
 				winSize:false,///* 显示遮罩 */
 				windowHeight:0,//高度
-				recordList:[{
-					id:0,
-					popu:false
-				},{
-					id:1,
-					popu:false
-				},{
-					id:2,
-					popu:false
-				}]
+				recordList:[],
+				pages:1
 			}
 		},
 		onLoad() {
 			this.getWindowSize();
-			
+			if(!this.isToken){
+				uni.navigateTo({
+					url:'../../login/login'
+				})
+			}
+		},
+		onShow() {
+			this.profileCollect(this.pages,this.isToken)
 		},
 		methods: {
+			// 取消收藏
+			unCollect(vo,index){
+				uni.showModal({
+					title:'是否取消收藏',
+					content:'',
+					success:(res) =>  {
+						if(res.confirm){
+							
+							// 取消收藏
+							unCollectProduct2(vo.pid,this.isToken).then(res => {
+								if(res.data.code == 200){
+									uni.showToast({
+										title:'已取消',
+										icon:'none',
+										success:(res)=>  {
+											this.recordList.splice(index,1)
+										}
+									})
+								}
+							})
+						}
+					}
+				})
+			},
+			// 获取数据源
+			profileCollect(page,token){
+				profileCollect(page,token)
+					.then(res => {
+						console.log(res)
+						if(res.data.code == 200){
+							this.recordList = res.data.data
+							console.log(this.recordList)
+						}
+					})
+			},
 			/* 获取窗口尺寸 */
 			getWindowSize() {
 				uni.getSystemInfo({
@@ -76,6 +113,9 @@
 				this.winSizeClick()
 			},
 			
+		},
+		computed:{
+			...mapGetters(['isToken']),
 		}
 	}
 </script>

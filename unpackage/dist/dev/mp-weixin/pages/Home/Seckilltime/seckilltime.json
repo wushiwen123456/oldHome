@@ -1,0 +1,7 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "限时秒杀",
+  "usingComponents": {
+    "tui-countdown": "/components/countdown/countdown"
+  }
+}

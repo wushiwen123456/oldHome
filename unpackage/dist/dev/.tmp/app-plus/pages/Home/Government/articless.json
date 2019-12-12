@@ -1,0 +1,15 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "新闻详情",
+  "scrollIndicator": "none",
+  "titleNView": {
+    "buttons": [
+      {
+        "type": "share"
+      }
+    ]
+  },
+  "usingComponents": {
+    "parser": "/components/jyf-Parser/index"
+  }
+}

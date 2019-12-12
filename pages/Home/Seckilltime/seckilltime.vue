@@ -2,16 +2,16 @@
 	<view class="container">
 		<scroll-view scroll-x scroll-with-animation class="tab-view" :scroll-left="scrollLeft">
 			<view v-for="(item,index) in tabbar" :key="index" class="tab-bar-item" :class="[currentTab==index ? 'active' : '']"
-			 :data-current="index" @tap.stop="swichNav">
+			 :data-current="index" @tap.stop="swichNav" >
 			 <view class="container-view">
 				 <view class="tab-bar-title text-bold">{{item.time}}</view>
 				 <view class="tab-bar-title">{{item.state}}</view>
 			 </view>
 			</view>
 		</scroll-view>
-		<view class="container-timeOut">
+		<view class="container-timeOut" v-if="skllTime">
 			<view class="container-timeOut-txt">距结束仅剩</view>
-			<tui-countdown :time="timeList[currentTab]" :colonSize="40" color="#fff" :width="60" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
+			<tui-countdown :time="skllTime" :colonSize="40" color="#fff" :width="60" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
 		</view>
 		<swiper class="tab-content" :current="currentTab" duration="300" @change="switchTab" :style="{height:winHeight+'px'}">
 			<swiper-item v-for="(page,page_indx) in tabbar " :key="page_indx">
@@ -20,11 +20,11 @@
 						<view class="booking-mian" v-for="(item,index) in timeSeckillList" :key="index">
 							<image :src="item.image"></image>
 							<view class="booking-main-right">
-								<view  class="booking-shop-name">{{item.title}}</view>
+								<view  class="booking-shop-name">{{item.info}}</view>
 								<view class="install-button">
-									<view class="download-plan">{{loadingPlan}}%</view>
+									<view class="download-plan">{{item.percent}}%</view>
 									<view class="cu-progress round " style="height: 100%; background: none;">
-										<view class="my-red-my light" style="border-radius: 24upx;" :style="[{ width:loadingPlan + '%'}]" ></view>
+										<view class="my-red-my light" style="border-radius: 24upx;" :style="[{ width:item.percent + '%'}]" ></view>
 									</view>
 								</view>
 								
@@ -33,9 +33,9 @@
 										<view class="text-price text-red text-xxl text-bold" >{{item.price}}</view>
 										<view class="booking-main-oldmoney">原价¥{{item.ot_price}}</view>
 									</view>
-									<button v-if="typeTime == 0" class="booking-main-money-button color-select">已结束</button>
-									<button v-if="typeTime == 1" @tap="timeSeckillClick()" class="booking-main-money-button">马上抢</button>
-									<button v-if="typeTime == 2"  class="booking-main-money-button">即将开始</button>
+<!-- 									<button v-if="typeTime == 0" class="booking-main-money-button color-select">已结束</button> -->
+									<button @tap="timeSeckillClick(item)" class="booking-main-money-button">{{typeTime}}</button>
+									<!-- <button v-if="typeTime == 2"  class="booking-main-money-button">即将开始</button> -->
 								</view>
 							</view>
 						</view>
@@ -51,6 +51,7 @@
 	
 	// 获取秒杀页面的数据
 	import { secKillData,getSecKillData } from '@/network/Home.js'
+	import { replaceImage } from '@/utils/dealUrl'
 	export default {
 		components:{
 			tuiCountdown
@@ -84,9 +85,9 @@
 					price:21,
 					ot_price:12
 				}],//秒杀商品列表
-				typeTime:1,//当前状态
 				loadingPlan:80,
-				skllTime:''//秒杀时间
+				skllTime:0,//秒杀时间
+				
 			}
 		},
 		onLoad: function() {
@@ -101,25 +102,27 @@
 			
 		},
 		onShow() {		
+			this.currentTab = 0
 			// 获取秒杀时间列表和商品列表
 			this.getSecKillData()
 		},
-		computed:{
-			timeList(){
-				return this.tabbar.map(item => {
-					if(item.state == '已结束'){
-						return 0
-					}else{
-						return parseInt(item.stop)/1000
-					}
-				})
-			},
-		},
 		methods: {
 			// 加载秒杀数据
-			secKillData(option){
-				secKillData(option).then(res => {
-					console.log(res)
+			secKillData(id,pages){
+				secKillData(id,pages).then(res => {
+					if(res.data.code == 200){
+						const num =  res.data.data.backtime.i*60 + res.data.data.backtime.h*3600 + res.data.data.backtime.s *1
+						if(num){
+							this.skllTime = num
+						}else{
+							this.skllTime = 0
+						}
+						const list = res.data.data.seckillInfo
+						list.forEach(x => {
+							x.image = replaceImage(x.image)
+						})
+						this.timeSeckillList = list
+					}
 				})
 			},
 			
@@ -133,34 +136,33 @@
 						this.tabbar.forEach(x => {
 							this.$set(x,'pages',1)
 						})
-						console.log(this.tabbar)
-						// 加载秒杀数据
-						this.secKillData(this.tabbar[2])
+						
+						// 守下加载第一页数据
+						const id = this.tabbar[0] ? this.tabbar[0].id : ''
+						const pages = this.tabbar[0].pages ? this.tabbar[0].pages : ''
+						console.log(id,pages)
+						// 先加载秒杀第一页数据
+						this.secKillData(this.tabbar[0].id,this.tabbar[0].pages)
 					}
 				})
 			},
 			
 			//秒杀详情
-			timeSeckillClick(key){
-				uni.navigateTo({
-					url:'../../ShopDetails/seckillTime'
-				})
-			},
-			//切换时间
-			timeswitching(){
-				setTimeout(function(){
-					uni.hideLoading()
-				},1500)
+			timeSeckillClick(item){
+				const curTab = this.tabbar[this.currentTab]
+				if(curTab.state == '抢购中'){
+					this.$store.commit('setSkillId',item.id)
+					uni.navigateTo({
+						url:'../../ShopDetails/seckillTime'
+					})
+				}
+				
 			},
 			// 滚动切换标签样式
 			switchTab: function(e) {
 				let that = this;
 				that.currentTab = e.detail.current;
 				that.checkCor();
-				uni.showLoading({title:'正在加载'})
-				setTimeout(function(){
-					that.timeswitching();
-				},500)
 			},
 			// 点击标题切换当前页时改变样式
 			swichNav: function(e) {
@@ -169,6 +171,7 @@
 					return false;
 				} else {
 					this.currentTab = cur
+					this.secKillData(this.tabbar[this.currentTab].id,this.tabbar[this.currentTab].pages)
 				}
 			},
 			//判断当前滚动超过一屏时，设置tab标题滚动条。
@@ -184,6 +187,11 @@
 				uni.navigateTo({
 					url: '../extend-view/newsDetail/newsDetail'
 				})
+			}
+		},
+		computed:{
+			typeTime(){
+				return this.tabbar[this.currentTab].state
 			}
 		}
 	}

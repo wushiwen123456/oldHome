@@ -7,4 +7,4 @@
         })
     },
     [['components/jyf-Parser/trees-create-component']]
-]);                
+]);

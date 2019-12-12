@@ -14,6 +14,7 @@ export function getProfileData(token){
 	})
 }
 
+
 // 获取用户所有地址
 export function getProfileAllAddress(token){
 	return http({
@@ -24,7 +25,16 @@ export function getProfileAllAddress(token){
 		method:"GET"
 	})
 }
-
+// 获取当前用户入驻信息
+export function isStatus(token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/public_api/apply_status'),
+		header:{
+			token
+		},
+		method:"GET"
+	})
+}
 // 添加、修改收货地址
 export function addAddress(data,token) {
 	return http({
@@ -91,5 +101,122 @@ export function setDefaultAddress(addressId,token){
 			token
 		},
 		method:"GET"
+	})
+}
+
+// 删除用户地址方法
+export function removeAddress(addressId,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/user_api/remove_user_address'),
+		data:{
+			addressId
+		},
+		header:{
+			token
+		},
+		method:"GET"
+	})
+}
+
+// 获取用户的收藏
+export function profileCollect(page,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/store_api/get_user_collect_product'),
+		data:{
+			limit:5,
+			page
+		},
+		header:{
+			token
+		},
+		method:"GET"
+	})
+}
+
+// 获取收藏店铺列表
+export function getCollectStore(page,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/public_api/shop_collect_list'),
+		data:{
+			limit:5,
+			page
+		},
+		header:{
+			token
+		}
+	})
+}
+
+// 个人订单
+export function userOrder(type,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/user_api/get_user_order_list'),
+		data:{
+			type:type
+		},
+		header:{
+			token
+		},
+		method:"GET"
+	})
+}
+
+// 获取用户优惠券
+export function getUserDiscounts(types,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/coupons_api/get_use_coupons'),
+		data:{
+			types
+		},
+		header:{
+			token
+		},
+		method:"GET"
+	})
+}
+
+// 获取用户拼团信息
+export function myPooking(type,token){
+	if(type) {
+		return http({
+			url:replaceImage('http://www.test.com/ebapi/user_api/get_user_pink'),
+			data:{
+				type
+			},
+			header:{
+				token
+			}
+		})
+	}else {
+		return http({
+			url:replaceImage('http://www.test.com/ebapi/user_api/get_user_pink'),
+			header:{
+				token
+			}
+		})
+	}
+	
+}
+// 获取用户积分
+export function userIntegral(token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/user_api/user_integral_list'),
+		header:{
+			token
+		}
+	})
+}
+
+// 商户入驻申请
+export function enterShop(data,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/public_api/enter_shop'),
+		data:{
+			...data
+		},
+		header:{
+			token
+		},
+		method:"POST"
 	})
 }

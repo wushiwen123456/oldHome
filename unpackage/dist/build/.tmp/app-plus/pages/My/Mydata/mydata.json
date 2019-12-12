@@ -1,0 +1,18 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "个人中心",
+  "scrollIndicator": "none",
+  "titleNView": {
+    "buttons": [
+      {
+        "text": "保存",
+        "color": "#CD3233",
+        "fontSize": "16"
+      }
+    ]
+  },
+  "usingComponents": {
+    "w-picker": "/components/w-picker/w-picker",
+    "avatar": "/components/yq-avatar/yq-avatar"
+  }
+}

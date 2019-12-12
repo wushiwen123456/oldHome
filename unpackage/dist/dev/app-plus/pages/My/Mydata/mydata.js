@@ -1,0 +1,2 @@
+setCssToHead([".",[1],"mydata-title{ height: ",[0,230],"; }\n.",[1],"mydata-title wx-image{ height: ",[0,140],"; width: ",[0,140],"; }\n.",[1],"mydata-title-all{ height: ",[0,100],"; border-top: #DCDCDC 1px solid; }\n.",[1],"mydata-title-all:nth-child(1){ border-top: none; }\n",],undefined,{path:"./pages/My/Mydata/mydata.wxss"})();
+document.dispatchEvent(new CustomEvent("generateFuncReady", { detail: { generateFunc: $gwx('./pages/My/Mydata/mydata.wxml') } }));

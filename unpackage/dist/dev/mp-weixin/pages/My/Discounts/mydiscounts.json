@@ -1,0 +1,7 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "优惠券",
+  "usingComponents": {
+    "tui-tabs": "/components/tui-tabs/tui-tabs"
+  }
+}

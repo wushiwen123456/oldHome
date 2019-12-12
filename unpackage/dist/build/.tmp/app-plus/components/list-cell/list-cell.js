@@ -7,4 +7,4 @@
         })
     },
     [['components/list-cell/list-cell-create-component']]
-]);                
+]);

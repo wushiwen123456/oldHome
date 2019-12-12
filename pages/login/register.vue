@@ -3,7 +3,7 @@
 		<canvas disable-scroll="true" class="text-width" :style="{height:windowHeight + 'px'}">
 			<!-- 头部图片 -->
 			<view class="login-image">
-				<image src="../../static/logo.png"></image>
+				<image src="../../static/logo/logo.png"></image>
 			</view>
 			<!-- 表单 -->
 			<view>
@@ -11,13 +11,17 @@
 					<view class="login-message">
 						<image src="../../static/phone.png"></image>
 						<input class="input-textlength" confirm-type="done" v-model="phone" placeholder="请输入手机号码" />
-						<button :disabled="isSend" @tap="codeTap" :loading="isSend" style="position: absolute; right: 0; width: 33%; height: 80%; font-size: 14px; color: #333;">{{codeText}}</button>
 					</view>
 				</view>
 				<view class="login-all">
-					<view class="login-message">
-						<image src="../../static/phone.png"></image>
-						<input class="input-textlength" confirm-type="done" v-model="code" placeholder="请输入验证码" />
+					<view class="flex align-center justify-between">
+						<view class="login-message">
+							<image src="../../static/name.png"></image>
+							<input class="input-textlength" v-model="code" placeholder="请输入验证码" />
+						</view>
+						<view  class="solid-left">
+							<view class="margin-left" @tap="getCode">{{codeTip}}</view>
+						</view>
 					</view>
 				</view>
 				<view class="login-all">
@@ -47,7 +51,7 @@
 			</view>
 			
 			<!-- 登录 防抖 -->
-			<wButton text="登 录" :rotate="isRotate"  @click.native="startLogin()" ></wButton>
+			<wButton text="注 册" :rotate="isRotate"  @click.native="startLogin()" ></wButton>
 			
 			<!-- 男女选择 -->
 			<w-picker mode="selector" :defaultVal="[0]" @confirm="onConfirm" ref="picker" themeColor="#f00" :selectList="selectList"></w-picker>
@@ -91,9 +95,9 @@
 				}],
 				sex:'',//男女
 				code:'',//验证码,
-				isSend:false  ,//判断验证码是否发送
-				downTime:60 	,//倒计时
-				isLoading:false ,
+				codeTip:"获取验证码",
+				currentTime: '60', //倒数计时
+				getCodebutton:false,
 			}
 		},
 		onLoad() {
@@ -106,6 +110,36 @@
 			});
 		},
 		methods: {
+			// 验证码发送
+			getCode(){
+				var that = this;
+				var currentTime = that.currentTime;
+				if((/^1[3456789]\d{9}$/).test(that.phone)){
+					if(that.getCodebutton){ return }
+					that.getCodebutton = true
+					
+					// 发送验证码
+					sendCode(that.phone).then(res => {
+						if(res.data.code == 200){
+							var interval = setInterval(function() {
+								that.codeTip = (currentTime - 1) + 's'
+								currentTime--;
+								if (currentTime <= 0) {
+									clearInterval(interval)
+									that.codeTip = '获取验证码'
+									that.getCodebutton = false
+								}
+							}, 1000)
+						}
+					})
+					
+				}else{
+					uni.showToast({
+						title:'请输入正确的手机号',
+						icon:'none'
+					})
+				}
+			},
 			//注册
 			startLogin(){
 				var that = this
@@ -164,18 +198,15 @@
 					code:that.code
 				}
 				register(data).then(res => {
-					if(res.data.code !== 200){
-						// 注册有问题
-						uni.showToast({
-							title:res.data.msg,
-							icon:'none'
-						})
-					}else{
 						// 注册成功,跳转到登录
 						uni.navigateTo({
 							url:`login?phone=${data.phone}`,
 						})
-					}
+				}).catch(res => {
+					uni.showToast({
+						title:res.data.msg,
+						icon:'none'
+					})
 				})
 				
 			},
@@ -237,6 +268,7 @@
 </script>
 
 <style>
+	
 	.content{
 		background: #FFFFFF;
 		min-height: 100vh;

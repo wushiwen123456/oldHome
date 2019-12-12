@@ -1,23 +1,41 @@
 
-.dis-flex{
+page.data-v-da7cb7ce{
+	margin-bottom: 44px;
+}
+.pay-load.data-v-da7cb7ce{
+	height: 450rpx;
+}
+.pay.data-v-da7cb7ce{
+	height: 44px;
+	line-height: 44px;
 	display: -webkit-box;
 	display: -webkit-flex;
-	display: -ms-flexbox;
 	display: flex;
-}
-.flex-jus-space{
 	-webkit-box-pack: justify;
 	-webkit-justify-content: space-between;
-	    -ms-flex-pack: justify;
 	        justify-content: space-between;
-}
-.flex-item-cent{
 	-webkit-box-align: center;
 	-webkit-align-items: center;
-	    -ms-flex-align: center;
+	        align-items: center;
+	border-bottom: 1px solid #EEEEEE;
+	margin-bottom: 20rpx;
+}
+.dis-flex.data-v-da7cb7ce{
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: flex;
+}
+.flex-jus-space.data-v-da7cb7ce{
+	-webkit-box-pack: justify;
+	-webkit-justify-content: space-between;
+	        justify-content: space-between;
+}
+.flex-item-cent.data-v-da7cb7ce{
+	-webkit-box-align: center;
+	-webkit-align-items: center;
 	        align-items: center;
 }
-.affirmOrder-title{
+.affirmOrder-title.data-v-da7cb7ce{
 	margin: 10rpx 0;
 	padding: 0 24rpx;
 	background: #FFFFFF;
@@ -25,65 +43,65 @@
 	color: #333333;
 	height: 136rpx;
 }
-.affirmOrder-titles{
+.affirmOrder-titles.data-v-da7cb7ce{
 	margin: 20rpx 0;
 	padding: 20rpx 24rpx;
 	background: #FFFFFF;
 	font-size: 30rpx;
 	color: #333333;
 }
-.title-img-one{
+.title-img-one.data-v-da7cb7ce{
 	margin-right: 18rpx;
 	width: 70rpx;
 	height: 70rpx;
 }
-.title-img-ones{
+.title-img-ones.data-v-da7cb7ce{
 	margin-right: 18rpx;
 	width: 68rpx;
 	height: 68rpx;
 }
-.title-img-two{
+.title-img-two.data-v-da7cb7ce{
 	margin-left: 20rpx;
 	width: 14rpx;
 	height: 26rpx;
 }
-.affirmOrder-main{
+.affirmOrder-main.data-v-da7cb7ce{
 	background: #FFFFFF;
 	padding: 30rpx 24rpx;
 }
-.affirmOrder-main image{
+.affirmOrder-main image.data-v-da7cb7ce{
 	width: 140rpx;
 	height: 140rpx;
 }
-.affirmOrder-main-right{
+.affirmOrder-main-right.data-v-da7cb7ce{
 	padding-bottom: 30rpx;
 	margin-left: 40rpx;
 	width: 520rpx;
 	font-size: 30rpx;
 }
-.affirmOrder-main-right-bottom{
+.affirmOrder-main-right-bottom.data-v-da7cb7ce{
 	margin-top: 20rpx;
 	color: #959494;
 	font-size: 24rpx;
 }
-.affirmOrder-message{
+.affirmOrder-message.data-v-da7cb7ce{
 	padding: 0 24rpx;
 	background: #FFFFFF;
 	height: 100rpx;
 	border-bottom: #f3f3f3 2rpx solid;
 }
-.affirmOrder-message:nth-child(1){
+.affirmOrder-message.data-v-da7cb7ce:nth-child(1){
 	margin-top: 10rpx;
 }
-.affirmOrder-message input{
+.affirmOrder-message input.data-v-da7cb7ce{
 	width: 440rpx;
 	text-align: right;
 }
-.affirmOrder-message-youhui{
+.affirmOrder-message-youhui.data-v-da7cb7ce{
 	color: #CD3233;
 	font-size: 26rpx;
 }
-.affirmOrder-bottom{
+.affirmOrder-bottom.data-v-da7cb7ce{
 	width: 100%;
 	position: fixed;
 	bottom: 0;
@@ -91,19 +109,17 @@
 	height: 104rpx;
 	display: -webkit-box;
 	display: -webkit-flex;
-	display: -ms-flexbox;
 	display: flex;
 	-webkit-box-align: center;
 	-webkit-align-items: center;
-	    -ms-flex-align: center;
 	        align-items: center;
 	-webkit-box-pack: justify;
 	-webkit-justify-content: space-between;
-	    -ms-flex-pack: justify;
 	        justify-content: space-between;
 	padding: 0 30rpx;
+	z-index: 998;
 }
-.affirmOrder-bottom button{
+.affirmOrder-bottom button.data-v-da7cb7ce{
 	width: 236rpx;
 	height: 80rpx;
 	margin: 0;
@@ -114,44 +130,49 @@
 	color: #FFFFFF;
 	display: -webkit-box;
 	display: -webkit-flex;
-	display: -ms-flexbox;
 	display: flex;
 	-webkit-box-pack: center;
 	-webkit-justify-content: center;
-	    -ms-flex-pack: center;
 	        justify-content: center;
 	-webkit-box-align: center;
 	-webkit-align-items: center;
-	    -ms-flex-align: center;
 	        align-items: center;
 }
-.affirmOrder-title-dizhi{
+.affirmOrder-title-dizhi.data-v-da7cb7ce{
 	color: #666666;
 	font-size: 26rpx;
 	max-width: 500rpx;
 	display: -webkit-box;
 	display: -webkit-flex;
-	display: -ms-flexbox;
 	display: flex;
 	-webkit-box-orient: vertical;
 	-webkit-box-direction: normal;
 	-webkit-flex-direction: column;
-	    -ms-flex-direction: column;
 	        flex-direction: column;
 }
-.affirmOrder-title-nickname{
+.affirmOrder-title-nickname.data-v-da7cb7ce{
 	font-size: 30rpx;
 	color: #000000;
 	margin-bottom:8rpx;
 }
-.shareShow-all{
+.shareShow-all.data-v-da7cb7ce{
 	height: 80rpx;
 }
-.shareShow-button{
+.shareShow-button.data-v-da7cb7ce{
 	background: #CD3233;
 	color: #FFFFFF;
 	margin-top: 80rpx;
 	border-radius: 50rpx;
 	margin-bottom: 20rpx;
+	position: relative;
+}
+.dscountTitle.data-v-da7cb7ce{
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-box-pack: justify;
+	-webkit-justify-content: space-between;
+	        justify-content: space-between;
+	width: 90%;
 }
 

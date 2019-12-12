@@ -1,0 +1,11 @@
+{
+  "disableScroll": true,
+  "navigationBarTitleText": "物流信息",
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "backgroundColor": "#f5f5f5",
+  "scrollIndicator": "none",
+  "bounce": "none",
+  "usingComponents": {
+    "track-node": "/components/trackNode"
+  }
+}

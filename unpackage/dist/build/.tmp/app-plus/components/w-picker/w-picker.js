@@ -7,4 +7,4 @@
         })
     },
     [['components/w-picker/w-picker-create-component']]
-]);                
+]);

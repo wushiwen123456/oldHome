@@ -1,0 +1,8 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "商家入驻",
+  "scrollIndicator": "none",
+  "usingComponents": {
+    "modal": "/components/x-modal/x-modal"
+  }
+}

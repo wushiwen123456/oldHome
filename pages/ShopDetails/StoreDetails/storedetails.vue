@@ -1,17 +1,18 @@
 <template>
-	<view>
+	<view v-if="productList.length">
+		<view :style="{ 'height': statusBarHeight + 'px'}"></view>
 		<view class="storedetails-title-background">
-			<view class="padding-top-sm">
-				<view class="flex align-center bg-white storedetails-title-search">
+			<view class="flex align-center storedetails-title">
+				<view class="flex align-center bg-white text-width storedetails-title-search">
 					<view style="font-size: 40upx;" class="lg text-gray cuIcon-search padding-left padding-right-xs"></view>
 					<input class="text-df" placeholder="搜索本店商品" @confirm="searchClick" />
 				</view>
 			</view>
 			<view class="flex align-center justify-between padding-bottom-sm margin-top-xl margin-left">
 				<view class="flex">
-					<image class="shop-introduce-img" src="../../../static/demo9.png" ></image>
+					<image class="shop-introduce-img" :src="dealImage" ></image>
 					<view class="margin-left-sm flex flex-direction justify-between">
-						<view class="shop-detal-name text-lg text-white text-bold">沃隆旗舰店</view>
+						<view class="shop-detal-name text-lg text-white text-bold">{{storeInfo.shop_info ? storeInfo.shop_info.shop_name : ''}}</view>
 						<view class="flex align-center text-xs shop-experience">
 							<view class="lg text-red-my cuIcon-favorfill"></view>
 							<view class="lg text-red-my cuIcon-favorfill"></view>
@@ -19,12 +20,12 @@
 							<view class="lg text-red-my cuIcon-favorfill"></view>
 							<view class="lg text-red-my cuIcon-favorfill"></view>
 						</view>
-						<view style="color: #FEFEFE;" class="text-sm">粉丝数量191万</view>
+						<view style="color: #FEFEFE;" class="text-sm">粉丝数量{{storeInfo.shop_fans}}万</view>
 					</view>
 				</view>
 				<view class="flex align-center text-white storedetails-title-right">
-					<view class="lg cuIcon-favor margin-left-xs margin-right-xs"></view>
-					<view>收藏</view>
+					<view class="lg margin-left-xs margin-right-xs" :class="[isCollectIng ? 'cuIcon-favorfill' : 'cuIcon-favor']"></view>
+					<view @tap="collectStore">{{collected}}</view>
 				</view>
 			</view>
 		</view>
@@ -72,13 +73,13 @@
 					<block v-for="(item,index) in productList" :key="index" v-if="(index+1)%2!=0">
 						<!-- <template is="productItem" data="{{item,index:index,isList:isList}}" /> -->
 						<!--商品列表-->
-						<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detail">
-							<image src="../../../static/demo4.png" class="tui-pro-img" mode="widthFix" />
+						<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detail(item)">
+							<image :src="item.image" class="tui-pro-img" mode="widthFix" />
 							<view class="tui-pro-content">
-								<view class="tui-pro-tit">{{item.name}}</view>
+								<view class="tui-pro-tit">{{item.store_name}}</view>
 								<view class="flex align-center justify-between">
-									<view class="tui-sale-price">￥{{item.sale}}</view>
-									<view class="tui-pro-pay">销量{{item.payNum}}</view>
+									<view class="tui-sale-price">￥{{item.price}}</view>
+									<view class="tui-pro-pay">销量{{item.sales}}</view>
 								</view>
 							</view>
 						</view>
@@ -89,13 +90,13 @@
 					<block v-for="(item,index) in productList" :key="index" v-if="(index+1)%2==0">
 						<!-- <template is="productItem" data="{{item,index:index}}" /> -->
 						<!--商品列表-->
-						<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detail">
-							<image src="../../../static/demo4.png" class="tui-pro-img" mode="widthFix" />
+						<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detail(item)">
+							<image  :src="item.image"  class="tui-pro-img" mode="widthFix" />
 							<view class="tui-pro-content">
-								<view class="tui-pro-tit">{{item.name}}</view>
+								<view class="tui-pro-tit">{{item.store_name}}</view>
 								<view class="flex align-center justify-between">
-									<view class="tui-sale-price">￥{{item.sale}}</view>
-									<view class="tui-pro-pay">销量{{item.payNum}}</view>
+									<view class="tui-sale-price">￥{{item.price}}</view>
+									<view class="tui-pro-pay">销量{{item.sales}}</view>
 								</view>
 							</view>
 						</view>
@@ -104,23 +105,38 @@
 				</view>
 			</view>
 		</view>
-		<uni-load-more v-if="loadingimg" :loadingType="loadingType" ></uni-load-more>
+		<!-- <uni-load-more v-if="loadingimg" :loadingType="loadingType" ></uni-load-more> -->
 	</view>
 </template>
 
 <script>
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
+	import {getStoreInfo,collectStoring,unCollectStore} from "@/network/detail"
+	
+	// 导入网络模块
+	import {getDetailData} from '@/network/Home'
+	
+	
+	// 导入vuex
+	import { mapGetters } from 'vuex'
+	
+	import {replaceImage} from '@/utils/dealUrl'
+	
 	export default{
 		components: {
 			uniLoadMore
 		},
 		data(){
 			return{
+				statusBarHeight:0,//状态栏高度
 				loadingimg:true,//login加载
 				loadingType:1,//login状态
 				currentTab: 0,//导航栏状态
 				shopselect:0,//综合  销量 价格
 				priceType:true,// true 价格升序  false价格降序
+				isCollectIng:false, //是否收藏
+				storeId:'',
+				storeInfo:{},
 				tabs2: [{
 					name: "今日特拼"
 				}, {
@@ -130,114 +146,118 @@
 				}, {
 					name: "新品",
 				}],
-				productList: [{
-						img: 1,
-						name: "欧莱雅（LOREAL）奇焕光彩粉嫩透亮修颜霜 30ml（欧莱雅彩妆 BB霜 粉BB 遮瑕疵 隔离）",
-						sale: 599,
-						factory: 899,
-						payNum: 2342
-					},
-					{
-						img: 2,
-						name: "德国DMK进口牛奶  欧德堡（Oldenburger）超高温处理全脂纯牛奶1L*12盒",
-						sale: 29,
-						factory: 69,
-						payNum: 999
-					},
-					{
-						img: 3,
-						name: "【第2支1元】柔色尽情丝柔口红唇膏女士不易掉色保湿滋润防水 珊瑚红",
-						sale: 299,
-						factory: 699,
-						payNum: 666
-					},
-					{
-						img: 4,
-						name: "百雀羚套装女补水保湿护肤品",
-						sale: 1599,
-						factory: 2899,
-						payNum: 236
-					},
-					{
-						img: 5,
-						name: "百草味 肉干肉脯 休闲零食 靖江精制猪肉脯200g/袋",
-						sale: 599,
-						factory: 899,
-						payNum: 2399
-					},
-					{
-						img: 6,
-						name: "短袖睡衣女夏季薄款休闲家居服短裤套装女可爱韩版清新学生两件套 短袖粉色长颈鹿 M码75-95斤",
-						sale: 599,
-						factory: 899,
-						payNum: 2399
-					},
-					{
-						img: 1,
-						name: "欧莱雅（LOREAL）奇焕光彩粉嫩透亮修颜霜",
-						sale: 599,
-						factory: 899,
-						payNum: 2342
-					},
-					{
-						img: 2,
-						name: "德国DMK进口牛奶",
-						sale: 29,
-						factory: 69,
-						payNum: 999
-					},
-					{
-						img: 3,
-						name: "【第2支1元】柔色尽情丝柔口红唇膏女士不易掉色保湿滋润防水 珊瑚红",
-						sale: 299,
-						factory: 699,
-						payNum: 666
-					},
-					{
-						img: 4,
-						name: "百雀羚套装女补水保湿护肤品",
-						sale: 1599,
-						factory: 2899,
-						payNum: 236
-					}
-				],
+				productList: [],
 			}
 		},
-		onReachBottom(){
-			
-			
+		onLoad(option) {
+			var that = this
+			uni.getSystemInfo({
+			    success: function (res) {
+					that.statusBarHeight = res.statusBarHeight
+			    }
+			});
+			if(option.id && !!that.isToken){
+				that.storeId = option.id
+			}else{
+				uni.switchTab({
+					url:'../../Home/home'
+				})
+				return false
+			}
+			// 调用头部数据接口
+			that.getStoreInfo(that.storeId,that.isToken)
+			// 调用商品数据接口
+			that.getPList(that.storeId)
 		},
 		methods:{
+			// 获取信息
+			getStoreInfo(id,token){
+				getStoreInfo(id,token).then(res => {
+					if(res.data.code == 200){
+						this.isCollectIng = res.data.data.user_collect
+						this.storeInfo = res.data.data
+					}
+				})
+			},
+			// 网络请求方法
+			getPList(storeId){
+				getDetailData({
+					shop_id:storeId
+				}).then(res => {
+					if(res.data.code == 200){
+						this.dealData(res)
+					}
+				})
+			},
+			// 店铺收藏
+			collectStore(){
+				// 如果未收藏
+					if(!this.isCollectIng){
+						collectStoring(this.storeId,this.isToken)
+						.then(res => {
+							if(res.data.code == 200){
+								uni.showToast({
+									title:'收藏成功',
+									icon:'none'
+								})
+								this.isCollectIng = !this.isCollectIng
+							}
+						})
+					}else{
+						// 如果已经收藏
+						unCollectStore(this.storeId,this.isToken)
+							.then(res => {
+								if(res.data.code == 200){
+									uni.showToast({
+										title:'已取消收藏',
+										icon:'none'
+									})
+									this.isCollectIng = !this.isCollectIng
+								}
+							}).catch(err => {
+								console.log(err)
+							})
+					}
+				
+				
+			},
 			//首页
 			HomeClick(){
 				if(this.currentTab == 0) return
 				this.currentTab = 0
+				this.getTabDetail(this.currentTab)
 			},
 			//商品
 			shopClick(){
 				if(this.currentTab == 1) return
 				this.currentTab = 1
 				this.shopselect = 0
+				this.getTabDetail(this.currentTab)
 			},
 			//促销
 			activtyClick(){
 				if(this.currentTab == 2) return
 				this.currentTab = 2
+				this.getTabDetail(this.currentTab)
 			},
 			//新品
 			newShopClick(){
 				if(this.currentTab == 3) return
 				this.currentTab = 3
+				this.dealClick(this.shopselect)
 			},
 			//综合
 			syndClick(){
-				if(this.shopselect = 0) return
+				if(this.shopselect == 0) return
 				this.shopselect = 0
+				this.dealClick(this.shopselect)
 			},
 			//销量
 			salesClick(){
-				if(this.shopselect = 1) return
+				console.log(this.shopselect)
+				if(this.shopselect == 1) return
 				this.shopselect = 1
+				this.dealClick(this.shopselect)
 			},
 			//价格
 			priceClick(){
@@ -245,9 +265,11 @@
 				if(this.priceType){
 					//价格升序
 					this.priceType = false
+					this.dealClick(this.priceType)
 				}else{
 					//价格降序
 					this.priceType = true
+					this.dealClick(this.priceType)
 				}
 			},
 			px(num) {
@@ -257,9 +279,74 @@
 			searchClick(){
 				
 			},
+			// 进入详情页
+			detail(item){
+				uni.navigateTo({
+					url:`../shopDetails?id=${item.id}`
+				})
+			},
+			// 数据处理
+			dealData(res){
+				const obj = res.data.data
+				obj.image = replaceImage(obj)
+				this.productList = obj
+				console.log(this.productList)
+			},
+			// 处理详情数据
+			dealClick(type){
+				switch(type){
+					case 0 : 
+						getDetailData ({
+							shop_id:this.storeId
+						}).then(res => {
+							this.dealData(res)
+						})
+					break
+					case 1 :
+						getDetailData({
+							shop_id:this.storeId
+						}).then(res => {
+							this.dealData(res)
+						})
+					break
+					case 2 :
+						getDetailData({
+							shop_id:this.storeId,
+							salesOrder:1
+						}).then(res => {
+							this.dealData(res)
+						})
+					break
+					case 3 :
+						getDetailData({
+							shop_id:this.storeId,
+							priceOrder:1
+						}).then(res => {
+							this.dealData(res)
+						})
+					break
+					default :
+						getDetailData({
+							shop_id:this.storeId
+						}).then(res => {
+							this.dealData(res)
+						})
+				}
+			},
+			// 处理tabbar分类数据
+			getTabDetail(type){
+				
+			}
 			
-			
-			
+		},
+		computed:{
+			...mapGetters(['isToken']),
+			collected(){
+				return this.isCollectIng ? '已收藏' : '收藏' 
+			},
+			dealImage(){
+				return this.storeInfo.shop_info ? replaceImage(this.storeInfo.shop_info.shop_logo) : ''
+			}
 		}
 	}
 </script>
@@ -273,6 +360,9 @@
 	.shop-introduce-img{
 		height: 106upx;
 		width: 106upx;
+	}
+	.storedetails-title{
+		height: 88upx;
 	}
 	.storedetails-title-search{
 		margin: 0 100upx;

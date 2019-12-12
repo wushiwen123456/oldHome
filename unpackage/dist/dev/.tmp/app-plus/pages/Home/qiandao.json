@@ -1,0 +1,10 @@
+{
+  "disableScroll": true,
+  "navigationBarTitleText": "我要签到",
+  "navigationBarTextStyle": "white",
+  "titleNView": {
+    "type": "transparent",
+    "backgroundColor": "#E8211F"
+  },
+  "usingComponents": {}
+}

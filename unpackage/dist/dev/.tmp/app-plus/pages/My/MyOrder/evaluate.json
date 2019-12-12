@@ -1,0 +1,18 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "发表评价",
+  "scrollIndicator": "none",
+  "titleNView": {
+    "buttons": [
+      {
+        "text": "发布",
+        "color": "#CD3233",
+        "fontSize": "16px"
+      }
+    ]
+  },
+  "usingComponents": {
+    "tui-rate": "/components/rate/rate",
+    "tui-icon": "/components/icon/icon"
+  }
+}

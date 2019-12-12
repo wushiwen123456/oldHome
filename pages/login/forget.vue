@@ -3,7 +3,7 @@
 		<canvas disable-scroll="true" class="text-width" :style="{height:windowHeight + 'px'}">
 			<!-- 头部图片 -->
 			<view class="login-image">
-				<image src="../../static/logo.png"></image>
+				<image src="../../static/logo/logo.png"></image>
 			</view>
 			<!-- 表单 -->
 			<view>
@@ -32,7 +32,7 @@
 				</view>
 			</view>
 			<!-- 登录 防抖 -->
-			<wButton text="注 册" :rotate="isRotate"  @click.native="startLogin()" ></wButton>
+			<wButton text="重 置" :rotate="isRotate"  @click.native="startLogin()" ></wButton>
 		</canvas>
 		
 	</view>
@@ -43,7 +43,6 @@
 	
 	// 注册,发送验证码方法：
 	import {resetPwd,sendCode} from '@/network/login'
-
 	export default {
 		components:{
 			wButton
@@ -142,17 +141,20 @@
 						if(res.data.code == 200){
 							uni.showToast({
 								title:res.data.msg,
-								icon:'none'
-							})
-							uni.navigateTo({
-								url:"login"
-							})
-						}else{
-							uni.showToast({
-								title:res.data.msg,
-								icon:'none'
+								icon:'none',
+								success() {
+									uni.navigateTo({
+										url:'login'
+									})
+								}
+								
 							})
 						}
+				}).catch(res => {
+					uni.showToast({
+						title:res.data.msg,
+						icon:'none'
+					})
 				})
 			},
 		}
@@ -201,3 +203,4 @@
 		width: 90%;
 	}
 </style>
+

@@ -35,15 +35,24 @@
 								<view :class="[distype ?'text-gray cuIcon-roundcheck':'text-red-my cuIcon-roundcheckfill']" style="font-size: 40upx;" class="lg margin-right-sm"></view>
 								<view>面议</view>
 							</view>
+							
 						</view>
 					</view>
 					<view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">联系电话</view>
 						<input class="flex-treble" placeholder="输入招聘者电话" v-model="phone" 	confirm-type="done" />
 					</view>
+					<view class="flex align-start solid-top padding-top-sm">
+						<view class="flex-sub text-bold text-three">联系人姓名</view>
+						<input class="flex-treble" placeholder="联系人姓名" v-model="name" />
+					</view>
 					<view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">公司名称</view>
-						<input class="flex-treble" placeholder="列:郑州瑞青人力资源有限公司" v-model="name" 	confirm-type="done" />
+						<input class="flex-treble" placeholder="列:郑州瑞青人力资源有限公司" v-model="c_name" 	confirm-type="done" />
+					</view>
+					<view class="flex align-center issue-all-heigth">
+						<view class="flex-sub text-bold text-three">招聘岗位</view>
+						<input class="flex-treble" placeholder="列:郑州瑞青人力资源有限公司" v-model="c_job" 	confirm-type="done" />
 					</view>
 					<view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">地址信息</view>
@@ -55,8 +64,9 @@
 					</view>
 					<view class="flex align-start solid-top padding-top-sm">
 						<view class="flex-sub text-bold text-three">内容</view>
-						<textarea class="flex-treble text-three" maxlength="-1" v-model="content" @input="textareaBInput" placeholder="请输入详细内容"></textarea>
+						<textarea class="flex-treble text-three" maxlength="-1" v-model="content" placeholder="请输入详细内容"></textarea>
 					</view>
+					
 				</view>
 				
 				<!-- 我要求职 -->
@@ -76,24 +86,29 @@
 								<view style="font-size: 40upx;" class="lg cuIcon-female margin-right-xs"></view>
 								<view>女</view>
 							</view>
+							
 						</view>
 					</view>
 					<view @tap="shopTypeClick" class="flex align-center solid-top issue-all-heigth">
 						<view class="flex-sub text-bold text-three">出生年月</view>
-						<view  class="flex-treble">{{birthbay}}</view>
+						<view  class="flex-treble">{{bResult}}</view>
 					</view>
 					<view class="flex align-center solid-top issue-all-heigth">
 						<view class="flex-sub text-bold text-three">联系电话</view>
 						<input class="flex-treble" placeholder="输入手机号码" v-model="wordphone" confirm-type="done" />
 					</view>
+					<view class="flex align-center solid-top issue-all-heigth">
+						<view class="flex-sub text-bold text-three">工作类别</view>
+						<input class="flex-treble" placeholder="请输入您的工作类别" v-model="job" confirm-type="done" />
+					</view>
 				</view>
 			</view>
 		</view>
-		<button class="issueinvite-button">发布</button>
+		<button class="issueinvite-button" @click="commit">发布</button>
 		<w-picker
 			mode="date" 
-			startYear="2017" 
-			endYear="2030"
+			startYear="1960" 
+			endYear="2019"
 			:defaultVal="['2018','10','31']"
 			:current="false" 
 			@confirm="onConfirm"
@@ -107,6 +122,9 @@
 
 <script>
 	import wPicker from "@/components/w-picker/w-picker.vue";
+	
+	// 导入网络模块
+	import { zp_push,qz_push  } from '@/network/invite'
 	export default{
 		components:{
 			wPicker
@@ -116,7 +134,7 @@
 				type:0,//0为企业招聘  1求职信息
 				distype:true ,//true固定薪资  false 面议
 				phone:'',//手机号码
-				name:'',//公司名称
+				c_name:'',//公司名称
 				address:'',//地址信息
 				title:'',//标题
 				content:'',//内容
@@ -124,8 +142,11 @@
 				maxMoney:'',//最大薪资
 				wordname:'',//求职者姓名
 				sex:0,//性别 0：男    1：女
-				birthbay:'请选择',//出生年月
 				wordphone:'',//求职者联系方式
+				bResult:'请选择',
+				job:''  ,//求职工作类别
+				c_job:'', //招聘职位
+				name:'' //联系人姓名
 			}
 		},
 		methods:{
@@ -136,6 +157,7 @@
 			//生日选择
 			onConfirm(val){
 				console.log(val);
+				this.bResult = val.result
 				//如果页面需要调用多个mode类型，可以根据mode处理结果渲染到哪里;
 				// switch(this.mode){
 				// 	case "date":
@@ -162,6 +184,53 @@
 			//点击男
 			sexnanClick(){
 				this.sex =  0
+			},
+			// 点击发布
+			commit(){
+				if(this.type == 1){
+					const obj = {
+						phone:this.wordphone,
+						name:this.wordname,
+						job:this.job,
+						birth:this.bResult,
+						sex:this.sex
+					}
+					qz_push(obj,this.$store.getters.isToken).then(res => {
+						if(res.data.code == 200){
+							uni.redirectTo({
+								url:'success'
+							})
+						}else{
+							uni.showToast({
+								title:res.data.msg
+							})
+						}
+					})
+				}else{
+					const obj = {
+						see:this.distype ? 0 : 1,
+						min:this.minMoney,
+						max:this.maxMoney,
+						phone:this.phone,
+						address:this.address,
+						company:this.c_name,
+						content:this.content,
+						name:this.name,
+						title:this.title,
+						job:this.c_job
+					}
+					zp_push(obj,this.$store.getters.isToken).then(res => {
+						if(res.data.code == 200){
+							uni.redirectTo({
+								url:'success'
+							})
+						}else{
+							uni.showToast({
+								title:res.data.msg
+							})
+						}
+					})
+				}
 			}
 		}
 	}

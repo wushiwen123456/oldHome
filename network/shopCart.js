@@ -12,3 +12,34 @@ export function getShopCartData(token){
 		}
 	})
 }
+
+// 删除购物车
+export function removeCart(ids,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/auth_api/remove_cart'),
+		data:{
+			ids
+		},
+		header:{
+			token
+		},
+		method:"GET"
+	})
+}
+
+// 修改购物车数量
+export function changeCartNum(cartId,cartNum,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/auth_api/change_cart_num'),
+		data:{
+			cartId,
+			cartNum
+		},
+		header:{
+			token
+		},
+		method:"GET",
+		hideModel:true
+	})
+}
+

@@ -1,0 +1,7 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "发布",
+  "usingComponents": {
+    "w-picker": "/components/w-picker/w-picker"
+  }
+}

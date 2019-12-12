@@ -1,9 +1,9 @@
 <template>
-	<view>
+	<view v-if="Object.keys(this.detailData).length != 0">
 		<!-- 代付款 -->
 		<view v-if="pageType == 0" class="orderdetail-all-background orderdetail-background-one text-white">
 			<view class="text-lg margin-bottom-xs">等待买家付款</view>
-			<view class="text-sm">剩23小时19分自动关闭</view>
+			<view class="text-sm">{{detailData._status._msg}}</view>
 		</view>
 		<!-- 代发货 -->
 		<view v-if="pageType == 1" class="orderdetail-all-background orderdetail-background-two text-white">
@@ -28,7 +28,7 @@
 						<view>2019/10/24  17:39:00</view>
 					</view>
 				</view>
-				<view class=" flex align-center orderdetail-titleone-right">
+				<view class=" flex align-center orderdetail-titleone-right" @click="copyOrder('t')">
 					<image src="../../../static/code.png"></image>
 					<view>复制</view>
 				</view>
@@ -41,31 +41,34 @@
 			</view>
 			<view class="text-width margin-left-sm">
 				<view class="flex align-center text-black text-bold margin-bottom-xs">
-					<view class="text-three">王女士</view>
-					<view class="text-df margin-left-sm">15225162623</view>
+					<view class="text-three">{{detailData.real_name}}</view>
+					<view class="text-df margin-left-sm">{{detailData.user_phone}}</view>
 				</view>
-				<view>河南省郑州市二七区  一马路陇海路欢乐湖童装4楼2街</view>
+				<view>{{detailData.user_address}}</view>
 			</view>
 		</view>
 		
 		
 		<view class="bg-white margin-tb-sm">
-			<view class="flex align-center padding-left padding-top-sm padding-bottom-sm">
+			<view class="flex align-center padding-left padding-top-sm padding-bottom-sm" @click.stop="goInfoStore(detailData)">
 				<view style="font-size: 36upx;" class="lg cuIcon-shop margin-right-sm"></view>
-				<view class="text-sm" style="color: #636362;">沃隆旗舰店</view>
+				<view class="text-sm" style="color: #636362;" >{{detailData.shopInfo ? detailData.shopInfo.shop_name : ''}}</view>
 			</view>
-			<view  class="flex align-start margin-left margin-right">
-				<view class="mybooking-image">
-					<image src="../../../static/56524a9a3b6bdab0753eb8ed922d57d.png"></image>
+			<view @click="goInfoDetail(item,index)" class="flex align-start margin-left margin-right"  v-if="Object.keys(detailData).length" v-for="(item,index) in detailData.cartInfo" :key="index">
+				<view class="mybooking-image" v-if="item.productInfo">
+					<image :src="item.productInfo.attrInfo ? item.productInfo.attrInfo.image : item.productInfo.image"></image>
 				</view>
 				<view class="text-width margin-left-sm ">
 					<view class="flex align-center justify-between">
-						<view class="flex-five text-hieed">沃隆每日坚果750g混合装30包干果零食大礼包混合坚果小包装坚果小包装坚果小包装</view>
-						<view class="text-price text-red flex-sub text-center">139</view>
+						<view class="flex-five text-hieed">{{item.productInfo.store_name}}</view>
+						<view class="text-price text-red flex-sub text-center">{{item.productInfo.attrInfo ? item.productInfo.attrInfo.price : item.productInfo.price}}</view>
 					</view>
 					<view class="flex align-center justify-between margin-top-xs">
-						<view class="flex-five text-jiujiujiu text-sm">口味：成人款A750g*1盒</view>
-						<view class="flex-sub text-center">x1</view>
+						<view class="flex-five text-jiujiujiu text-sm">规格:{{item.productInfo.attrInfo ? item.productInfo.attrInfo.suk : '默认类型'}}</view>
+						<view class="flex-sub text-center">x{{detailData.total_num}}</view>
+					</view>
+					<view v-if="pageType == 1 || pageType == 2 || pageType == 3" @click.stop="tuikuan(item)" class="flex align-center justify-end margin-top margin-bottom">
+						<view class="tuikuan">退款</view>
 					</view>
 				</view>
 			</view>
@@ -77,76 +80,327 @@
 			<view class="margin-lr padding-top-sm padding-bottom-xs text-sm-erliu">
 				<view class="flex align-center justify-between orderdetail-line-height">
 					<view class=" text-black">商品金额</view>
-					<view class="text-jiujiujiu">￥139</view>
+					<view class="text-jiujiujiu">￥{{detailData.total_price}}</view>
 				</view>
 				<view class="flex align-center justify-between orderdetail-line-height">
 					<view class="text-black">运费</view>
-					<view class="text-jiujiujiu">￥0</view>
+					<view class="text-jiujiujiu">￥{{detailData.pay_postage}}</view>
 				</view>
 				<view class="flex align-center justify-between orderdetail-line-height">
 					<view class="text-black">优惠券</view>
-					<view class="text-jiujiujiu">-￥10</view>
+					<view class="text-jiujiujiu">{{parseInt(detailData.coupon_price) == 0 ? '未使用优惠券' : '-￥' + detailData.coupon_price}}</view>
 				</view>
 				<view class="flex align-center justify-between orderdetail-line-height">
 					<view class="text-black">红包抵扣</view>
-					<view class="text-jiujiujiu">-￥0.1</view>
+					<view class="text-jiujiujiu">未使用红包	</view>
 				</view>
 			</view>
 			<view class="solid-top flex align-center justify-between orderdetail-height">
 				<view class="padding-left text-black">实付款</view>
-				<view class="padding-right text-red-my text-xl text-price ">128.9</view>
+				<view class="padding-right text-red-my text-xl text-price ">{{detailData.pay_price}}</view>
 			</view>
 		</view>
 		
-		<view class="bg-white margin-top-sm text-black">
+		<view class="bg-white margin-top-sm text-black" ref='order'>
 			<view class="margin-lr padding-top-sm padding-bottom-xs text-sm-erliu">
-				<view class="orderdetail-line-height">订单备注：无</view>
+				<view class="orderdetail-line-height">订单备注：{{detailData.mark == '' ? '无' : detailData.mark}}</view>
 				<view class="flex align-center justify-between">
 					<view class="flex align-center orderdetail-line-height">
 						<view>订单编号：</view>
-						<view>579327552299·58922</view>
+						<view>{{detailData.order_id}}</view>
 					</view>
-					<view class=" flex align-center orderdetail-titleone-right">
+					<view class=" flex align-center orderdetail-titleone-right" @click="copyOrder('p')">
 						<image src="../../../static/code.png"></image>
 						<view>复制</view>
 					</view>
 				</view>
-				<view class="orderdetail-line-height">创建时间：2019/10/23  16:39:58</view>
-				<view v-if="pageType != 0" class="orderdetail-line-height">交易时间：2019/10/23  17:39:00</view>
-				<view v-if="pageType != 0" class="orderdetail-line-height">支付方式：支付宝</view>
+				<view class="orderdetail-line-height">创建时间：{{ dealAddtime }}</view>
+				<view v-if="pageType != 0" class="orderdetail-line-height">交易时间：{{detailData._pay_time}}</view>
+				<view v-if="pageType != 0" class="orderdetail-line-height">支付方式：{{detailData.pay_type == 'weixin' ? '微信支付' : '支付宝支付'}}</view>
 				<view v-if="pageType == 2" class="orderdetail-line-height">交易时间：2019/10/24  17:39:00</view>
 			</view>
+			<!-- 选择支付方式 -->
+			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message margin-top-sm" v-if="pageType == 0">
+				<view>请选择支付方式</view>
+			</view>
+			<view class="affirmOrder-main" v-if="pageType == 0">
+				<radio-group @change="closePopupsSharClick" style="width: 100%;">
+					<view class="pay"><image src="../../../static/paya.png" mode="" style="width: 44px; height: 44px;"></image>微信支付  <radio color="#1ECD16" value="vx" /></view>
+					<view class="pay"><image src="../../../static/payb.png" mode="" style="width: 44px; height: 44px;"></image>支付宝支付 <radio value="zfb" /></view>
+				 </radio-group>
+			</view>
 		</view>
-		<view style="height: 300upx;"></view>
-		<view class="orderdetail-botom bg-white">
-			<button @tap="renfundClick" class="mybooking-button mybooking-button-colse">申请退款</button>
-			<button class="mybooking-button">查看物流</button>
+		<view style="height: 300upx;" v-if="pageType == 0"></view>
+		<view class="orderdetail-botom bg-white" v-if="pageType == 0">
+			<button @tap="renfundClick" class="mybooking-button mybooking-button-colse">{{stateTextLeft}}</button>
+			<button @tap="rightClick" class="mybooking-button">{{stateTextRight}}</button>
 		</view>
+		
+		
+		
 	</view>
 </template>
 
 <script>
+	import { cancelOrder } from '@/network/affirm'
+	import { replaceImage } from '@/utils/dealUrl'
+	import { payorder } from '@/network/affirm'
+	
+	import uniPopup  from "@/components/uni-popup/uni-popup"
+	
+	// 导入工具类
+	import { formatDate } from '@/utils/dealData'
+	
+	
 	export default{
 		data(){
 			return{
 				pageType:1,//页面状态 0等待付款 1代发货 2已发货
+				detailData:{},
+				payFun:[
+					{
+						name:'微信',
+						key:'weixin',
+						
+					},
+					{
+						name:'支付宝',
+						key:'apay',
+						
+					},
+				],
+				payMethod:''
 			}
 		},
 		onLoad(e) {
 			// this.pageType = e.payimgType
 		},
+		onShow() {
+			const id = this.$store.state.orderKey
+			,token = this.$store.getters.isToken
+			if(!id){
+				uni.switchTab({
+					url:'../../Home/home'
+				})
+				return 
+			}
+			else if(!token){
+				uni.navigateTo({
+					url:'../../login/login'
+				})
+				return 
+			}
+			else{
+				 this.$store.dispatch('detailOrder')
+				 	.then(res => {
+				 		this.dealRes(res)
+				 	})
+			}
+			
+			
+		},
 		methods:{
-			//申请退款
-			renfundClick(){
+			// 立即支付
+			rightClick(){
+				this.showModel()
+			},
+			// 选择支付方式
+			closePopupsSharClick(e){
+				this.payMethod = e.detail.value
+			},
+			cacelBackMoney(){
+				
+			},
+			showModel(){
+
+				if(this.payMethod){
+
+					if(this.payMethod == 'vx'){
+										
+						payorder(this.detailData.unified_order,'weixin',this.$store.getters.isToken)
+						.then(res => {	
+							const price = this.detailData.pay_price
+							if(res.data.code == 200){
+								const obj = res.data.data
+								// 发起微信支付
+								uni.requestPayment({
+									provider:"wxpay",
+									orderInfo:obj,
+									success:(res)=> {
+										console.log(res)
+										if(res.channel.serviceReady){
+											if(this.detailData.combination_id  || this.detailData.pink_id){
+												uni.redirectTo({
+													url:'../../PayOrder/payOrderMessage/payorderMessage'
+												})
+											}else{
+												this.$store.commit('setOrderKey',this.detailData.unified_order)
+												const obj = {
+													real_name:this.detailData.real_name,
+													phone:this.detailData.user_phone,
+													detail:this.detailData.user_address
+												}
+												this.$store.commit('setShoppingAddress',obj)
+												uni.redirectTo({
+													url:`../../ShopDetails/affirm/success_pay?price=${price}`
+												})
+											}
+										}
+									}
+								})
+							}
+							
+							
+						})
+					}else if(this.payMethod == 'zfb'){
+						// payorder(this.detailData.unified_order,'zfb',this.$store.getters.isToken)
+					}
+				}else{
+					uni.showToast({
+						title:'请选择支付方式',
+						icon:'none'
+					})
+				}
+			},
+			// 复制订单
+			copyOrder(e){
+				// 如果是复制的订单
+				if(e == 'p'){
+					const orderId = this.detailData.order_id
+					uni.setClipboardData({
+						data:orderId
+					})
+				}else{
+					
+				}
+				
+			},
+			
+			// 立即付款
+			payNow(paytype){
+				payorder(this.detailData.unified_order,paytype,this.isToken)
+			},
+			isProduct(){
+				
+			},
+			common(){
+				
+			},
+			// 处理res
+			dealRes(res){
+				const data = res.data.data
+				this.pageType = data._status._type
+				// 对商品图片进行处理
+				data.cartInfo.forEach(x => {
+					if(x.productInfo.attrInfo){
+						x.productInfo.attrInfo.image = replaceImage(x.productInfo.attrInfo.image)
+					}
+					const obj = replaceImage(x.productInfo.image)
+					x.productInfo.image = obj
+					
+				})
+				this.detailData = data
+			},
+			// 取消订单
+			cancelOrder(){
+				uni.showModal({
+					title:'是否取消订单',
+					content:'',
+					success:(res)=> {
+						if(res.confirm){
+							cancelOrder(this.detailData.order_id,this.$store.getters.isToken)
+								.then(res => {
+									if(res.data.code == 200){
+										uni.showToast({
+											title:'取消订单成功',
+											icon:'none'
+										})
+										uni.navigateTo({
+											url:'myorderss'
+										})
+									}
+								})
+						}
+					}
+				})
+			},
+			// 退款退货
+			tuikuan(item){
+				item.phone = this.detailData.user_phone
+				this.$store.commit('setProductInfo',item)
 				uni.navigateTo({
 					url:'refund'
 				})
 			},
-		}
+			// 进入商铺
+			goInfoStore(detailData){
+				const storeId = detailData.shop_id
+				uni.navigateTo({
+					url:`../../ShopDetails/StoreDetails/storedetails?id=${storeId}`
+				})
+			},
+			// 进入商品详情页
+			goInfoDetail(item,index){
+				const id = item.productInfo.id
+				uni.navigateTo({
+					url:`../../ShopDetails/shopDetails?id=${id}`
+				})
+			},
+			//取消订单
+			renfundClick(){
+				this.cancelOrder()
+			},	
+		},
+		
+		computed:{
+			stateTextLeft(){
+				switch(this.pageType){
+					case -1: return '查看退货进度'
+					case 0 : return '取消订单'
+					case 1 : return '我要退款'
+					case 2 : return '查看物流'
+				}
+			},
+			stateTextRight(){
+				switch(this.pageType){
+					case -1: return '取消退货'
+					case 0 : return '立即付款'
+					case 1 : return '提醒发货'
+					case 2 : return '确认收货'
+				}
+			},
+			dealAddtime(){
+				if(this.detailData._add_time){
+					const time = new Date(this.detailData._add_time*1000)
+					return formatDate(time,"yyyy-MM-dd hh:mm:ss")
+				
+				}else{
+					return ''
+				}
+			}
+		},
+		
 	}
 </script>
 
 <style>
+	.pay{
+		height: 44px;
+		line-height: 44px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid #EEEEEE;
+		margin-bottom: 20upx;
+	}
+	.affirmOrder-main{
+		background: #FFFFFF;
+		padding: 30upx 24upx;
+	}
+	.affirmOrder-main image{
+		width: 140upx;
+		height: 140upx;
+	}
 	.orderdetail-all-background{
 		width: 100%;
 		height: 200upx;
@@ -215,5 +469,12 @@
 	.mybooking-button-colse{
 		border:1px solid rgba(153,153,153,1);
 		color: rgba(153,153,153,1);
+	}
+	.tuikuan{
+		color: #666;
+		padding: 5upx 15upx;
+		border-radius: 5px;
+		font-size: 28upx;
+		border: 1px solid #666;
 	}
 </style>

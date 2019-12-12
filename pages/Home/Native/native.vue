@@ -3,23 +3,23 @@
 		<image class="native-banner" src="../../../static/laojiatchang.png"></image>
 		<!-- 头部四位 -->
 		<view class="bg-white grid margin-bottom-xs text-center col-4">
-			<view @tap="nativeClick(vo.id,vo.name)" class="native-image-all" v-for="(vo,key) in titleList" :key="key">
-				<image :src="vo.image"></image>
-				<view>{{vo.name}}</view>
+			<view @tap="nativeClick(vo,key)" class="native-image-all" v-for="(vo,key) in titleList" :key="key">
+				<!-- <image :src="vo.image"></image> -->
+				<view>{{vo.label}}</view>
 			</view>
 		</view>
 		<!-- 列表 -->
 		<view>
-			<view class="flex align-center bg-white padding margin-top-xs">
+			<view @click="itemClick(item)" v-if="hotList.length" class="flex align-center bg-white padding margin-top-xs" v-for="(item,index) in hotList" :key = 'index'>
 				<view class="native-list-image">
-					<image src="../../../static/d2af55055910151b4fa167be4a02681.png"></image>
+					<image :src="item.image"></image>
 				</view>
 				<view class="margin-left-sm text-width">
-					<view class="text-sm-erliu text-black text-hide"><text class="bg-grey text-xs padding-lr-xs margin-right-sm native-txt-red">江西特产</text>江西靖安白茶新茶   江西资溪珍稀 绿茶 正宗明前安吉茶江西靖安白茶新茶   江西资溪珍稀 绿茶 正宗明前安吉茶</view>
+					<view class="text-sm-erliu text-black text-hide"><text v-if="item.is_hot == 1" class="bg-grey text-xs padding-lr-xs margin-right-sm native-txt-red">{{item.province}}特产</text>{{item.store_name}}</view>
 					<view class="navtive-center">200g</view>
 					<view class="flex align-center justify-between">
-						<view class="text-price text-bold text-red text-lg" >30.60</view>
-						<view class="text-jiujiujiu text-sm">销量2000</view>
+						<view class="text-price text-bold text-red text-lg" >{{item.price}}</view>
+						<view class="text-jiujiujiu text-sm">销量{{item.stock}}</view>
 					</view>
 				</view>
 			</view>
@@ -29,11 +29,11 @@
 		<uni-load-more v-if="loadingimg" :loadingType="loadingType" ></uni-load-more>
 		
 		<!-- 顶部弹出 -->
-		<uni-popup ref="popup" type="top" >
+		<uni-popup ref="popup" type="top" class="popModel">
 			<view class="padding">
 				<view class="grid text-center col-4 native-address-all" >
 					<view class="margin-top-sm" v-for="(vo,keyTop) in topList" :key="keyTop">
-						<view :class="[vo.type?'navtive-select':'native-address']" class="flex align-center justify-center">{{vo.name}}</view>
+						<view @click="keyTopClick(vo,keyTop)" :class="{'navtive-select':keyTop == currentIndex}" class="native-address flex align-center justify-center">{{vo.label}}</view>
 					</view>
 				</view>
 			</view>
@@ -45,6 +45,17 @@
 <script>
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
+	
+	// 工具
+	import {replaceImage} from '@/utils/dealUrl'
+	
+	
+	// 获取数据
+	import {getDetailData} from '@/network/Home'
+	
+	// 获取省
+	import province from '@/components/w-picker/city-data/province'
+	
 	export default{
 		components: {
 			uniPopup,
@@ -52,81 +63,74 @@
 		},
 		data(){
 			return{
-				loadingimg:true,//login加载
+				loadingimg:false,//login加载
 				loadingType:1,//login状态
-				titleList:[{
-					id:0,
-					image:'../../../static/nativea.png',
-					name:'河南馆'
-				},{
-					id:1,
-					image:'../../../static/nativeb.png',
-					name:'上海馆',
-				},{
-					id:2,
-					image:'../../../static/nativec.png',
-					name:'陕西馆'
-				},{
-					id:3,
-					image:'../../../static/natived.png',
-					name:'其他'
-				}],
-				topList:[{
-						name:'北京馆',
-						type:true
-					},{
-						name:'重庆馆',
-						type:false
-					},{
-						name:'拉萨馆',
-						type:false
-					},{
-						name:'厦门馆',
-						type:false
-					},{
-						name:'台湾馆',
-						type:false
-					},{
-						name:'北京馆',
-						type:false
-					},{
-						name:'重庆馆',
-						type:false
-					},{
-						name:'拉萨馆',
-						type:false
-					},{
-						name:'厦门馆',
-						type:false
-					},{
-						name:'台湾馆',
-						type:false
-					},{
-						name:'北京馆',
-						type:false
-					},{
-						name:'重庆馆',
-						type:false
-					},{
-						name:'拉萨馆',
-						type:false
-					},{
-						name:'厦门馆',
-						type:false
-					},{
-						name:'台湾馆',
-						type:false
-					}]
+				titleList:[],
+				topList:[],
+				hotList:[],
+				pages:1,
+				limit:5,
+				currentIndex:0
 			}
 		},
+		onLoad() {
+			// 加载商品数据
+			this.getDetailData()
+
+		},
 		methods:{
-			nativeClick(id,name){
-				if(id==3){
+			// 获取省份
+			getProvince(province){
+					
+						const titleArr = []
+						const othersArr = []
+						province.forEach(x => {
+							
+							x.label = x.label.replace(/(['省''市'('自治区')'馆'])/g,'')+'馆'
+
+							if(x.label == '河南馆' || x.label == '上海馆' || x.label == '陕西馆'){
+								titleArr.push(x)
+							}else{
+								othersArr.push(x)
+							}
+							
+						})
+						titleArr.push({
+							image:'',
+							label:'其他'
+						})
+						console.log(titleArr)
+						this.titleList = titleArr
+						this.topList = othersArr
+					
+			},
+			detalHotitem(item){
+				if(item.is_hot){
+					item.province = item.province.replace(/(['省''市'('自治区')])/g,'')
+				}
+			},
+			// 点击商品跳转
+			itemClick(item){
+				uni.navigateTo({
+					url:`../../ShopDetails/shopDetails?id=${item.id}`
+				})
+			},
+			// 动态添加样式，
+			// 头部列表点击跳转
+			keyTopClick(vo,keyTop){
+				this.currentIndex = keyTop
+				uni.navigateTo({
+					url:'address?id=' + vo.value + '&name=' + vo.label
+				})
+			},
+			// 点击热门列表跳转
+			nativeClick(vo,key){
+				if(key==3){
 					this.outloginSharClick()
 					return
 				}
 				uni.navigateTo({
-					url:'address?id=' + id + '&name=' + name
+					url:'address?id=' + vo.value + '&name=' + vo.label
 				})
 			},
 			//地区弹出
@@ -137,6 +141,26 @@
 			closePopupsSharClick(){
 				this.$refs.popup.close()
 			},
+			
+			// 商品列表
+			getDetailData(){
+				getDetailData({
+					limit:this.limit,
+					page:this.pages,
+					isHot:1
+				}).then(res => {
+					if(res.data.code == 200){
+						const obj	= res.data.data
+						obj.forEach(x => {
+							x.image = replaceImage(x.image)
+							this.detalHotitem(x)
+						})
+						this.hotList = obj
+						// 处理省份
+						this.getProvince(province)
+					}
+				})
+			}
 		}
 	}
 </script>
@@ -194,5 +218,9 @@
 		height: 60upx;
 		background: #CD3233;
 		color: #FFF;
+	}
+	.popModel{
+		position: fixed;
+		top: 42px;
 	}
 </style>

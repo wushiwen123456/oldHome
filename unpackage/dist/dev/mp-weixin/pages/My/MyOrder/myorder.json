@@ -1,0 +1,7 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "我的订单",
+  "usingComponents": {
+    "tui-tabs": "/components/tui-tabs/tui-tabs"
+  }
+}

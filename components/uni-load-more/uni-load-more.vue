@@ -48,7 +48,7 @@
 					return {
 						contentdown: "上拉给你更多精彩",
 						contentrefresh: "努力加载中...",
-						contentnomore: "———— 我也是有底线的 ————"
+						contentnomore: " 没有更多了... "
 					};
 				}
 			}

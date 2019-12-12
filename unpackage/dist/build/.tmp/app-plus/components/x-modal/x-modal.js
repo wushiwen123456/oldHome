@@ -7,4 +7,4 @@
         })
     },
     [['components/x-modal/x-modal-create-component']]
-]);                
+]);

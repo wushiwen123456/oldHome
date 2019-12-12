@@ -2,12 +2,12 @@
 	<view>
 		<view v-for="(vo,key) in List" :key="key" class="flex align-center justify-between bg-white piblic-height margin-top-xs padding-lr">
 			<view>
-				<view class="text-wuer text-lg text-bold margin-bottom-xs">郏县装修公司</view>
-				<view class="text-jiujiujiu text-sm-erliu">管城区·航海东路·227号</view>
+				<view class="text-wuer text-lg text-bold margin-bottom-xs">{{vo.title}}</view>
+				<view class="text-jiujiujiu text-sm-erliu">{{vo.address}}</view>
 			</view>
 			<view class="flex flex-direction align-end">
-				<view class="text-jiujiujiu text-sm">2.7km</view>
-				<view @tap="callPhone(phone)" class="flex align-center public-phone-button">
+				<view class="text-jiujiujiu text-sm" v-if="vo.km">距离您{{vo.km}}千米</view>
+				<view @tap="callPhone(vo.phone)" class="flex align-center public-phone-button">
 					<image src="../../../static/codephone.png"></image>
 					<view>联系它</view>
 				</view>
@@ -19,16 +19,32 @@
 
 <script>
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
+	
+	import { pubDetailData } from '@/network/Home'
 	export default{
 		components:{
 			uniLoadMore
 		},
 		data(){
 			return{
-				loadingimg:true,//login加载
+				loadingimg:false,//login加载
 				loadingType:1,//login状态
-				List:[{},{},{},{}]
+				List:[{},{},{},{}],
+				page:1
 			}
+		},
+		onLoad(option) {
+			const token = this.$store.getters.isToken,
+			id = option.id,
+			{latitude,longitude} = this.$store.state.userInfo.address
+			// 获取信息
+			this.pubDetailData({
+				cate:id,
+				jingdu:longitude,
+				weidu:latitude,
+				page:this.page,
+				limit:10
+			},token)
 		},
 		methods:{
 			callPhone(phone){
@@ -36,6 +52,15 @@
 				uni.makePhoneCall({
 				    phoneNumber: phone
 				});
+			},
+			// 根据位置信息获取数据
+			pubDetailData(obj,token){
+				console.log(obj)
+				pubDetailData(obj,token).then(res => {
+					if(res.data.code == 200){
+						this.List = res.data.data
+					}
+				})
 			}
 		}
 	}

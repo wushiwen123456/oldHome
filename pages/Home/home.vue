@@ -1,9 +1,10 @@
 <template>
-	<view>
-		<view class="flex align-end home-title-search bg-white ">
+	 <mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption">
+	<view id="home">
+		<view class="flex align-end home-title-search bg-white">
 			<view class="flex align-center justify-between home-search-all-one">
-				<view class="home-search-all">
-					<view class="flex align-center  share-all-bg">
+				<view class="home-search-all" @click="search">
+					<view class="flex align-center  share-all-bg" >
 						<view style="font-size: 40upx;" class="lg text-gray cuIcon-search margin-left margin-right-xs"></view>
 						<view class="text-df text-jiujiujiu">搜索商品</view>
 					</view>
@@ -24,10 +25,10 @@
 					defaultStyle="#525253"	
 					:tabs="tabs_3" 
 					width="150" 
-					@change="change($event, '3')"
+					@change="change"
 				/>
 			</view>
-			<view class="title-select-right">
+			<view class="title-select-right" @click="moreDetail">
 				<view style="font-size: 44upx;" class="lg text-black cuIcon-list padding-left"></view>
 			</view>
 		</view>
@@ -39,25 +40,39 @@
 			:circular="true"
 			:autoplay="true" 
 			interval="5000" 
+			v-if="isShowIndex"
 			duration="500">
-				<swiper-item v-for="(item,index) in swiperList" :key="index">
+				<swiper-item @click="swiperShow(index)" v-for="(item,index) in swiperList" :key="index">
 					<image :src="item.pic" mode="aspectFill"></image>
 				</swiper-item>
 		</swiper>
 		
 		<!-- 八宫格 -->
-		<view class="grid padding-bottom text-center col-4 bg-white">
+		<view v-if="current_3 == 0" class="grid padding-bottom text-center col-4 bg-white">
 			<view @tap="homeListClick(vo.id)" v-for="(vo,key) in homeTitle" :key="key" class="home-title-image">
 				<image :src="vo.image"></image>
 				<view>{{vo.name}}</view>
 			</view>
 		</view> 
 		
+		
+		<!-- 其他八宫格 -->
+			<view v-if="current_3 != 0" class="grid padding-bottom text-center col-4 bg-white bagong">
+				<view @tap="classifyClick(item.id,item.cate_name)" v-for="(item,key) in homeTabs.child" :key="key" class="home-title-image">
+					<image :src="item.pic"></image>
+					<view>{{item.cate_name}}</view>
+				</view>
+			</view> 
+		
 		<!-- 新闻 -->
-		<view class="bg-white margin-top-xs flex align-center home-new-all">
+			
+		<view   
+			v-if="isShowIndex"
+			class="bg-white margin-top-xs flex align-center home-new-all">
+			
 			<image class="home-new-image" src="../../static/newimg.png"></image>
 			<swiper vertical autoplay circular interval="3000" class="tui-swiper margin-right">
-				<swiper-item v-for="(item,index) in newsList" :key="item.id" class="tui-swiper-item">
+				<swiper-item @click="goNews(item)" v-for="(item,index) in newsList" :key="item.id" class="tui-swiper-item">
 					<view class="tui-news-item" @tap='detail(item.url)'>{{item.info}}</view>
 				</swiper-item>
 			</swiper>
@@ -65,7 +80,9 @@
 		<!-- 新闻new -->
 		
 		<!-- 优惠券 -->
-		<view class="flex align-center justify-between youhui-all-margin youhuiquan-color">
+		<view
+			v-if="isShowIndex"
+		     class="flex align-center justify-between youhui-all-margin youhuiquan-color">
 			<view class="home-youhui-all">
 				<view style="font-size: 80upx;" class="text-price">10</view>
 				<view class="flex flex-direction align-center margin-left-xs">
@@ -90,7 +107,7 @@
 					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(item.id)">
 						<image :src="item.image" class="tui-pro-img" mode="widthFix" />
 						<view class="tui-pro-content">
-							<view class="tui-pro-tit">{{item.store_name}}</view>
+							<view class="tui-pro-tit"><text v-if="item.is_hot" class="bg-grey text-xs padding-lr-xs margin-right-sm native-txt-red">{{dealTechan(item)}}特产</text>{{item.store_name}}</view>
 							<view class="flex align-center justify-between">
 								<view class="tui-sale-price">￥{{item.price}}</view>
 								<view class="tui-pro-pay">销量{{item.sales}}</view>
@@ -107,7 +124,7 @@
 					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(item.id)">
 						<image :src="item.image" class="tui-pro-img" mode="widthFix" />
 						<view class="tui-pro-content">
-							<view class="tui-pro-tit">{{item.store_name}}</view>
+							<view class="tui-pro-tit"><text v-if="item.is_hot" class="bg-grey text-xs padding-lr-xs margin-right-sm native-txt-red">{{dealTechan(item)}}特产</text>{{item.store_name}}</view>
 							<view class="flex align-center justify-between">
 								<view class="tui-sale-price">￥{{item.price}}</view>
 								<view class="tui-pro-pay">销量{{item.sales}}</view>
@@ -119,37 +136,62 @@
 			</view>
 		</view>
 		
-		<view class="red-pack">
+		<view class="red-pack" @click="qian">
 			<image src="../../static/redpack.png"></image>
 		</view>
-		<uni-load-more v-if="loadingimg" :loadingType="loadingType" ></uni-load-more>
+		<!-- <uni-load-more v-if="loadingimg" :loadingType="loadingType" ></uni-load-more> -->
+		
+		<!-- 顶部弹出 -->
+		<uni-popup ref="popup" type="top" class="popModel">
+			<view class="padding">
+				<view class="grid text-center col-4 native-address-all">
+					<view class="margin-top-sm">
+						<view class="native-address flex align-center justify-center">123321</view>
+					</view>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
+	</mescroll-uni>
 </template>
 
 <script>
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
 	import QSTabs from '@/components/QS-tabs/QS-tabs.vue';
 	
+	
 	// 网络处理
 	import { getHomeData,getDetailData } from '@/network/Home'
+	
+	// 获取分类
+	import { getCategory } from '@/network/category'
 	// 变量
 	import { HOST } from '@/common/const'
 	// 工具类
 	import { replaceImage } from '@/utils/dealUrl'
+	
+	// 下拉刷新
+	import MescrollUni from "@/components/mescroll-uni/mescroll-uni.vue";
+	
+	// 弹出层
+	import uniPopup  from "@/components/uni-popup/uni-popup"
 	export default{
 		components: {
 			QSTabs,
-			uniLoadMore
+			uniLoadMore,
+			uniPopup,
+			MescrollUni
 		},
 		data(){
 			return{
-				loadingimg:true,//login加载
+				loadingimg:false,//login加载
 				loadingType:1,//login状态
 				newsList: [], // 新闻
 				tabs_3: [], //tabBar
 				current_3: 0,
 				swiperList: [], // 头部轮播
-				homeTitle:[{
+				homeTabs:[],//其他的八宫格
+				homeTitle:[{//第一个tab的八宫格
 					id:0,
 					name:'老家特产',
 					image:'../../static/homea.png'
@@ -183,19 +225,56 @@
 					image:'../../static/homeg.png'
 				}],
 				productList: [], // 商品列表
+				page:1,
+				isShowIndex:true,
+				isLoading:true,
+				// 下拉刷新的常用配置
+				downOption: { 
+					use: true, // 是否启用下拉刷新; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行下拉刷新的回调; 默认true
+				},
+				// 上拉加载的常用配置
+				upOption: {
+					use: true, // 是否启用上拉加载; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行上拉加载的回调; 默认true
+					page: {
+						num: 0, // 当前页码,默认0,回调之前会加1,即callback(page)会从1开始
+						size: 10 // 每页数据的数量,默认10
+					},
+					noMoreSize: 5, // 配置列表的总数量要大于等于5条才显示'-- END --'的提示
+					textNoMore:'-- 没有更多了 --',
+					empty: {
+						tip: '暂无相关数据'
+					}
+				},
 			}
 		},
 		onLoad(){
 			// 获取主页上面数据
 			this._getHomeData()
-			// 获取主页商品列表数据
-			this._getDetailData()
-			
 		},
-		methods:{
-			
-			change(index, i) {
-				this['current_' + i] = index;
+		methods:{			
+			// 搜索事件
+			search(){
+				this.$store.commit('setSearchType','product')
+				uni.navigateTo({
+					url:'../HM-search/HM-search'
+				})
+			},
+			// 切換tab事件
+			change(index) {
+				if(this.current_3 != index){
+					const mes = this.$refs.mescroll.mescroll
+					const obj = this.tabs_3[index]
+					this.current_3 = index
+					if(this.current_3 != 0){
+						this.isShowIndex = false
+						this.homeTabs = obj
+					}else{
+						this.isShowIndex = true
+					}
+					mes.resetUpScroll()
+				}
 			},
 			//八宫格
 			homeListClick(num){
@@ -234,6 +313,18 @@
 					//更多
 				}
 			},
+			// 跳转到签到
+			qian(){
+				uni.navigateTo({
+					url:'qiandao'
+				})
+			},
+			// 其余tab八宫格监听点击
+			classifyClick(id,name){
+				uni.navigateTo({
+					url:'../HM-search/HM-searchList?cid=' + id + '&search=' + name + '&id=' + name
+				})
+			},
 			//商品详情页
 			detailsClck(id){
 				uni.navigateTo({
@@ -241,35 +332,105 @@
 				})
 			},
 			// 获取上面数据
-			_getHomeData(){
+			_getHomeData(obj){
+				
 				getHomeData().then(res => {
 					if(res.statusCode == 200){
 						this.swiperList = res.data.data.banner
 						this.newsList = res.data.data.roll
-						this.tabs_3 = res.data.data.cate
+						
+						const list  = res.data.data.cate
+						list.unshift({
+							cate_name:'推荐',
+							child:[],
+							id:0
+						})
+						list.forEach(x => {
+							x.page = 1
+						})
+						this.tabs_3 = list
 					}
 				})
 			},
-			// 获取商品列表数据
-			_getDetailData(){
-				getDetailData().then(res => {
+			// 获取下面商品数据.
+			_getDetailData(pageNum,pageSize,mescroll,cid){
+				getDetailData({
+					page:pageNum,
+					limit:pageSize,
+					hideModel:true,
+					cid:cid || ''
+				}).then(res => {
 					if(res.statusCode == 200){
+						const obj = res.data.data
 						const arr = res.data.data.map(item => {
 							return replaceImage(item.image)
 						})
-						this.productList = res.data.data
-						this.productList.forEach((item,i) => {
-							item.image = arr[i]
-						})
+						if(obj.length){
+							obj.forEach((item,i) => {
+								item.image = arr[i]
+								
+							})
+						}
+						if(obj.length < pageSize){
+							this.isLoading = false
+						}else{
+							this.isLoading = true
+						}
+						if(pageNum == 1) this.productList = [];
+						this.productList = this.productList.concat(obj)
+						mescroll.endSuccess(obj.length, this.isLoading);
 					}
+				}).catch(err => {
+					mescroll.endErr()
 				})
 			},
+			
 			// 跳转到新闻详情页，路径暂时有问题
 			detail(url){
 				url = `../..${url}`
 				uni.navigateTo({
 					url:url
 				})
+			},
+			// 加载更多分类
+			moreDetail(){
+				// this.$refs.popup.open()
+				uni.switchTab({
+
+					url:'../Classify/classify'
+				})
+			},
+			
+			// 下拉刷新方法
+			downCallback(mescroll) { 
+				mescroll.resetUpScroll()
+			},
+			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
+			upCallback(mescroll) {
+				const cid = this.current_3 != 0 ? this.tabs_3[this.current_3].id : ''
+				// 此时mescroll会携带page的参数:
+				let pageNum = mescroll.num; // 页码, 默认从1开始
+				let pageSize = mescroll.size; // 页长, 默认每页10条
+				this._getDetailData(pageNum,pageSize,mescroll,cid)
+			},
+			// 处理特产
+			dealTechan(item){
+				return item.province.replace(/(['省''市'('自治区')])/g,'')
+			},
+			// 查看新闻
+			goNews(item){
+				const id = item.id
+				uni.navigateTo({
+					url:'Government/government'
+				})
+			},
+			// 轮播图展示
+			swiperShow(index){
+				let arr = this.swiperList
+				arr = arr.map(x => x.pic)
+				// #ifdef APP-PLUS
+				plus.nativeUI.previewImage(arr,index)
+				// #endif
 			}
 		}
 	}
@@ -343,7 +504,9 @@
 	.youhuiquan-color{
 		color: #E5150B;
 	}
-	
+	.bagong{
+		margin: 20upx 0;
+	}
 	/* 商品列表*/
 	
 	.tui-product-list {
@@ -383,7 +546,13 @@
 		width: 100%;
 		display: block;
 	}
-	
+	.native-txt-red{
+		width:86upx;
+		height:40upx;
+		background:rgba(205,50,51,1);
+		border-radius:16upx;
+		font-size: 20upx;
+	}
 	.tui-proimg-list {
 		width: 260rpx;
 		height: 260rpx !important;
@@ -470,5 +639,9 @@
 	}
 	.home-search-all-one{
 		width: 100%;
+	}
+	.popModel{
+		position: fixed;
+		top: 42px;
 	}
 </style>

@@ -1,16 +1,16 @@
 <template>
-	<view>
+	<view v-if="list.length">
 		<view class="intrgralDetail-title">
-			<view class="text-xxxl text-white">100</view>
+			<view class="text-xxxl text-white">{{totalIntegral}}</view>
 			<image class="intrgralDetail-title-image" src="../../../static/jifenw.png"></image>
 		</view>
 		<view v-for="(vo,key) in list" :key="key">
 			<view class="flex align-center justify-between padding-left padding-right-lg bg-white intrgralDetail-mian-all">
 				<view>
-					<view class="text-wuer text-lg text-bold margin-bottom-xs">购买商品</view>
-					<view class="text-jiujiujiu text-sm-erliu">2019-10-23</view>
+					<view class="text-wuer text-lg text-bold margin-bottom-xs">{{vo.pm == 1 ? '购买商品' : '兑换商品'}}</view>
+					<view class="text-jiujiujiu text-sm-erliu">{{vo.add_time}}</view>
 				</view>
-				<view class="text-red-my text-lg text-bold">+1</view>
+				<view class="text-red-my text-lg text-bold">{{vo.pm == 1 ? '+' : '-'}}{{vo.number}}</view>
 			</view>
 		</view>
 		<image class="intrgralDetail-right-image" src="../../../static/jifenr.png"></image>
@@ -18,14 +18,38 @@
 </template>
 
 <script>
-	export default{
+	// 获取用户积分
+	import { userIntegral } from '@/network/getProfileData'
+ 	export default{
+		onShow() {
+			if(this.$store.getters.isToken){
+				this.token = this.$store.getters.isToken
+				this.userIntegral(this.token)
+			}
+			else{
+				uni.switchTab({
+					url:'../../login/login'
+				})
+			}
+		},
 		data(){
 			return{
-				list:[{},{},{},{},{},{}]
+				list:[],
+				token:'',
+				totalIntegral:0
 			}
 		},
 		methods:{
-			
+			// 获取积分信息
+			userIntegral(token){
+				userIntegral(token)
+				.then(res => {
+					if(res.data.code == 200){
+						this.list = res.data.data.list
+						this.totalIntegral = res.data.data.userBill
+					}
+				})
+			}
 		}
 	}
 </script>

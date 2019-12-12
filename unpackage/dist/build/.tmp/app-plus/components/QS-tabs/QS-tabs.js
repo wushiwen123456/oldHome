@@ -7,4 +7,4 @@
         })
     },
     [['components/QS-tabs/QS-tabs-create-component']]
-]);                
+]);

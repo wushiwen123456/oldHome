@@ -7,4 +7,4 @@
         })
     },
     [['components/countdown/countdown-create-component']]
-]);                
+]);

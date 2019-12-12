@@ -1,0 +1,22 @@
+
+page{
+	overflow: hidden;
+}.inviteDetail-image{
+	height: 40rpx;
+	width: 40rpx;
+}.text-line-height{
+	line-height: 42rpx;
+}.invitedetail-button{
+	margin-top: 200rpx;
+	height:88rpx;
+	line-height: 88rpx;
+	color: #FFFFFF;
+	text-align: center;
+	font-size: 36rpx;
+	background:rgba(205,50,51,1);
+	border-radius:10rpx;
+}.s-content{
+	height: 460rpx;
+	background-color: #fff;
+}
+

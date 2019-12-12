@@ -4,7 +4,7 @@
 		<view class="flex align-center">
 			<view @tap="integralShopDetailClick" class="flex-sub flex align-center justify-center integralShop-title-left">
 				<image class="integralShop-title-image" src="../../../static/jifenb.png"></image>
-				<view class="text-wuer text-lg text-bold">积分<text class="text-red">100</text></view>
+				<view class="text-wuer text-lg text-bold">我的积分<text class="red">{{totalIntegral}}</text></view>
 			</view>
 			<view @tap="recordListClcikc" class="flex-sub flex align-center justify-center integralShop-title-right">
 				<image class="integralShop-title-image" src="../../../static/jifenc.png"></image>
@@ -17,12 +17,12 @@
 				<block v-for="(item,index) in productList" :key="index" v-if="(index+1)%2!=0">
 					<!-- <template is="productItem" data="{{item,index:index,isList:isList}}" /> -->
 					<!--商品列表-->
-					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(1)">
-						<image src="../../../static/demo4.png" class="tui-pro-img" mode="widthFix" />
+					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(item)">
+						<image :src="item.image" class="tui-pro-img" mode="widthFix" />
 						<view class="tui-pro-content">
-							<view class="tui-pro-tit">{{item.name}}</view>
+							<view class="tui-pro-tit">{{item.store_name}}</view>
 							<view class="flex align-center justify-between margin-top-sm">
-								<view class="tui-sale-price">{{item.sale}}积分</view>
+								<view class="tui-sale-price">{{item.price}}积分</view>
 								<view class="tui-pro-pay">立即兑换</view>
 							</view>
 						</view>
@@ -34,12 +34,12 @@
 				<block v-for="(item,index) in productList" :key="index" v-if="(index+1)%2==0">
 					<!-- <template is="productItem" data="{{item,index:index}}" /> -->
 					<!--商品列表-->
-					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(1)">
-						<image src="../../../static/demo6.png" class="tui-pro-img" mode="widthFix" />
+					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(item)">
+						<image :src="item.image" class="tui-pro-img" mode="widthFix" />
 						<view class="tui-pro-content">
-							<view class="tui-pro-tit">{{item.name}}</view>
+							<view class="tui-pro-tit">{{item.store_name}}</view>
 							<view class="flex align-center justify-between margin-top-sm">
-								<view class="tui-sale-price">{{item.sale}}积分</view>
+								<view class="tui-sale-price">{{item.price}}积分</view>
 								<view class="tui-pro-pay">立即兑换</view>
 							</view>
 						</view>
@@ -55,14 +55,48 @@
 
 <script>
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
-	export default{
+	
+	// 获取积分商城列表
+	import { getDetailData } from '@/network/Home'
+	// 获取个人信息
+	import { getProfileData } from '@/network/getProfileData'
+	// 导入兑换方法
+	import { payNow }  from '@/network/detail'
+	
+	
+	// 导入工具类方法
+	import { replaceImage } from '@/utils/dealUrl.js'
+	
+	
+ 	export default{
 		components: {
 			uniLoadMore
 		},
+		onLoad() {
+			if(this.$store.getters.isToken){
+				this.token = this.$store.getters.isToken
+				this.getData(this.token)
+				this.getUserIntegral(this.token)
+			}else{
+				uni.showModal({
+					title:'请您先去登录再来查看哦',
+					content:'please you login',
+					success(res) {
+						if(res.confirm){
+							uni.switchTab({
+								url:'../../login/login'
+							})
+						}
+					}
+				})
+			}
+		},
 		data(){
 			return{
-				loadingimg:true,//login加载
+				token:'',
+				loadingimg:false,//login加载
 				loadingType:1,//login状态
+				totalIntegral:'' ,//个人总积分
 				productList: [{
 						img: 1,
 						name: "欧莱雅（LOREAL）奇焕光彩粉嫩透亮修颜霜 30ml（欧莱雅彩妆 BB霜 粉BB 遮瑕疵 隔离）",
@@ -148,7 +182,75 @@
 				uni.navigateTo({
 					url:'intrgralDetail'
 				})
+			},
+			// 获取用户积分
+			getUserIntegral(token){
+				getProfileData(token).then(res => {
+					if(res.data.code == 200){
+						const a = res.data.data.integral
+						this.totalIntegral = (a*1).toFixed(0)	
+					}
+					
+				})
+			},
+			// 获取商城列表
+			getData(){
+				getDetailData({
+					shop_id:0
+				}).then(res => {
+					if(res.data.code == 200){
+						const list = res.data.data
+						list.forEach(x => {
+							x.image = replaceImage(x.image)
+						})
+						this.productList = list
+					}
+					
+				})
+			},
+			
+			detailsClck(item){
+				const that = this
+				if(this.$store.getters.isToken){
+					uni.showModal({
+						title:'是否兑换该商品',
+						content:'Are you Exchange this product?',
+						success(res) {
+							if(res.confirm){
+								if(true){
+									// 发送兑换商品请求
+									payNow({
+										productId:item.id,
+										cartNum:1,
+										uniqueId:'',
+										combinationId:'',
+										secKillId:'',
+										bargainId:'',
+										shop_id:0
+									},that.token)
+									.then(res => {
+										if(res.data.code == 200){
+											const id = res.data.data.cartId
+											that.$store.commit('setIntegralId',id)
+											uni.navigateTo({
+												url:'../../ShopDetails/affirm/affirmIntegral'
+											})
+										}
+									})
+								}else{
+									uni.showToast({
+										title:'积分不够兑换哦，快去努力攒积分吧',
+										icon:'none'
+									})
+								}
+							}
+						}
+					})
+				}else{
+					
+				}
 			}
+			
 		}
 	}
 </script>
@@ -258,7 +360,10 @@
 		text-decoration: line-through;
 		padding-left: 12rpx;
 	}
-	
+	.red{
+		color: rgb(240,86,81);
+		font-size: 36upx;
+	}
 	.tui-pro-pay {
 		font-size: 24rpx;
 		color: #FFFFFF;

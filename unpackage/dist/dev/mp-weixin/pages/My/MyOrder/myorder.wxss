@@ -1,0 +1,36 @@
+
+.mybooking-image image{
+	width: 164rpx;
+	height: 164rpx;
+}
+.text-hieed{
+	overflow: hidden;
+	-o-text-overflow: ellipsis;
+	   text-overflow: ellipsis;
+	display:-webkit-box;
+	-webkit-box-orient:vertical;
+	-webkit-line-clamp:2;
+}
+.start{
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+}
+.mybooking-button{
+	width:180rpx;
+	height:60rpx;
+	line-height: 60rpx;
+	background: none;
+	border:1px solid rgba(205,50,51,1);
+	border-radius:40rpx;
+	color: #CD3233;
+	font-size: 28rpx;
+	margin: 0;
+	margin-right: 30rpx;
+}
+.mybooking-button-colse{
+	border:1px solid rgba(153,153,153,1);
+	color: rgba(153,153,153,1);
+}
+

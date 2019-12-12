@@ -1,53 +1,70 @@
 <template>
-	<view>
+	<view v-if="Object.keys(detailData).length">
 		<!-- head -->
-		<view class="shopDetails-title">
-			<swiper :current="swiperNum" @change="swiperChange" class="screen-swiper" duration="500">
-				<swiper-item  v-for="(item,index) in swiperList" :key="index">
-					<image :src="item.url" mode="aspectFill" v-if="item.type=='image'"></image>
-					<video :src="item.url" autoplay loop muted :show-play-btn="false" :controls="false" objectFit="contain" v-if="item.type=='video'"></video>
+		<view class="shopDetails-title" >
+			<swiper class="screen-swiper" :hidden="!autoplay">
+				<swiper-item>
+					<video id="myVideo" v-if="videoUrl" :src="videoUrl"
+				 autoplay="false" loop muted show-play-btn controls objectFit="contain" @pause="ZhanTing" @ended="ZhanTing"></video>
+				</swiper-item>
+			</swiper>
+			<swiper :hidden="autoplay" class="screen-swiper" circular="true"
+			 :autoplay="!autoplay" interval="3500" duration="500" :current="swiperNum" @change="swiperChange">
+				<swiper-item @tap="BoFang" v-if="videoUrl" class="item1">
+					<image src="/static/play/larkcloud_play.png" mode="aspectFill"></image>
+				</swiper-item>
+				<swiper-item @tap="swiperDetail" v-for="(item,index) in swiperList">
+					<image :src="item.url" mode="widthFix"></image>
 				</swiper-item>
 			</swiper>
 			<view class="shopDetails-title-select">
 				<view class="shopDetails-title-left"></view>
-				<view class="flex align-center">
-					<view @tap="selectPlayClick" :class="[ payimgType?'':'select-title-type']" class="shopDetails-title-play">
-						<view class="lg  cuIcon-playfill"></view>
-						<view>视频</view>
+					<view class="flex align-center">
+						<view v-if="videoUrl" @tap="selectPlayClick" :class="[swiperNum == 0 ? 'select-title-type' : '']" class="shopDetails-title-play">
+							<view class="lg  cuIcon-playfill"></view>
+							<view>视频</view>
+						</view>
+						<view v-if="videoUrl" @tap="selectimageClick" :class="[ swiperNum == 0 ?'':'select-title-type']" class="shopDetails-title-play margin-left-sm ">图片</view>
 					</view>
-					<view @tap="selectimageClick" :class="[ payimgType?'select-title-type':'']" class="shopDetails-title-play margin-left-sm ">图片</view>
-				</view>
-				<view class="shopDetails-title-num">{{swiperNum + 1}}/{{swiperList.length}}</view>
+				<view class="shopDetails-title-num">{{swiperNum + 1}}/{{videoUrl ? swiperList.length + 1 : swiperList.length}}</view>
 			</view>
 		</view>
+		
+		
+		
+		
+		
+		
 		<view class="seckilltime-background">
 			<view class="flex align-center margin-left-sm">
-				<view style="font-size: 70upx;" class="text-price">139</view>
+				<view style="font-size: 70upx;" class="text-price">{{detailData.storeInfo.price}}</view>
 				<view class="text-xs margin-left-xs" style="color: #FFD4D2;">
-					<view class="seckilltime-yuanjiage">￥289</view>
-					<view>仅剩:16份</view>
+					<view class="seckilltime-yuanjiage">￥{{detailData.storeInfo.ot_price}}</view>
+					<view>仅剩:{{detailData.storeInfo.stock}}份</view>
 				</view>
 			</view>
 			<view class="flex flex-direction align-center justify-center margin-right">
 				<view class="text-red-my text-sm margin-bottom-xs">限时秒杀</view>
-				<tui-countdown :time="timeList[0]" :colonSize="40" color="#fff" :width="44" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
+				<tui-countdown :time="timeList" :colonSize="40" color="#fff" :width="44" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
 			</view>
 		</view>
 		<view class="bg-white padding-left">
 			<view>
 				<view class="flex align-center justify-between margin-right-sm">
 					<view class="flex align-center margin-top-xs margin-bottom-xs">
-						<view class="cu-tag bg-red-my shopDetails-title-height">店铺红包满149减10</view>
+						<!-- 暂无折扣信息 -->
+						<!-- <view class="cu-tag bg-red-my shopDetails-title-height">店铺红包满149减10</view> -->
 						<view class="cu-tag bg-red-my shopDetails-title-height">购买得积分</view>
 					</view>
+					<!-- 暂无折扣信息 -->
 					<view @tap="outloginClick" class="flex align-center">
-						<view class="text-gray text-sm">领券</view>
-						<view class="lg text-gray cuIcon-right"></view>
+						<!-- <view class="text-gray text-sm">领券</view>
+						<view class="lg text-gray cuIcon-right"></view> -->
 					</view>
 				</view>
 				
 				<view class="flex align-center margin-top-sm margin-bottom-sm">
-					<view class="flex-four text-three shopDetails-title-name">沃隆每日坚果750g混合装30包干果零食大礼包混合坚果小包装</view>
+					<view class="flex-four text-three shopDetails-title-name"></view>
 					<view @tap="outloginSharClick" class="flex-sub flex align-center justify-center shopDetails-title-shar">
 						<view class="lg cuIcon-forward margin-right-xs"></view>
 						<view>转发</view>
@@ -55,7 +72,7 @@
 				</view>
 				<view class="flex align-center justify-between padding-bottom-sm margin-right-sm text-jiujiujiu">
 					<view>快递:<text class="margin-left-sm">免运费</text></view>
-					<view>销量11266</view>
+					<view>销量{{detailData.storeInfo.sales}}</view>
 				</view>
 			</view>
 		</view>
@@ -76,15 +93,16 @@
 			<view class=" flex align-center justify-between shopDetails-baozhanng">
 				<view class="flex text-sm-erliu">
 					<view class="text-jiujiujiu ">选择</view>
-					<view class="margin-left-sm">选择  食品口味 </view>
+					<view class="margin-left-sm">颜色  种类 </view>
 				</view>
 				<view class="lg text-jiujiujiu cuIcon-right"></view>
 			</view>
 			<view class="flex align-center shopDetails-select-image">
 				<view class="flex-yidw">
-					<image v-for="(vo,key) in selectimg" :key="key" class="shopDetails-image" :src="vo.img"></image>
+					<image v-for="(vo,key) in detailData.productValue" :key="key" class="shopDetails-image" :src="vo.image"></image>
 				</view>
-				<view class="flex-sub shopDetails-image-select">共有10中口味可选</view>
+				<view class="flex-sub shopDetails-image-select" v-if="detailData.productValue">共有{{Object.keys(detailData.productValue).length}}种类型可选</view>
+				<view class="flex-sub shopDetails-image-select" v-if="!detailData.productValue">暂无选择种类</view>
 			</view>
 		</view>
 		<!-- 选择 end -->
@@ -94,17 +112,23 @@
 			<view class="flex align-center justify-between shopDetails-baozhanng">
 				<view >商品评价</view>
 				<view class="flex text-sm-erliu align-center">
-					<view class="text-red-my margin-right-sm">查看更多</view>
+					<view class="text-red-my margin-right-sm"  v-if="Object.keys(commont).length != 0" @click="goMoreCommont">查看更多</view>
 					<view style="margin-top: 4upx;" class="lg text-jiujiujiu cuIcon-right"></view>
 				</view>
 			</view>
-			<view class="padding-left padding-right padding-bottom-lg">
+			<view class="padding-left padding-right padding-bottom-lg" v-if="Object.keys(commont).length != 0">
 				<view class="flex align-center margin-top-xs">
-					<image class="comment-image-all" src="../../static/demo3.png"></image>
-					<view class="text-jiujiujiu text-sm margin-left-xs">海鲸鱼</view>
+					<image class="comment-image-all" :src="commont.avatar"></image>
+					<view class="text-jiujiujiu text-sm margin-left-xs">{{commont.nickname}}</view>
 				</view>
-				<view style="margin-top: 10upx;">发货速度快 质感超亲肤 上身很显瘦版型合适呀 这价格绝对美腻 两件套 也可以单穿 爱了~</view>
+				<view style="margin-top: 10upx;">{{commont.comment ? commont.comment : '未作出评价，系统默认好评'}}</view>
+				<view class="common-pics">
+					<image v-for="(item,index) in commont.pics" @click="goDetail(item)" :src="item"></image>
+				</view>
 			</view>
+		</view>
+		<view class="no-comment padding-left padding-right padding-bottom-lg" v-if="Object.keys(commont).length == 0">
+			该商品暂无评论，快来抢沙发
 		</view>
 		<!-- 评价 end -->
 		
@@ -115,7 +139,7 @@
 				<view class="flex">
 					<image class="shop-introduce-img" src="../../static/demo9.png" ></image>
 					<view class="margin-left-sm flex flex-direction justify-between">
-						<view class="shop-detal-name">沃隆旗舰店</view>
+						<view class="shop-detal-name">{{detailData.shop_info.shop_name}}</view>
 						<view class="flex align-center text-xs shop-experience">
 							<view>综合体验</view>
 							<view class="lg text-red-my cuIcon-favorfill"></view>
@@ -129,18 +153,18 @@
 			</view>
 			<view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
 				<view class="flex align-center flex-sub ">
-					<view>宝贝描述</view>
-					<view class="padding-left-xs padding-right-xs">4.9</view>
+					<view>商品评分</view>
+					<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.product_score}}</view>
 					<view class="shop-pingfen" >平</view>
 				</view>
 				<view class="flex align-center flex-sub ">
-					<view>宝贝描述</view>
-					<view class="padding-left-xs padding-right-xs">4.9</view>
+					<view>物流评分</view>
+					<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.expressage_score}}</view>
 					<view class="shop-pingfen" >平</view>
 				</view>
 				<view class="flex align-center flex-sub ">
-					<view>宝贝描述</view>
-					<view class="padding-left-xs padding-right-xs">4.9</view>
+					<view>服务评分</view>
+					<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.service_score}}</view>
 					<view class="shop-pingfen" >平</view>
 				</view>
 			</view>
@@ -158,21 +182,12 @@
 				</view>
 			</view>
 			<view class="flex align-center padding-left padding-right">
-				<view class="flex-sub">
-					<image class="tuijian-shop-three-image" src="../../static/demo4.png"></image>
-					<view class="text-sm-erliu text-black">【预售】沃隆每日坚果750g混合装...</view>
-					<view class="text-red-my text-sm-erliu margin-top-sm margin-bottom-sm">￥159</view>
+				<view class="flex-sub" v-for="(item,index) in detailData.recommend_goods">
+					<image class="tuijian-shop-three-image" :src="item.image"></image>
+					<view class="text-sm-erliu text-black">{{item.store_name}}</view>
+					<view class="text-red-my text-sm-erliu margin-top-sm margin-bottom-sm">￥{{item.price}}</view>
 				</view>
-				<view class="flex-sub">
-					<image class="tuijian-shop-three-image" src="../../static/demo4.png"></image>
-					<view class="text-sm-erliu text-black">【预售】沃隆每日坚果750g混合装...</view>
-					<view class="text-red-my text-sm-erliu">￥159</view>
-				</view>
-				<view class="flex-sub">
-					<image class="tuijian-shop-three-image" src="../../static/demo4.png"></image>
-					<view class="text-sm-erliu text-black">【预售】沃隆每日坚果750g混合装...</view>
-					<view class="text-red-my text-sm-erliu">￥159</view>
-				</view>
+				
 			</view>
 		</view>
 		
@@ -182,7 +197,7 @@
 		
 		<!-- 商品介绍 -->
 		<view>
-			<image src="../../static/demo7.png" mode="widthFix" style="width: 100%;"></image>
+			<image :src="detailData.storeInfo.image" mode="widthFix" style="width: 100%;"></image>
 		</view>
 		<!-- 商品介绍end -->
 		
@@ -200,21 +215,21 @@
 					<view>客服</view>
 				</view>
 				<view @tap="collectClick(1)" class="margin-left flex flex-direction align-center justify-center">
-					<image class="shop-bottom-kefu" src="../../static/collect.png"></image>
+					<image class="shop-bottom-kefu" src="../../static/collect.png" v-show="!detailData.storeInfo.userCollect"></image>
 					<!-- 已收藏 -->
-					<!-- <image src="../../static/collectClick.png"></image> -->
-					<view>收藏</view>
+					<image src="../../static/collectClick.png" class="shop-bottom-kefu" v-show="detailData.storeInfo.userCollect"></image>
+					<view>{{detailData.storeInfo.userCollect ? '已收藏' : '收藏'}}</view>
 				</view>
 			</view>
 			<view class="flex align-center">
-				<view @tap="outloginShopClick" class="shopDetails-bottom-button button-left">加入购物车</view>
+				<view @tap="outloginShopClick" class="shopDetails-bottom-button button-left">快来买呀~</view>
 				<view @tap="outloginShopClick" class="shopDetails-bottom-button button-right">立即购买</view>
 			</view>
 		</view>
 		<!-- 底部操作条end -->
 		
 		<!-- 选择优惠券 -->
-		<uni-popup ref="popups" type="bottom">
+		<!-- <uni-popup ref="popups" type="bottom">
 			<view class="shopDetails-bottom-popups">
 				<view @tap="closePopupsClick" class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos"></view>
 				<view class="text-lg text-center text-wuer">优惠</view>
@@ -224,10 +239,10 @@
 					<view class="text-sm-erliu">购买可得24积分</view>
 				</view>
 				<view class="text-jiujiujiu text-df margin-bottom">领券</view>
-				<view class="flex align-center justify-between shopDetails-bottom-popups-backone text-red-my">
+				<view class="flex align-center justify-between shopDetails-bottom-popups-backone text-red-my" v-for="(item,index) in disCountList" :key="index">
 					<view>
 						<view class="flex align-center">
-							<view class="text-price text-xxxl text-red margin-right-xs">80</view>
+							<view class="text-price text-xxxl text-red margin-right-xs">{{item.coupon_price}}</view>
 							<view class="text-df">商品优惠券</view>
 						</view>
 						<view class="text-sm">满39使用</view>
@@ -247,13 +262,13 @@
 					<view class="text-three text-bold">立即领取</view>
 				</view>
 			</view>
-		</uni-popup>
+		</uni-popup> -->
 		
 		<!-- 分享 -->
 		<uni-popup ref="popup" type="bottom" >
 			<view @tap="closePopupsSharClick" class="lg text-gray cuIcon-roundclose margin-top-sm margin-right shopDetails-bottom-popups-clos"></view>
 			<view class="share-popup-all">
-				<view @tap="shareShowClick(key)" v-for="(vo,key) in shareList" :key="key" class="share-popup-sx">
+				<view @tap="shareShowClick(vo,key)" v-for="(vo,key,item) in shareList" :key="key" class="share-popup-sx">
 					<image :src="vo.img"></image>
 					<view style="font-size: 26upx;">{{vo.name}}</view>
 				</view>
@@ -265,20 +280,20 @@
 			<view class="popupbottom-all">
 				<view class="flex justify-between solid-bottom">
 					<view class="flex align-end margin-bottom-lg ">
-						<image class="popupbottom-shop-img" src="../../static/demo1.png"></image>
+						<image class="popupbottom-shop-img" v-if="detailData.storeInfo" @click="openImage"  :src="uniqueType ? uniqueType.image : detailData.storeInfo.image "></image>
 						<view class="margin-left-sm">
-							<view class="text-price text-red text-bold text-xl">50</view>
-							<view class="text-sm" style="color: #828282;">库存14455件</view>
-							<view class="text-sm">选择  食品口味</view>
+							<view class="text-price text-red text-bold text-xl">{{uniqueType ? uniqueType.price : detailData.storeInfo.price }}</view>
+							<view class="text-sm" style="color: #828282;">库存{{uniqueType ? uniqueType.stock : detailData.storeInfo.stock }}件</view>
+							<view class="text-sm user-choose">选择{{isUserChoosed ? isUserChoosed : ''}}</view>
 						</view>
 					</view>
-					<view class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos"></view>
+					<view class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos" @click="chooseClose"></view>
 				</view>
-				<view class="padding-bottom-sm solid-bottom">
-					<view class=" margin-top-lg margin-bottom">食品口味</view>
+				<view class="padding-bottom-sm solid-bottom" v-for="(item,index) in detailData.productAttr">
+					<view class=" margin-top-lg margin-bottom">{{item.attr_name}}</view>
 					<view class="flex flex-wrap">
-						<block v-for="(vo,key) in list" :key="key">
-							<view @tap="selectShopClick(vo.type,key)" :class="[vo.type?'popupbottom-shop-type-select':'']" class="popupbottom-shop-type-all">{{vo.title}}</view>
+						<block v-for="(vo,key) in item.attr_value" :key="key">
+							<view @tap="selectShopClick(vo,key,item)" :class="[vo.check?'popupbottom-shop-type-select':'']" class="popupbottom-shop-type-all">{{vo.attr}}</view>
 						</block>
 					</view>
 				</view>
@@ -289,8 +304,8 @@
 					</view>
 				</view>
 				<view class="flex align-center popupbottom-all-top">
-					<view class="shopDetails-bottom-button popupbottom-all-button button-left">加入购物车</view>
-					<view @tap="nowBuyClick" class="shopDetails-bottom-button popupbottom-all-button button-right">立即购买</view>
+					<!-- <view class="shopDetails-bottom-button popupbottom-all-button button-left">加入购物车</view> -->
+					<view @tap="nowBuyClick" class="liji-pay">立即购买</view>
 				</view>
 			</view>
 		</uni-popup>
@@ -299,42 +314,69 @@
 </template>
 
 <script>
+	var that;
 	import tuiNumberbox from "@/components/numberbox/numberbox"
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	import tuiCountdown from "@/components/countdown/countdown"
+	
+	// 导入网络模块
+	import {getDetailSkill} from '@/network/skill'
+
+	import { clickDetail } from '@/common/detail'
+	// 导入工具类
+	import { replaceImage } from '@/utils/dealUrl'
+	
+	// #ifdef APP-PLUS
+	// 导入分享方法
+	import share from "@/common/share.js";
+	// #endif
 	export default{
 		components: {
 			uniPopup,
 			tuiNumberbox,
 			tuiCountdown
 		},
+		onLoad() {
+			that = this
+			if(!this.$store.getters.isToken){
+				uni.showModal({
+					title:"请先去登录再来查看",
+					success(res) {
+						if(res.confirm){
+							uni.navigateTo({
+								url:'../login/login'
+							})
+						}else{
+							uni.navigateTo({
+								url:"../Home/home"
+							})
+						}
+					}
+				})
+				return false
+			}
+			if(this.$store.state.skillId){
+				const id = this.$store.state.skillId,
+				token = this.$store.getters.isToken
+				// 发送数据请求
+				this.getDetailSkill(id,token)
+				
+			}else{
+				uni.switchTab({
+					url:"../Home/home"
+				})
+				return 
+			}
+		},
 		data(){
 			return{
-				timeList: [1000, 2000, 3000, 19, 240000],//倒计时
+				timeList: 0,//倒计时
 				payimgType:true,//图片或者视频
-				swiperNum:1,//当前所在滑块
+				swiperNum:0,//当前所在滑块
 				videoUrl:'',
-				swiperList: [{
-					id: 0,
-					type: 'video',
-					url: 'http://baobab.kaiyanapp.com/api/v1/playUrl?vid=164016&resourceType=video&editionType=high&source=aliyun&playUrlType=url_oss'
-				},{
-					id: 0,
-					type: 'image',
-					url: '../../static/demo2.png'
-				}, {
-					id: 1,
-					type: 'image',
-					url: '../../static/demo2.png',
-				}, {
-					id: 2,
-					type: 'image',
-					url: '../../static/demo2.png'
-				}, {
-					id: 3,
-					type: 'image',
-					url: '../../static/demo2.png'
-				}],
+				swiperList: [],//轮播数据
+				disCountList:[],//优惠券信息
+				
 				selectimg:[{
 					img:'../../static/demo10.png'
 				},{
@@ -365,41 +407,158 @@
 					type:false,
 				}],
 				value:1,//步进器
+				detailData:{} ,//总数据
+				autoplay:false,
+				uniqueIndex:0,
+				procuctObj:{},
+				commont:{}
 			}
 		},
+		onBackPress() {
+			// #ifdef APP-PLUS
+			//监听back键，关闭弹出菜单
+			if (nvImageMenu.isVisible()) {
+				nvImageMenu.hide()
+				nvMask.hide()
+				return true
+			}
+			// #endif
+		},
 		methods:{
-			//选择商品属性
-			selectShopClick(type,key){
-				if(type){
-					this.list[key].type = false
-				}else{
-					this.list[key].type = true
+			// 秒杀数据获取
+			getDetailSkill(id,token){
+				getDetailSkill(id,token)
+					.then(res => {
+						if(res.data.code == 200){
+							const data = res.data.data
+							
+							// 对推荐商品进行url处理
+							data.recommend_goods.forEach(x => {
+								x.image = replaceImage(x.image)
+							})
+							// 对商品图片进行处理
+							data.storeInfo.image = replaceImage(data.storeInfo.image)
+							// 对商品图片组进行url处理
+							data.storeInfo.images = data.storeInfo.images.map(a => {
+								return replaceImage(a)
+							})
+							data.storeInfo.video = replaceImage(data.storeInfo.video)
+
+							
+							// 保存视频
+							this.videoUrl = data.storeInfo.video
+							if(this.videoUrl) this.videoContext = uni.createVideoContext('myVideo',this)
+							// 对轮播数据进行处理
+							this.dealSwiper(data)
+							
+							// 处理倒计时
+							this.dealTime(data)
+							// 判断是否有productValue
+							if(data.productValue){
+								this.dealProductValue(data)
+							}
+							// 处理评价信息
+							const commont = data.reply
+							this.dealCommont(commont)
+							
+							
+							// 赋值
+							this.detailData = data
+						}
+					})
+			},
+			// 处理轮播数据
+			dealSwiper(data){
+				this.swiperList = data.storeInfo.images.map((item,index) => {
+					return {
+						url:item,
+						id:index,
+						type:'image'
+					}
+				})
+				// if(data.storeInfo.video){
+				// 	const obj = {
+				// 		url:data.storeInfo.video,
+				// 		id:0,
+				// 		type:'video'
+				// 	}
+				// 	this.swiperList.unshift(obj)
+				// }
+				console.log(this.swiperList)
+				
+			},
+			// 处理倒计时
+			dealTime(data){
+				const stopTime = data.storeInfo.stop_time
+				const date = new Date()
+				const time2 = Math.round(date.getTime()/1000)
+				this.timeList = stopTime - time2
+			},
+			// 处理dealProductValue
+			dealProductValue(data){
+				const obj = data.productValue
+				const keys = Object.keys(obj)
+				keys.forEach((item,index) => {
+					const image = replaceImage(obj[item].image)
+					obj[item].image = image
+				})
+				this.procuctObj = obj
+			},
+			// 处理评价信息
+			dealCommont(obj){
+				if(obj){
+					const arr = obj.pics.map(x => {
+						return replaceImage(x)
+					})
+					obj.pics = arr
+					obj.avatar = replaceImage(obj.avatar)
+					this.commont = obj
 				}
+			},
+			//选择商品属性  
+			selectShopClick(vo,key,item){
+				if(vo.check){
+					vo.check = false
+				}else{
+					item.attr_value.forEach(x => {
+						x.check = false
+					})
+					vo.check = true
+				}
+			},
+			goDetail(item){
+				clickDetail(item)
 			},
 			//选择图片
 			selectimageClick(){
-				this.payimgType = true
-				this.swiperNum = 1
+				if(this.swiperNum == 0 ){
+					this.payimgType = false
+					this.ZhanTing()
+				}
 			},
 			//选择视频
 			selectPlayClick(){
-				this.payimgType = false
-				this.swiperNum = 0
+				if(this.swiperNum != 0){
+					this.payimgType = true
+					this.BoFang()
+				}
 			},
 			//滑块的change
 			swiperChange(e){
 				this.swiperNum = e.target.current
-				if(this.swiperNum == 0){
-					this.payimgType = false
-				}else{
-					this.payimgType = true
-				}
-				console.log(e.target.current)
+				// console.log(e.target.current)
 			},
 			//点击kefu
 			serviceClick(shopname){
 				uni.navigateTo({
 					url:'informtion/informtion?shopname=' + shopname
+				})
+			},
+			// 进入评论详情
+			goMoreCommont(){
+				const id = this.detailData.storeInfo.product_id
+				uni.navigateTo({
+					url:`shopComment?id=${id}`	
 				})
 			},
 			//步进起数值修改
@@ -408,23 +567,105 @@
 			},
 			//立即购买
 			nowBuyClick(){
-				uni.navigateTo({
-					url:'affirm/affirmOrder'
-				})
+				// uni.navigateTo({
+				// 	url:'affirm/affirmOrder'
+				// })
+				if(!this.uniqueType){
+					uni.showToast({
+						title:'请选择商品属性',
+						icon:'none'
+					})
+					return 
+				}
+				const data = this.detailData
+				const obj = {
+					productId:data.storeInfo.price,
+					cartNum:this.value,
+					uniqueId:this.uniqueType ? this.uniqueType.unique : '',
+					combinationId:'',
+					secKillId:data.id,
+					bargainId:'',
+					shop_id:data.storeInfo.shop_id
+				}
+				this.$store.dispatch('Pay',obj)
+					.then(res => {
+						console.log(res)
+						if(res.data.code == 200){
+							this.$store.commit('keepCartId',res.data.data.cartId)
+							const pinkInfo = this.$store.state.pinkInfo
+							if(Object.keys(pinkInfo).length){
+								this.$store.commit('setOutPinkInfo')
+							}
+							uni.navigateTo({
+								url:"affirm/affirmOrder"
+							})
+						}else{
+							uni.showToast({
+								title:res.data.msg,
+								icon:'none'
+							})
+						}
+					})
+			},
+			// 点击图片预览
+			swiperDetail(){
+				let arr = this.swiperList.slice(1,this.swiperList.length-1)
+				arr = arr.map(x => x.url)
+				console.log(arr)
+				// #ifdef APP-PLUS
+				plus.nativeUI.previewImage(arr)
+				// #endif
 			},
 			//点击收藏
-			collectClick(id){
-				
+			collectClick(){
+				const obj = {
+					id:this.detailData.id,
+					category:'seckill'
+				}
+				if(!this.detailData.storeInfo.userCollect){
+					this.$store.dispatch('collect',obj)
+						.then(res => {
+							console.log(res)
+							if(res.data.code == 200){
+								this.detailData.storeInfo.userCollect = true
+								uni.showToast({
+									title:'收藏成功',
+									icon:'none'
+								})
+							}
+						})
+				}else{
+					this.$store.dispatch('unCollect',obj)
+						.then(res => {
+							console.log(res)
+							if(res.data.code == 200){
+								this.detailData.storeInfo.userCollect = false
+								uni.showToast({
+									title:'收藏成功',
+									icon:'none'
+								})
+							}
+						})
+				}
 			},
 			//点击店铺
-			shopClick(id){
+			shopClick(){
 				uni.navigateTo({
-					url:'StoreDetails/storedetails?id=' + id
+					url:'StoreDetails/storedetails?id=' + this.detailData.storeInfo.shop_id
 				})
 			},
 			//领券弹出
 			outloginClick(){
-				this.$refs.popups.open()
+				this.$refs.popups.close()
+			},
+			// 点击分类图片预览
+			openImage(){
+				const img = this.uniqueType ? this.uniqueType.price : this.detailData.storeInfo.price
+				if(img){
+					// #ifdef APP-PLUS
+					plus.nativeUI.previewImage([img])
+					// #endif
+				}
 			},
 			//领券关闭
 			closePopupsClick(){
@@ -432,7 +673,66 @@
 			},
 			//转发弹出
 			outloginSharClick(){
-				this.$refs.popup.open()
+				let shareInfo={
+					href:"https://uniapp.dcloud.io",
+					title:'老家商城',
+					desc:'快来老家，和我一起秒杀',
+					imgUrl:'/static/56524a9a3b6bdab0753eb8ed922d57d.png'
+				};
+				this.shareObj=share(shareInfo,this.shareList,(index) => {
+						console.log("点击按钮的序号: " + index);
+						let shareObj={
+							href:shareInfo.href||"",
+							title:shareInfo.title||"",
+							summary:shareInfo.desc||"",
+							success:(res)=>{
+								console.log("success:" + JSON.stringify(res));
+							},
+							fail:(err)=>{
+								console.log("fail:" + JSON.stringify(err));
+							}
+						};
+						switch (index) {
+							case 0:
+								shareObj.provider="weixin";
+								shareObj.scene="WXSceneSession";
+								shareObj.type=0;
+								shareObj.imageUrl=shareInfo.imgUrl||"";
+								uni.share(shareObj);
+								break;
+							case 1:
+								shareObj.provider="weixin";
+								shareObj.scene="WXSenceTimeline";
+								shareObj.type=0;
+								shareObj.imageUrl=shareInfo.imgUrl||"";
+								uni.share(shareObj);
+								break;
+							case 2:
+								uni.setClipboardData({
+									data:shareInfo.href,
+									complete() {
+										uni.showToast({
+											title: "已复制到剪贴板"
+										})
+									}
+								})
+								break;
+							case 3:
+								plus.share.sendWithSystem({
+									type:"web",
+									title:shareInfo.title||"",
+									thumbs:[shareInfo.imgUrl||""],
+									href:shareInfo.href||"",
+									content: shareInfo.desc||"",
+								})
+								break;
+						};
+					});
+					
+					this.$nextTick(()=>{
+						this.shareObj.alphaBg.show();
+						this.shareObj.shareMenu.show();
+					})
 			},
 			//转发关闭
 			closePopupsSharClick(){
@@ -446,11 +746,94 @@
 			closePopupsShopClick(){
 				this.$refs.popupbottom.close()
 			},
+			chooseClose(){
+				this.$refs.popupbottom.close()
+			},
+			// 分享
+			shareShowClick(vo,key){
+				if(vo.name == '微信好友'){
+					uni.share({
+					    provider: "weixin",
+					    scene: "WXSceneSession",
+					    type: 0,
+					    href: "https://baidu.com",
+					    title: "老家商城分享",
+					    summary: "我正在使用老家商城购物，赶紧跟我一起来体验！",
+					    imageUrl: "../../../static/demo5.png",
+					    success: function (res) {
+					        console.log("success:" + JSON.stringify(res));
+					    },
+					    fail: function (err) {
+					        console.log("fail:" + JSON.stringify(err));
+					    }
+					});
+				}
+			},
+			// 播放暂停
+			BoFang(){
+				if(that.autoplay==false){
+					that.autoplay=true;
+					this.videoContext.play();
+				}
+			},
+			ZhanTing(){
+				if(that.autoplay==true){
+					that.autoplay=false
+				}
+			}
+		},
+		computed:{
+			isUserChoosed(){
+				if(this.detailData){
+					if(this.detailData.productAttr.length){
+						const arr = []
+						this.detailData.productAttr.forEach((item,index) => {
+							item.attr_value.forEach(x => {
+								if(x.check) arr.push(x.attr)
+							})
+						})
+						return arr.length ? arr : ''
+					}else{
+						return false
+					}
+				}
+				else{
+					return false
+				}
+				
+			},
+			uniqueType(){
+				if(this.isUserChoosed){
+					const obj = this.detailData.productValue
+					const keys = Object.keys(obj)
+					const cho = this.isUserChoosed.join(',')
+					const result = 	keys.filter((item,index) => {
+						if(item == cho){
+							this.uniqueIndex == index
+						}
+						return item == cho
+					})
+					return obj[result.join('')] || ''
+				}else{
+					return false
+				}
+				return false
+			}
 		}
 	}
 </script>
 
-<style>
+<style lang="scss">
+	.item1{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: #000;
+		image{
+			width: 80upx;
+			height: 80upx;
+		}
+	}
 	.shopDetails-title{
 		position: relative;
 	}
@@ -673,6 +1056,12 @@
 		justify-content: center;
 		align-items: center;
 	}
+	.user-choose{
+		width: 400upx;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 	.popupbottom-shop-img{
 		width:224upx;
 		height:224upx;
@@ -730,5 +1119,42 @@
 	}
 	.seckilltime-yuanjiage{
 		text-decoration: line-through;
+	}
+	
+	// 立即购买
+	.liji-pay{
+		background: #CD3233;
+		border-radius: 100upx;
+		margin-right: 18upx;
+		width: 440upx;
+		font-size: 32upx;
+		color: #FFFFFF;
+		border: none;
+		height: 80upx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;	
+	}
+	.common-pics{
+		display: flex;
+		flex-wrap: wrap;
+		padding: 15upx 0;
+		image{
+			display: inline-block;
+			width: 140upx;
+			height: 140upx;
+			margin-right: 20upx;
+		}
+	}
+	.no-comment{
+		height: 180upx;
+		display: flex;
+		color: $uni-text-color;
+		font-size: $uni-font-size-base;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: #fff;
 	}
 </style>

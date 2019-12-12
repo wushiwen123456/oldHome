@@ -3,7 +3,7 @@
 		<canvas disable-scroll="true" class="text-width" :style="{height:windowHeight + 'px'}">
 			<!-- 头部图片 -->
 			<view class="login-image">
-				<image src="../../static/logo.png"></image>
+				<image src="/static/logo/logo.png"></image>
 			</view>
 			<!-- 表单 -->
 			<view>
@@ -105,14 +105,6 @@
 				console.log(this.$store.state.userInfo)
 
 				login(data).then(res => {
-					if(res.data.code == 400){
-						uni.showToast({
-							title:res.data.msg,
-							icon:'none'
-						})
-						this.phone = ''
-						this.password = ''
-					}else{
 						const token = res.data.data.token
 						uni.setStorage({
 							key:"token",
@@ -131,6 +123,14 @@
 						}else{
 							uni.navigateBack()
 						}
+				}).catch(res => {
+					if(res.data.code == 400){
+						uni.showToast({
+							title:'用户名或密码错误',
+							icon:'none'
+						})
+						this.phone = ''
+						this.password = ''
 					}
 				})
 			},

@@ -9,4 +9,4 @@ const app = new Vue({
     ...App,
 	store
 })
-app.$mount()
+app.$mount()  

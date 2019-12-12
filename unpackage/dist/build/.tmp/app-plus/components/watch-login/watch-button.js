@@ -7,4 +7,4 @@
         })
     },
     [['components/watch-login/watch-button-create-component']]
-]);                
+]);

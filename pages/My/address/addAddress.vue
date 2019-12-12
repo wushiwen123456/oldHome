@@ -22,7 +22,7 @@
 				</view>
 				<view></view>
 			</view>
-			<view @tap="openonConfirmClick" class="addAddress-all">
+			<view @tap="openonConfirmClick" class="addAddress-all address-info">
 				<view class="addAddress-left">
 					<view>地址信息</view>
 					<input type="text" v-model="resultInfo" disabled="true" placeholder="请选择" />
@@ -39,23 +39,26 @@
 			
 		</view>
 		<!-- 三级联动 -->
-		<w-picker mode="linkage" :level="3" :value="['11','1101','110101']" :defaultVal="['北京市','市辖区','东城区']" @confirm="onConfirm" ref="picker" :linkList="linkList" themeColor="#f00"></w-picker>
+		<w-picker 
+			mode="region"
+			:defaultVal="['浙江省','杭州市','滨江区']"
+			:areaCode="['33','3301','330108']"
+			:linkList="linkList"
+			:hideArea="false"
+			@confirm="onConfirm" 
+			ref="picker" 
+			themeColor="#f00">
+		</w-picker>
 	</view>
 </template>
 
 <script>
 	import wPicker from "@/components/w-picker/w-picker.vue";
 	
+	import Modal from '@/components/x-modal/x-modal'
+	
 	// 添加地址接口:
 	import {addAddress} from '@/network/getProfileData'
-	
-	// 导入地区文件
-	import area from '@/components/w-picker/city-data/area' //区
-	import city from '@/components/w-picker/city-data/city'  //市
-	import province from '@/components/w-picker/city-data/province' //省
-	
-	// 导入工具类
-	import { getAddress } from '../../../utils/dealUrl.js'
 	
 	// 导入token：
 	import { mapGetters } from 'vuex'
@@ -77,17 +80,24 @@
 				id:'',//地址id，默认为空
 				post_code:'' ,//邮编
 				addressArr:[],//发送的地址格式
-				linkList:[]
+				linkList:[]//三级联动数据
 			}
 		},
-		onNavigationBarButtonTap(){
+		onNavigationBarButtonTap(e){
 			this.saveClick()
 		},
 		onBackPress() {
 			
-		},
-		onLoad(){
-			this.linkList = getAddress(area,city,province)
+		},	
+		onLoad(option){
+			if(Object.keys(this.$store.state.address).length){
+				const obj = this.$store.state.address
+				this.detail = obj.detail
+				this.phone = obj.phone
+				this.id = obj.id
+				this.is_default = obj.is_default
+				this.real_name = obj.real_name
+			}
 		},
 		methods: {
 			//打开三级联动
@@ -97,7 +107,8 @@
 			//三级联动
 			onConfirm(val){
 				this.addressArr = val.checkArr;
-				this.resultInfo = val.result 
+				this.resultInfo = val.result;
+				console.log(this.addressArr)
 			},
 			// 保存按钮
 			saveClick(){
@@ -121,9 +132,13 @@
 						title:'请输入邮编',
 						icon:'none'
 					})
+				}else if(!this.resultInfo){
+					uni.showToast({
+						title:'请输入地址',
+						icon:'none'
+					})
 				}
 				else{
-
 					let data = {
 						is_default:this.is_default,
 						real_name:this.real_name,
@@ -131,14 +146,15 @@
 						detail:this.detail,
 						post_code:this.post_code,
 						id:this.id,
-						address:this.addressArr
+						address:this.addressArr,
 					}
 					this.addAddress(data)
 				}
 			},
 			addAddress(data){
 				uni.showModal({
-					title:'是否设置为默认收货地址',
+					title:'是否把此地址作为默认发货地址 ',
+					content:'Is Defalult?',
 					cancelColor:"#333333",
 					confirmColor:"#333333",
 					confirmText:"立即设置",
@@ -153,11 +169,7 @@
 						if(this.isToken){
 							addAddress(data,this.isToken).then(res => {
 								if(res.data.code == 200){
-									uni.showToast({
-										title:'保存成功',
-										icon:"none"
-									})
-									
+									uni.navigateBack()
 								}else{
 									uni.showToast({
 										title:'未知错误',
@@ -182,6 +194,7 @@
 </script>
 
 <style>
+	
 	.addAddress{
 		padding: 0 26upx;
 		background: #FFFFFF;
@@ -219,5 +232,8 @@
 	}
 	.addAddress-left-txt{
 		width: 120upx;
+	}
+	.address-info{
+		height: 110upx;
 	}
 </style>

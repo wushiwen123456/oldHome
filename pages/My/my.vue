@@ -3,7 +3,7 @@
 		<view v-if="mytrue" class="my-title-background">
 			<view  class="bg-white  margin-left margin-right my-one-all">
 				<view class="flex align-end justify-between margin-left-lg">
-					<view class="flex align-center">
+					<view class="flex align-center" @click="mySet">
 						<image class="my-head-image" :src="avatar"></image>
 						<view class="text-xl text-bold margin-left-sm">{{username}}</view>
 					</view>
@@ -14,18 +14,18 @@
 				</view>
 				<view class="flex align-center justify-around margin-top">
 					<view @tap="collectClick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">{{product_collect}}</view>
+						<view class="margin-bottom-xs text-lg">{{!product_collect ? '0' : shop_collect}}</view>
 						<view class="text-sm">商品收藏</view>
 					</view>
 					<view @tap="attrntionClick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">{{shop_collect}}</view>
+						<view class="margin-bottom-xs text-lg">{{!shop_collect ? '0' : shop_collect}}</view>
 						<view class="text-sm">店铺收藏</view>
 					</view>
 					<view @tap="integralShopCick" class="flex flex-direction align-center justify-center">
 						<view class="margin-bottom-xs text-lg">{{integral}}</view>
 						<view class="text-sm">积分</view>
 					</view>
-					<view class="flex flex-direction align-center justify-center">
+					<view@tap="footprintClick" class="flex flex-direction align-center justify-center" @click="my_zuji">
 						<view class="margin-bottom-xs text-lg">{{visit}}</view>
 						<view class="text-sm">我的足迹</view>
 					</view>
@@ -114,13 +114,16 @@
 </template>
 
 <script>
+	// 获取个人信息
 	import { getProfileData } from '@/network/getProfileData'
 	
 	// 导入vuex
 	import { mapGetters } from 'vuex'
 	// 导入工具类
-	import { addUrl } from '@/utils/dealUrl'
+	import { replaceImage } from '@/utils/dealUrl'
 	
+	// 导入公共类
+	import { HOST } from '@/common/const'
 	export default{
 		data(){
 			return{
@@ -136,6 +139,7 @@
 			}
 		},
 		onShow() {
+			console.log(this.isToken)
 			if(this.isToken){
 				getProfileData(this.isToken).then(res => {
 					const data = res.data
@@ -150,9 +154,9 @@
 							icon:'none'
 						})
 					}else if(data.code == 200){
+						console.log(res)
 						this.mytrue = true
-						console.log(data)
-						this.avatar = addUrl(data.data.avatar)
+						this.avatar = replaceImage(data.data.avatar)
 						this.username = data.data.nickname
 						this.integral = data.data.integral
 						this.now_money = data.data.now_money
@@ -160,11 +164,22 @@
 						this.product_collect = data.data.product_collect
 						this.shop_collect = data.data.shop_collect
 						this.visit = data.data.visit
+						
+
+						this.$store.commit('setIntegral',this.integral)
+						data.data.avatar = replaceImage(data.data.avatar)	
+							uni.setStorage({
+								key: 'Message_key',
+								data: data.data,
+								success: function () {
+									console.log('个人信息写入缓存成功');
+								}
+							});
 					}
 					
 				})
 			}else{
-				console.log('您还未登录')
+				this.mytrue = false
 			}
 		},
 		onNavigationBarButtonTap(e){
@@ -213,6 +228,12 @@
 					url:'Discounts/mydiscounts'
 				})
 			},
+			//足迹
+						footprintClick(){
+							uni.navigateTo({
+								url:'Footprint/footprint'
+							})
+						},
 			//我的订单
 			myOrderClick(num){
 				uni.navigateTo({
@@ -253,6 +274,19 @@
 			discountscententClick(){
 				uni.navigateTo({
 					url:'Discounts/DiscpuntsCentent'
+				})
+			},
+			// 我的足迹
+			my_zuji(){
+				uni.navigateTo({
+					url:''
+				})
+			},
+			// 跳转用户设置
+			mySet(){
+				
+				uni.navigateTo({
+					url:'Mydata/mydata'
 				})
 			}
 		},

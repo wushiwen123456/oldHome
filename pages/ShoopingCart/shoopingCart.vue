@@ -1,27 +1,30 @@
 <template>
+	<mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption">
 	<view>
-		<view v-for="(vo,key) in shopList" :key="key" v-if="isToken" class="bg-white shoopingCart-all">
-			<view class="flex align-center">
-				<view class="lg shoppingCart-title-yuan" @tap="ShopClick(key)" :class="[vo.shopType?'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']"></view>
-				<view class=" flex align-center">
-					<view class="lg cuIcon-shop shoppingCart-title-shop"></view>
-					<view class="text-wuer text-lg text-bold">{{vo.shopname}}</view>
+		<view v-for="(vo,key) in shopList" :key="key" v-if="Object.keys(shopList).length" class="bg-white shoopingCart-all con">
+			<view class="c-contain" v-if="vo.length">
+				<view class="store-info">
+					<view class="lg shoppingCart-title-yuan" @tap="ShopClick(vo,key)" :class="[isSellectAll(vo,key) ? 'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']"></view>
+					<view class="storename flex align-center">
+						<view class="lg cuIcon-shop shoppingCart-title-shop"></view>
+						<view class="text-wuer text-lg text-bold">{{vo[0].shop_info ? vo[0].shop_info.shop_name : '无名小店'}}</view>
+					</view>
 				</view>
-			</view>
-			<view v-for="(item,index) in vo.shopAllMessage" :key="index" class="flex align-center margin-top margin-bottom">
-				<view class="flex align-center">
-					<view @tap="shoponeClick(key,index)" :class="[item.type?'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']" class="lg shoppingCart-title-yuan"></view>
-					<image class="shoppingCart-image-all" :src="item.image"></image>
-				</view>
-				<view class="margin-left-sm shoopingCart-right">
-					<view class="shoopingCart-right-title"><text class="text-xs shopping-teichang">江西特产</text>{{item.shoptitle}}</view>
-					<view class="shoopingCart-right-guige">{{item.specification}}</view>
-					<view class=" flex align-center justify-between">
-						<view class="text-price text-red text-lg text-bold">{{item.money}}</view>
-						<view class="flex align-center">
-							<view @tap="moveShopClick(key,index,item.money)" class="lg cuIcon-move shoopingCart-input-add"></view>
-							<input :disabled="true" type="number" v-model="item.num" class="shoopingCart-input"/>
-							<view @tap="addShopClick(key,index,item.money)" class="lg cuIcon-add shoopingCart-input-add"></view>
+				<view v-for="(item,index) in vo" class="flex align-center margin-top margin-bottom c-item">
+					<view class="flex align-center">
+						<view @tap="shoponeClick(item)" :class="[item.isClick?'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']" class="lg shoppingCart-title-yuan"></view>
+						<image class="shoppingCart-image-all" @click="goDetail(item)" :src="item.productInfo.attrInfo ? item.productInfo.attrInfo.image : item.productInfo.image"></image>
+					</view>
+					<view class="margin-left-sm shoopingCart-right">
+						<view class="shoopingCart-right-title"><text class="text-xs shopping-teichang" v-if="false">土特产，没有字段暂时注释</text>{{item.productInfo.store_name}}</view>
+						<view class="shoopingCart-right-guige"><text>{{item.productInfo.attrInfo ? '类型: ' +  item.productInfo.attrInfo.suk : '默认类型'}}</text></view>
+						<view class=" flex align-center justify-between">
+							<view class="text-price text-red text-lg text-bold">{{item.productInfo.attrInfo ? item.productInfo.attrInfo.price : item.productInfo.price}}</view>
+							<view class="flex align-center">
+								<view  @tap="moveShopClick(key,index,item)" class="lg cuIcon-move shoopingCart-input-add"></view>
+								<input :disabled="true"  type="number" v-model="item.cart_num" class="shoopingCart-input"/>
+								<view @tap="addShopClick(key,index,item)" class="lg cuIcon-add shoopingCart-input-add"></view>
+							</view>
 						</view>
 					</view>
 				</view>
@@ -30,35 +33,72 @@
 		<view class="no-token" v-else>
 			您还未登录哦~
 		</view>
-		<view style="height: 100upx;"></view>
-		<view style="bottom: 100upx;" class="shoopingCart-bottom flex justify-between align-center">
+		<view style="height: 200upx;"></view>
+		<view class="shoopingCart-bottom flex justify-between align-center">
 			<view @tap="shopAllselectClick" class="flex align-center margin-left">
 				<view :class="[allselect?'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']"  class="lg shoppingCart-title-yuan margin-right-xs"></view>
 				<view class="bg-white text-df">{{allselectTxt}}</view>
 			</view>
-			<view class="flex align-center margin-right">
+			<view class="flex align-center margin-right" v-if="isManage">
 				<view class="text-price text-red text-lg text-bold">{{sumMoney}}</view>
-				<view class="shoopingCart-bottom-button shoopingCart-bottom-button-one">结算</view>
-				<!-- <view class="shoopingCart-bottom-button shoopingCart-bottom-button-two">删除</view> -->
+				<view class="shoopingCart-bottom-button shoopingCart-bottom-button-one" @click="goPay">结算</view>
+			</view>
+			<view class="flex align-center margin-right" v-if="!isManage">
+				<view class="shoopingCart-bottom-button remove-btn shoopingCart-bottom-button-one" @click="upModel">删除</view>
 			</view>
 		</view>
+		<Modal v-model="show1" title='是否删除' text='' @confirm="removeProduct" />
 	</view>
+	</mescroll-uni>
 </template>
 
 <script>
 	// 导入网络请求方法：
-	import {getShopCartData} from '@/network/shopCart'
-	
+	import {getShopCartData,removeCart,changeCartNum} from '@/network/shopCart'
+	import { getAffirmInfo } from '@/network/affirm'
 	// 导入vuex
 	import { mapGetters } from 'vuex'
 	
 	// 导入工具类
 	import { replaceImage } from '@/utils/dealUrl'
+	// 导入模态框
+	import Modal from '@/components/x-modal/x-modal'
+	//导入下拉加载
+	import MescrollUni from "@/components/mescroll-uni/mescroll-uni.vue";
 	export default{
 		components: {
-			
+			Modal,
+			MescrollUni
 		},
-		onShow() {
+		onNavigationBarButtonTap:function(btn){
+			if(btn.index == 0){
+			let pages = getCurrentPages();
+			let page = pages[pages.length - 1];
+			// #ifdef APP-PLUS
+			let currentWebview = page.$getAppWebview();
+			let titleObj = currentWebview.getStyle().titleNView;
+			if (!titleObj.buttons) {
+			return;
+			}
+			if(titleObj.buttons[0].text == '管理'){
+			titleObj.buttons[0].text = "完成";
+			}else{
+			titleObj.buttons[0].text = "管理";
+			}
+			const keys = this.keys
+			keys.forEach((item,index) => {
+				this.shopList[keys[index]].forEach(x => {
+					this.$set(x,'isClick',false)
+				})
+			})
+			currentWebview.setStyle({
+			titleNView: titleObj
+			});
+			// #endif
+			}
+			this.isManage = !this.isManage
+		},
+		onLoad() {
 			if(!this.isToken){
 				uni.showModal({
 					title:'您还未登录，是否前去登录？',
@@ -75,269 +115,330 @@
 						}
 					}
 				})
-			}else{
-				getShopCartData(this.isToken).then(res => {
-					if(res.data.code == 200){
-						const arr =	res.data.data.group
-						console.log(arr)
-						const result = []
-						
-						for (let key in arr){
-							console.log(arr)
-							const obj = {}
-							obj.shopname = arr[key][0].shop_info.shop_name
-							obj.shopAllMessage = []
-							obj.shopType = false, 
-							arr[key].forEach(item =>{
-								const image = replaceImage(item.productInfo.image)
-								console.log(image)
-								obj.shopAllMessage.push({
-									// 对数据进行保存
-									shoptitle:item.productInfo.store_name, //商品名称
-									specification:item.productInfo.attrInfo.suk, //商品种类
-									money:item.productInfo.price,//商品价格
-									image: image,//商品logo
-									num:item.cart_num,//商品数量
-									id:item.id ,//商品id
-									uid:item.uil, //商品uid
-									type:false,
-								})
-							})
-							
-							// 充值购物车信息
-							this.$store.commit('clearCart')
-							
-							// 把数据存放在vuex中
-							this.$store.commit('addCart',obj)
-							
-							
-							console.log(this.$store.state.CartList)
-							this.shopList = this.$store.state.CartList
-						}
-					}
-				})
 			}
 		},
-		
-		// arr.forEach((item,i) => {
-		// 	const obj = {
-		// 		shopname:item.shop_info.shop_name,
-		// 		shopType:false,
-		// 		shopAllMessage:[{
-		// 			shoptitle:item.productInfo.store_name,
-		// 			specification:item.productInfo.attrInfo.suk,
-		// 			money:item.productInfo.price,
-		// 			image:item.productInfo.image,
-		// 			num:item.cart_num,
-		// 			type:false
-		// 		}]
-		// 	}
-		// })
+		onShow() {
+			this.getCartData()
+			this.isManage = true
+			let pages = getCurrentPages();
+			let page = pages[pages.length - 1];
+			// #ifdef APP-PLUS
+			let currentWebview = page.$getAppWebview();
+			let titleObj = currentWebview.getStyle().titleNView;
+			if (!titleObj.buttons) {
+			return;
+			}
+			titleObj.buttons[0].text = "管理";
+			currentWebview.setStyle({
+			titleNView: titleObj
+			});
+			// #endif
+		},
 		data(){
 			return{
-				sumMoney:0,//结算金额
-				allselect:false,//是否全选
-				allselectTxt:'全选',//是否全选文字
-				shopList:[]
+				shopList:[],
+				isManage:true,
+				keys:[],
+				show1:false,
+				// 下拉刷新的常用配置
+				downOption: { 
+					use: true, // 是否启用下拉刷新; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行下拉刷新的回调; 默认true
+				},
+				// 上拉加载的常用配置
+				upOption: {
+					use: true, // 是否启用上拉加载; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行上拉加载的回调; 默认true
+					page: {
+						num: 0, // 当前页码,默认0,回调之前会加1,即callback(page)会从1开始
+						size: 10 // 每页数据的数量,默认10
+					},
+					noMoreSize: 5, // 配置列表的总数量要大于等于5条才显示'-- END --'的提示
+					textNoMore:'-- 没有更多了 --',
+					empty: {
+						tip: '暂无相关数据'
+					}
+				},
 			}
 		},
 		computed:{
-			...mapGetters(['isToken'])
+			...mapGetters(['isToken']),
+
+			// 结算金额(可以优化)
+			sumMoney(){
+					const obj = this.shopList
+					,keys = this.keys
+					let totalPrice = 0
+					
+					keys.forEach((item,index) => {
+						totalPrice += obj[keys[index]].filter(x => {
+							return x.isClick
+						}).reduce((prev,x) => {
+							const product = x.productInfo
+							if(product.attrInfo){
+								return (prev*1 + product.attrInfo.price * x.cart_num)
+							}else{
+								return (prev*1 + product.price * x.cart_num)
+							}
+						},0)
+					})
+					return totalPrice.toFixed(2)
+			},
+			// 用户选择的商品
+			used(){
+				const keys = this.keys
+				if(keys.length){
+					const keys = this.keys
+					const arr = []
+					keys.forEach((item,index) => {
+						 this.shopList[keys[index]].forEach(x => {
+							if(x.isClick){
+								arr.push(x)
+							}
+						})
+					})
+					return arr
+				}else{
+					return []
+				}
+			},
+			// 全选
+			allselect(){
+				const keys = this.keys
+				if(keys.length){
+					return	this.keys.every((x,index) => {
+						return this.isSellectAll(this.shopList[this.keys[index]]) 
+					})
+				}else{
+					return false
+				}
+			},
+			allselectTxt(){
+				return this.allselect ? '全不选' : '全选'
+			},
+
 		},
 		methods:{
-			//点击店铺
-			ShopClick(key){
-				var that = this
-				let shopAll = that.shopList[key]
-				let moneynum = 0
-				if(shopAll.shopType){
-					shopAll.shopType = false
-					shopAll.shopAllMessage.forEach(function(item){
-						let ride = that.numMulti(item.num,item.money)
-						moneynum = that.numAdd(moneynum,ride)
-						item.type = false
-					})
-					that.sumMoney = that.numSub(that.sumMoney,moneynum)
-				}else{
-					shopAll.shopType = true
-					shopAll.shopAllMessage.forEach(function(item){
-						if(!item.type){
-							let ride = that.numMulti(item.num,item.money)
-							moneynum = that.numAdd(moneynum,ride)
-							item.type = true
+			// 访问网络数据
+			getCartData(mescroll){
+				getShopCartData(this.isToken).then(res => {
+					if(res.data.code == 200){
+						const obj =	res.data.data.group
+						const result = []
+						const keys= Object.keys(obj)
+						keys.forEach((x,index) => {
+							obj[keys[index]].forEach(x => {
+								x.isClick = false
+								const product = x.productInfo
+								if(product.attrInfo){
+									product.attrInfo.image = replaceImage(product.attrInfo.image)
+								}
+								product.image = replaceImage(product.image)
+								if(product.shop_info){
+									product.shop_info.shop_logo = replaceImage(product.shop_info.shop_logo)
+								}
+							})
+						})
+							this.shopList = obj
+							this.keys = keys
+							
 						}
+						if(mescroll){
+							mescroll.endErr()
+						}
+				})
+			},
+			// 商品是否全选
+			isSellectAll(vo,key){
+				if(vo){
+					return vo.every(x => {
+						return x.isClick
 					})
-					that.sumMoney = that.numAdd(that.sumMoney,moneynum)
+				}else{
+					return false
 				}
-				that.shopList[key] = shopAll
+			},
+			// 去结算
+			goPay(){
+				// 清除用户拼团的信息
+				this.$store.commit('setOutPinkInfo')
+				const arr = []
+				console.log(this.used)
+				arr.push(...this.used.map(x => x.id))
+				if(arr.length){	
+					// 把购物车id存在vuex中
+					this.$store.commit('keepCartId',arr)
+						
+					uni.navigateTo({
+						url:'../ShopDetails/affirm/affirmOrder'
+					})
+				}else{
+					uni.showToast({
+						title:'请选择商品',
+						icon:'none'
+					})
+				}
+				
+			},
+			// 删除商品
+			removeProduct(){
+				const arr = this.used.map(x => x.id)
+				if(arr.length){
+					this.removeCart(arr.join(','),this.isToken)
+				}
+			},
+			removeCart(ids,token){
+				removeCart(ids,token).then(res => {
+					console.log(res)
+					if(res.data.code == 200){
+						const keys = this.keys
+						const list = this.shopList
+						keys.forEach((item,index) => {
+							const arr = list[keys[index]]
+							for(var i = arr.length-1 ; i >=0 ; i--){
+								if(arr[i].isClick){
+									arr.splice(i,1)
+								}
+							}
+							if(!arr.length){
+								delete list[keys[index]]
+							}
+						})
+						this.$set(this,'shopList',list)
+						this.keys = Object.keys(list)
+						console.log(this.shopList)
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast("删除成功")
+						// #endif
+					}
+				})
+			},
+			//点击店铺
+			ShopClick(vo,key){
+				const status = this.isSellectAll(vo)
+					vo.forEach(x => {
+						x.isClick = !status
+					})
 			},
 			
 			//点击店铺内商品
-			shoponeClick(key,index){
-				var that = this
-				let length = 0
-				let shopAll = that.shopList[key].shopAllMessage[index]
-				let shopAllLength = that.shopList[key].shopAllMessage
-				if(shopAll.type){
-					shopAll.type = false
-					shopAllLength.forEach(function(item){
-						if(!item.type){
-							length += 1
-						}
-					})
-					if(length != 0){
-						that.shopList[key].shopType = false
-					}
-					let ride = that.numMulti(shopAll.num,shopAll.money)
-					let Sub = that.numSub(that.sumMoney,ride)
-					that.sumMoney = Sub
-				}else{
-					shopAll.type = true
-					shopAllLength.forEach(function(item){
-						if(item.type){
-							length += 1
-						}
-					})
-					if(shopAllLength.length == length){
-						that.shopList[key].shopType = true
-					}
-					let ride = that.numMulti(shopAll.num,shopAll.money)
-					let pulsSum = that.numAdd(ride,that.sumMoney)
-					that.sumMoney = pulsSum
-				}
-				that.shopList[key].shopAllMessage[index] = shopAll
+			shoponeClick(item){
+				item.isClick = !item.isClick
 			},
-			
+			voClick(item){
+				const click = item.isClick
+				console.log(item)
+			},
 			//购物车数量增加
-			addShopClick(key,index,money){
-				var that = this
-				let timeout = that.shopList[key].shopAllMessage[index]
-				timeout.num = that.numAdd(timeout.num,1)
-				if(timeout.type){
-					let moneyFake=  that.numAdd(that.sumMoney,money)
-					that.sumMoney = parseFloat(moneyFake.toFixed(2))
-				}
-				that.shopList[key].shopAllMessage[index] = timeout
+			addShopClick(key,index,item){
+					item.cart_num ++
+				// 修改购物车数量，发起网络请求
+				changeCartNum(item.id,item.cart_num,this.isToken)
+					.then(res =>{
+						if(res.data.code != 200){
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast("您点击的太快了，请稍后重试")
+							// #endif
+						}else{
+							
+						}
+					})
 			},
-			
+			upModel(){
+				this.show1 = true
+			},
 			//购物车数量减少
-			moveShopClick(key,index,money){
-				var that = this
-				let timeout = that.shopList[key].shopAllMessage[index]
-				if(timeout.num < 2) return
-				timeout.num = that.numSub(timeout.num,1)
-				if(timeout.type){
-					console.log(that.sumMoney)
-					console.log(money)
-					let moneyFake=  that.numSub(that.sumMoney,money)
-					that.sumMoney = moneyFake
+			moveShopClick(key,index,item){
+				
+				if(item.cart_num>1){
+					item.cart_num -- 
+					changeCartNum(item.id,item.cart_num,this.isToken)
+						.then(res =>{
+							if(res.data.code != 200){
+								// #ifdef APP-PLUS
+								plus.nativeUI.toast("您点击的太快了，请稍后重试")
+								// #endif
+							}else{
+								
+							}
+						})
 				}
-				that.shopList[key].shopAllMessage[index] = timeout
 			},
 			
 			//点击全选
 			shopAllselectClick(){
-				var that = this
-				let shopCartList = null
-				if(that.allselect){
-					shopCartList = that.shopList
-					shopCartList.forEach(function(item){
-						item.shopType = false
-						item.shopAllMessage.forEach(function(index){
-							index.type = false
+				const status = this.allselect
+				const length = Object.keys(this.shopList).length
+				const keys = this.keys
+				if(length){
+					if(status){
+						keys.forEach((x,index) => {
+							this.ShopClick(this.shopList[keys[index]])
 						})
-					})
-					that.sumMoney = 0
-					that.allselect = false
-					that.allselectTxt = '全选'
-				}else{
-					let allsumMoney = 0//控制所有总和
-					shopCartList = that.shopList
-					shopCartList.forEach(function(item){
-						let moneynum = 0//控制每个店铺的总和
-						item.shopType = true
-						item.shopAllMessage.forEach(function(index){
-							let ride = that.numMulti(index.num,index.money)//每个商品总和
-							moneynum = that.numAdd(moneynum,ride)//每个店铺的总和
-							index.type = true
+					}else{
+						keys.forEach((x,index) => {
+							if(!this.isSellectAll(this.shopList[keys[index]])){
+								this.ShopClick(this.shopList[keys[index]])
+							}
 						})
-						allsumMoney =that.numAdd(allsumMoney,moneynum)//所有总和
-					})
-					that.sumMoney = allsumMoney
-					that.allselect = true
-					that.allselectTxt = '全不选'
-					
+					}
 				}
-				that.shopList = shopCartList
 			},
-			
-			/**
-			 * 加法运算，避免数据相加小数点后产生多位数和计算精度损失。
-			 * 
-			 * @param num1加数1 | num2加数2
-			 */
-			numAdd(num1, num2) {
-			    var baseNum, baseNum1, baseNum2;
-			    try {
-			        baseNum1 = num1.toString().split(".")[1].length;
-			    } catch (e) {
-			        baseNum1 = 0;
-			    }
-			    try {
-			        baseNum2 = num2.toString().split(".")[1].length;
-			    } catch (e) {
-			        baseNum2 = 0;
-			    }
-			    baseNum = Math.pow(10, Math.max(baseNum1, baseNum2));
-			    return (num1 * baseNum + num2 * baseNum) / baseNum;
+			// 进入详情
+			goDetail(item){
+				if(item){
+					const id = item.productInfo.id
+					uni.navigateTo({
+						url:`../ShopDetails/shopDetails?id=${id}`
+					})
+				}
 			},
-			
-			/**
-			 * 减法运算，避免数据相减小数点后产生多位数和计算精度损失。
-			 * 
-			 * @param num1被减数  |  num2减数
-			 */
-			numSub(num1, num2) {
-			    var baseNum, baseNum1, baseNum2;
-			    var precision;// 精度
-			    try {
-			        baseNum1 = num1.toString().split(".")[1].length;
-			    } catch (e) {
-			        baseNum1 = 0;
-			    }
-			    try {
-			        baseNum2 = num2.toString().split(".")[1].length;
-			    } catch (e) {
-			        baseNum2 = 0;
-			    }
-			    baseNum = Math.pow(10, Math.max(baseNum1, baseNum2));
-			    precision = (baseNum1 >= baseNum2) ? baseNum1 : baseNum2;
-			    return ((num1 * baseNum - num2 * baseNum) / baseNum).toFixed(precision);
+			// 下拉刷新方法
+			downCallback(mescroll) { 
+				this.getCartData(mescroll)
+				
 			},
-			
-			/**
-			 * 乘法运算，避免数据相乘小数点后产生多位数和计算精度损失。
-			 * 
-			 * @param num1被乘数 | num2乘数
-			 */
-			numMulti(num1, num2) {
-			    var baseNum = 0;
-			    try {
-			        baseNum += num1.toString().split(".")[1].length;
-			    } catch (e) {
-			    }
-			    try {
-			        baseNum += num2.toString().split(".")[1].length;
-			    } catch (e) {
-			    }
-			    return Number(num1.toString().replace(".", "")) * Number(num2.toString().replace(".", "")) / Math.pow(10, baseNum);
+			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
+			upCallback(mescroll) {
+				mescroll.endErr()
 			},
-
 		}
 	}
 </script>
 
-<style>
+<style lang="scss">
+	.header{
+		height: 122upx;
+		width: 100%;
+		padding: 10upx 24upx;
+		box-sizing: border-box;
+		background: #f9f9f9;
+		font-size: 32upx;
+		color: #333333;
+		display: flex;
+		justify-content: flex-end;
+		align-items: flex-end;
+		position: fixed;
+		top: 0px;
+		left: 0;
+		right: 0;
+		z-index: 999;
+	}
+	page{
+
+	}
+	.backDark{
+		>view{
+			background-color: $uni-color-warning;
+			color: #fff;
+		}
+	}
+	.m-btn{
+		padding: 10upx 25upx;
+		background-color: #cd3233;
+		border-radius: 5px;
+		color: #fff;
+	}
 	.shoppingCart-image-all{
 		width:188upx;
 		height: 188upx;
@@ -361,27 +462,26 @@
 		padding: 0 10upx;
 	}
 	.shoopingCart-right{
-		width: 100%;
+		flex: 1;
+		width: 60%;
+		overflow: hidden;
 	}
 	.shoopingCart-right-title{
+		white-space: nowrap;
 		overflow:hidden;
-		text-overflow:ellipsis; 
-		display:-webkit-box; 
-		-webkit-box-orient:vertical; 
-		-webkit-line-clamp:2; 
+		text-overflow:ellipsis; ; 
 		font-size: 26upx;
+		width: 100%;
 	}
 	.shoopingCart-right-guige{
 		font-size: 22upx;
 		color: #999999;
-		background: #F9F9F9;
-		height:40upx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin: 20upx 0;
-		width: 100upx;
-		border-radius: 10upx;
+		padding: 30upx 0;
+		text{
+			background: #F9F9F9;
+			padding: 5upx 0;
+		}	
+		
 	}
 	.shoopingCart-input{
 		width: 50upx;
@@ -394,6 +494,9 @@
 	}
 	.shoopingCart-input-add{
 		font-size: 34upx;
+		padding: 5upx;
+		// border: 1px solid #333;
+		margin: 0 10upx;
 	}
 	.shoopingCart-bottom{
 		width: 100%;
@@ -430,5 +533,21 @@
 		position: fixed;
 		width: 100%;
 		top: 500upx;
+	}
+	.store-info{
+		display: flex;
+		.storename{
+			flex:1;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			
+		}
+	}
+	.c-item{
+		height: 210upx;
+	}
+	.remove-btn{
+		background-color: #e67e22;
 	}
 </style>

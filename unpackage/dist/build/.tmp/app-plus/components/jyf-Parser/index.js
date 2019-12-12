@@ -7,4 +7,4 @@
         })
     },
     [['components/jyf-Parser/index-create-component']]
-]);                
+]);

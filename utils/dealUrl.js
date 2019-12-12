@@ -6,8 +6,21 @@ import province from '@/components/w-picker/city-data/province' //省
 
 // 替换单个Url的路径
 export function replaceImage(str){
-	const reg = new RegExp(`${HOSTWWW}`)
-	return str.replace(reg,HOST)
+	if(str){
+		const reg = new RegExp(`${HOSTWWW}`)
+		let flag = true 
+		if(!reg.test(str)){
+			if(!~str.indexOf(HOST)){
+				flag = false
+			}		
+		}
+		if(flag){
+			return str.replace(reg,HOST)
+		}else{
+			return 'http://' + HOST + str
+		}
+	}
+	return ''
 }
 
 // 替换图片列表

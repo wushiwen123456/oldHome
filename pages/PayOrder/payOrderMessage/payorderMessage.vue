@@ -1,100 +1,306 @@
 <template>
-	<view class="bookingMessage">
+ <mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption">
+	<view class="bookingMessage" v-if="pinkInfo.length">
 		<view class="bookingMessage-title">
-			<view  v-if="type == 1" class="bookingMessage-title-title">
+			<view class="bookingMessage-title-title" v-if="pinkInfo.length < pinkInfo[0].people">
 				<view style="font-size: 40upx;" class="lg text-orange cuIcon-timefill"></view>
 				<view class="margin-left-xs margin-right-xs">剩余</view>
-				<tui-countdown :time="timeList[0]" colonSize="40" color="#fff" width="44" height="36" size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
+				<tui-countdown :time="dealTime()"  :colonSize="40" color="#fff" :width="44" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
 				<view  class="margin-left-xs margin-right-xs">结束</view>
 			</view>
-			<view v-if="type == 0" class="bookingMessage-success"><view class="tui-icon tui-icon-circle-fill bookingMessage-title-success" >拼团成功</view></view> 
-			<view class="bookingMessage-title-headimg">
-				<view class="bookingMessage-title-left">
-					<view class="bookingMessage-head-text">团长</view>
-					<image class="bookingMessage-title-headimgone" src="../../../static/demo3.png"></image>
+			<view class="bookingMessage-success"><view class="tui-icon tui-icon-circle-fill bookingMessage-title-success" >{{detltopText()}}</view></view> 
+			<view class="booking-contain">
+				<view v-for="(item,index) in pinkInfo[0].people" :key='index' class="booking-item">
+					<view class="bookingMessage-title-left" v-if="index < pinkInfo.length">
+						<view v-if="pinkInfo[index].k_id == 0" class="bookingMessage-head-text">团长</view>
+						<image class="bookingMessage-title-headimgone" :src="pinkInfo[index].userInfo.avatar"></image>
+					</view>
+					<view v-if="index >= pinkInfo.length" class="booking-item" @tap="popup">
+						<image src="../../../static/denfairen.png"></image>
+					</view>
 				</view>
-				<image v-if="type == 1" class="bookingMessage-title-headimgtwo" src="../../../static/denfairen.png"></image>
-				<image v-if="type == 0" class="bookingMessage-title-headimgtwo" src="../../../static/demo3.png"></image>
 			</view>
-			<view  v-if="type == 1" class="bookingMessage-title-onetxt">还差<span style="color: #fe4d3d;">1</span>人，赶快邀请好友来拼团吧</view>
-			<button  v-if="type == 1" @tap="popup" class="bookingMessage-title-button">邀请好友拼团</button>
-			<button  v-if="type == 0" @tap="homeClick" class="bookingMessage-title-button">去首页逛逛</button>
-			<view v-if="type == 0" style="height: 80upx;"></view>
-			<view  v-if="type ==  1" class="bookingMessage-title-twotxt">拼团规则：好友拼团，人满发货，人不满退款</view>
+			<view v-if="pinkInfo.length < pinkInfo[0].people">
+				<view   class="bookingMessage-title-onetxt">还差<text style="color: #fe4d3d;">{{pinkInfo[0].people - pinkInfo.length}}</text>人，赶快邀请好友来拼团吧</view>
+				<button @tap="popup" class="bookingMessage-title-button">{{'邀请好友拼团'}}</button>
+			</view>
+			<view v-if="pinkInfo.length == pinkInfo[0].people" class="seccess-pink">拼团成功</view>
+			<view style="height: 80upx;"></view>
+			<view class="bookingMessage-title-twotxt">拼团规则：好友拼团，人满发货，人不满退款</view>
 			<view @tap="homeClick"  class="bookingMessage-title-twotxt">回到首页</view>
 		</view>
 		
 		<view class="bookingMessage-bottom">
-			<view class="bookingMessage-bottom-title">
-				<image src="../../../static/demo4.png"></image>
-				<view class="bookingMessage-bottom-txt">沃隆每日坚果750g混合装30包干果零食...</view>
+			<view class="c-title"><text>推 荐 商 品</text></view>
+			<view class="bookingMessage-bottom-title" v-for="(item,index) in recommendGoods" @click="goDetail(item)">
+				<image :src="item.image"></image>
+				<view class="bookingMessage-bottom-txt">{{item.store_name}}</view>
 			</view>
 		</view>
 	</view>
+	</mescroll-uni>
 </template>
 
 <script>
 	import tuiCountdown from "@/components/countdown/countdown"
+	// 下拉刷新
+	import MescrollUni from "@/components/mescroll-uni/mescroll-uni.vue";
+	
+	import { getUserPink } from '@/network/pink'
+	
+	import { getPinkStatus } from '@/network/affirm'
+	
+	// 导入工具类
+	import { replaceImage } from '@/utils/dealUrl'
+	
+	// #ifdef APP-PLUS
+	// 导入分享方法
+	import share from "@/common/share.js";
+	// #endif
+	
 	export default {
 		components:{
-			tuiCountdown
+			tuiCountdown,
+			MescrollUni
 		},
 		data() {
 			return {
+				id:'',
 				timeList: [1000, 2000, 3000, 19, 240000],//倒计时
-				type:1,// 0参团 , 1拼团
-				shoplist:'',//拼团商品
-				shoplistimg:'',//拼团用户信息
-				joinbookimg:'',//参团信息
+				type:1,// 0参团 , 1开团
 				popupShow: false,
-				pink_id:'',//订单id
 				poster: {},
 				qrShow: false,
 				canvasId: 'default_PosterCanvasId',
 				shareList:[{
-					img:'../../../static/image/share_weixin.png',
-					name:'微信好友'
-				},{
-					img:'../../../static/image/friend.png',
-					name:'朋友圈'
-				},{
-					img:'../../../static/image/share_qq.png',
-					name:'QQ'
-				},{
-					img:'../../../static/image/share_weibo.png',
-					name:'微博'
+						icon:"/static/sharemenu/wechatfriend.png",
+						text:"微信好友",
+					},
+					{
+						icon:"/static/sharemenu/wechatmoments.png",
+						text:"朋友圈"
+					},{
+					icon:"/static/sharemenu/copyurl.png",
+					text:"复制"
+				},
+				{
+					icon:"/static/sharemenu/more.png",
+					text:"更多"
 				}],
+				token:'',
+				order:'',
+				pinkInfo:[],
+				recommendGoods:[],
+				// 下拉刷新的常用配置
+				downOption: { 
+					use: true, // 是否启用下拉刷新; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行下拉刷新的回调; 默认true
+				},
+				// 上拉加载的常用配置
+				upOption: {
+					use: true, // 是否启用上拉加载; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行上拉加载的回调; 默认true
+					page: {
+						num: 0, // 当前页码,默认0,回调之前会加1,即callback(page)会从1开始
+						size: 10 // 每页数据的数量,默认10
+					},
+					noMoreSize: 5, // 配置列表的总数量要大于等于5条才显示'-- END --'的提示
+					textNoMore:'-- 没有更多了 --',
+					empty: {
+						tip: '暂无相关数据'
+					},
+					
+					
+					Linder:{}
+				},
 			}
 		}, 
 		onLoad(e) {
-			this.pink_id = e.pink_id
-			this.booking();
+			this.token = this.$store.getters.isToken
+			this.order = this.$store.state.orderKey
+			console.log(this.token)
+			console.log(this.order)
+		},
+		onReady() {
+			const mescroll = this.$refs.mescroll.mescroll
+			this.getPinkInfo(mescroll)
 		},
 		onShow(){
 			
 		},
 		methods: {
-			//判断是参团还是开团
-			booking(){
+			popup() {
+				
+				// 邀请好友拼团
+				if(this.pinkInfo.length < this.pinkInfo[0].people){
+					
+					let shareInfo={
+						href:"https://uniapp.dcloud.io",
+						title:'老家商城',
+						desc:'我正在老家商城发起拼团，敢来和我一起拼么',
+						imgUrl:'/static/56524a9a3b6bdab0753eb8ed922d57d.png'
+					};
+					this.shareObj=share(shareInfo,this.shareList,(index) => {
+							console.log("点击按钮的序号: " + index);
+							let shareObj={
+								href:shareInfo.href||"",
+								title:shareInfo.title||"",
+								summary:shareInfo.desc||"",
+								success:(res)=>{
+									console.log("success:" + JSON.stringify(res));
+								},
+								fail:(err)=>{
+									console.log("fail:" + JSON.stringify(err));
+								}
+							};
+							switch (index) {
+								case 0:
+									shareObj.provider="weixin";
+									shareObj.scene="WXSceneSession";
+									shareObj.type=0;
+									shareObj.imageUrl=shareInfo.imgUrl||"";
+									uni.share(shareObj);
+									break;
+								case 1:
+									shareObj.provider="weixin";
+									shareObj.scene="WXSenceTimeline";
+									shareObj.type=0;
+									shareObj.imageUrl=shareInfo.imgUrl||"";
+									uni.share(shareObj);
+									break;
+								case 2:
+									uni.setClipboardData({
+										data:shareInfo.href,
+										complete() {
+											uni.showToast({
+												title: "已复制到剪贴板"
+											})
+										}
+									})
+									break;
+								case 3:
+									plus.share.sendWithSystem({
+										type:"web",
+										title:shareInfo.title||"",
+										thumbs:[shareInfo.imgUrl||""],
+										href:shareInfo.href||"",
+										content: shareInfo.desc||"",
+									})
+									break;
+							};
+						});
+						
+						this.$nextTick(()=>{
+							this.shareObj.alphaBg.show();
+							this.shareObj.shareMenu.show();
+						})
+				}else{
+					uni.navigateTo({
+						url:''
+					})
+				}
+				
 				
 				
 			},
-			popup: function() {
-				
+			// 获取拼团信息
+			getPinkInfo(mescroll){
+				const uni = this.order
+				const token = this.token
+				console.log(uni)
+				console.log(token)
+				getPinkStatus(uni,token).then(res => {
+					if(res.data.code == 200){
+						let arr = res.data.data.list
+						console.log(arr)
+						let recommendGoods = res.data.data.goodsList
+						this.type = arr.length == 1 ? 1 : 0
+						arr.forEach(x =>{
+							x.userInfo.avatar = replaceImage(x.userInfo.avatar)
+						})
+						// 判断谁是团长
+						this.dealTuan(arr)
+						this.pinkInfo = arr
+						this.dealTitle()
+						recommendGoods.forEach(x => {
+							x.image = replaceImage(x.image)
+						})
+						
+						this.recommendGoods = recommendGoods
+						mescroll.endErr()
+					}
+				})
 			},
 			//回到首页
 			homeClick(){
-				
+				uni.switchTab({
+					url:'../../Home/home'
+				})
 			},
-			
+			// 判断谁是团长
+			dealTuan(arr){
+				arr.forEach(x => {
+					if(x.k_id == 0){
+						this.Linder = x
+					}
+				})
+			},
 			shareShowclose(){
 				
 			},
+			// 处理时间方法(功能暂未实现)
+			dealTime(){
+				if(this.pinkInfo){
+					const time = Math.round(new Date().getTime()/1000)
+					// console.log(this.pinkInfo[0].stop_time - time) 
+					console.log(new Date(1575873765*1000))
+					return 123
+				}
+				// return 21212
+			},
+			dealTitle(){
+				uni.setNavigationBarTitle({
+					title:this.type == 1 ? '开团成功' : '拼团成功'
+				})
+			},
+			goMyPicking(){
+				uni.navigateTo({
+					url:'../../My/MyBooking/mybooking'
+				})
+			},
+			// 下拉刷新方法
+			downCallback(mescroll) { 
+				this.getPinkInfo(this.order,this.token,mescroll)
+			},
+			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
+			upCallback(mescroll) {
+				mescroll.endErr()
+			},
+			detltopText(){
+				if(this.pinkInfo.length != 0){
+					if(this.pinkInfo.length == this.pinkInfo[0].people){
+						return '拼团成功'
+					}else{
+						if(this.type == 1){
+							return '正在开团中...'
+						}else{
+							const name = this.Linder.userInfo.nickname
+							return `正在参加${name}的团`
+						}
+					}
+				}
+			},
+			goDetail(item){
+				const id = item.id
+				uni.navigateTo({
+					url:`../../ShopDetails/shopDetails?id=${id}`
+				})
+			}
 		}
 	}
 </script>
 
-<style>
+<style lang="scss">
 	/* 隐藏scroll-view滚动条*/
 	::-webkit-scrollbar {
 		width: 0;
@@ -115,29 +321,24 @@
 		display: flex;
 		justify-content: center;
 		margin-top: 46upx;
-	}
-	.bookingMessage-title-headimgone{
-		border-radius: 50%;
-		height: 96upx;
-		width: 96upx;
-		margin-left: 10upx;
-		margin-top: 10upx;
-		border: #ff8625 2upx solid;
-	}
-	.bookingMessage-title-headimgtwo{
-		border-radius: 50%;
-		height: 96upx;
-		width: 96upx;
-		margin-left: 60upx;
-		margin-top: 10upx;
-		border: #FFFFFF 2upx solid;
+		
 	}
 	.bookingMessage-title-left{
-		height: 106upx;
+		height: 96upx;
+		position: relative;
+		border-radius: 50%;
+		height: 96upx;
+		width: 96upx;
+		border: #FFFFFF 2upx solid;
+		margin-right: 20upx;
+		.bookingMessage-title-headimgone{
+			width: 100%;
+			height: 100%;
+		}
 	}
 	.bookingMessage-head-text{
 		z-index: 99;
-		position: fixed;
+		position: absolute;
 		width: 68upx;
 		height: 36upx;
 		background-color: #ff8625;
@@ -201,6 +402,7 @@
 	}
 	.bookingMessage-success{
 		text-align: center;
+		padding: 25upx 0;
 	}
 	.bookingMessage-title-success{
 		color:#1ecd16;
@@ -303,5 +505,41 @@
 	
 	.marginTop2vh {
 		margin-top: 2vh;
+	}
+	.booking-contain{
+		padding:0 45upx ;
+		width: 100%;
+		height: 120upx;
+		box-sizing: border-box;
+		display: flex;
+		justify-content:center;
+		align-items: center;
+		image{
+			width: 100%;
+			height: 100%;
+		}
+		.booking-item{
+			border-radius: 50%;
+			height: 96upx;
+			width: 96upx;
+			border: #FFFFFF 2upx solid;
+			margin-right: 20upx;
+			image{
+				width: 100%;
+				height: 100%;
+			}
+		}
+	}
+	.seccess-pink{
+		text-align: center;
+		padding: 25upx 0;
+		color:#1ecd16;
+		font-size:30upx;
+	}
+	.c-title{
+		padding: 25upx 15upx;
+		font-size: 34upx;
+		text-align: center;
+		color: $uni-text-color;
 	}
 </style>

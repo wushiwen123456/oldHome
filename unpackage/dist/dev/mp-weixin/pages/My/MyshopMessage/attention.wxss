@@ -1,0 +1,66 @@
+
+.nodata{
+	padding-top: 200rpx;
+}
+.nodata image{
+	width: 100%;
+}
+.enter-left-image{
+}
+.enter-left-image image{
+	width:84rpx;
+	height:84rpx;
+	border-radius:22rpx;
+}
+.enter-margin{
+	padding-left: 24rpx;
+}
+.enter-margin-all{
+	height: 140rpx;
+	border-top: #E1E1E1 1px solid;
+}
+.enter-margin-all:nth-child(1){
+	border: none;
+}
+.text-color{
+	color: #838383;
+}
+.enter-booton{
+	width:70rpx;
+	height:34rpx;
+	background:rgba(205,50,51,1);
+	border-radius:18rpx;
+	font-size: 20rpx;
+	color: #FFFFFF;
+	margin-right: 24rpx;
+}
+.enter-sanjiao-right{
+	padding: 2rpx 6rpx;
+	border-radius: 8rpx;
+	background: #EAD09D;
+	font-size: 24rpx;
+	color: #5C2E10;
+}
+.recordList-all-popu{
+	position: absolute;
+	z-index: 999;
+	right: 60rpx;
+	top: 100rpx;
+	width:180rpx;
+	height:80rpx;
+	background:rgba(255,255,255,1);
+	-webkit-box-shadow:0rpx 0rpx 30rpx 6rpx rgba(0, 0, 0, 0.09);
+	        box-shadow:0rpx 0rpx 30rpx 6rpx rgba(0, 0, 0, 0.09);
+	border-radius:10rpx;
+	color: 32rpx;
+	line-height: 80rpx;
+	text-align: center;
+}
+.winSize-zehzaho{
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 99;
+	background: rgba(255,255,255,0);
+}
+

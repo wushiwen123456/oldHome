@@ -3,11 +3,28 @@
 		{
 			"path": "pages/Home/home",//首页
 			"style": {
+				"disableScroll": true,
 				"app-plus": {
-					"titleNView": false //禁用原生导航栏
+					"scrollIndicator":"none",
+					"titleNView": false ,//禁用原生导航栏
+					"bounce" : "none"
 				}
 			}
 		},
+		// 搜索框页面
+		{
+			"path":"pages/HM-search/HM-search"
+		},
+		{
+			"path":"pages/HM-search/HM-searchList",
+			"style": {
+				"app-plus":{
+					"scrollIndicator":"none",
+					"titleNView": false  ,//禁用原生导航栏
+					"bounce":"vertical"//窗口垂直方向回弹效果
+				}
+			}
+		},	
 		{
 			"path": "pages/Home/Native/native",//老家特产
 			"style": {
@@ -18,6 +35,26 @@
 				}
 			}
 		},
+		{
+			"path": "pages/My/MyOrder/evaluate",//发表评论
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "发表评价",
+				"app-plus":{
+					"scrollIndicator":"none",//不显示滚动条
+					"titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+							{
+								"text": "发布" ,//原生标题栏增加分享按钮，点击事件可通过页面的 onNavigationBarButtonTap 函数进行监听
+								"color":"#CD3233",
+								"fontSize":"16px"
+							}
+						]
+					}
+				}
+			}
+		},
+
 		{
 			"path": "pages/Home/Native/address",//特产馆
 			"style": {
@@ -44,7 +81,7 @@
 				"navigationBarBackgroundColor":"#FFFFFF",
 				"navigationBarTitleText": "拼团",
 				"app-plus":{
-					"scrollIndicator":"none"//不显示滚动条
+					
 				}
 			}
 		},
@@ -53,6 +90,16 @@
 			"style": {
 				"navigationBarBackgroundColor":"#FFFFFF",
 				"navigationBarTitleText": "积分商城",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		},
+		{
+			"path": "pages/ShopDetails/shopComment",//积分明细
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "评论详情",
 				"app-plus":{
 					"scrollIndicator":"none"//不显示滚动条
 				}
@@ -215,6 +262,7 @@
 			"style": {
 				"navigationBarBackgroundColor":"#FFFFFF",
 				"navigationBarTitleText": "购物车",
+				"navigationStyle":"default",
 				"app-plus":{
 					"scrollIndicator":"none",//不显示滚动条
 					"titleNView": {
@@ -242,7 +290,8 @@
 								"fontSrc" : "/static/chunlei-video/iconfont.ttf",
 								"color":"#FFFFFF",
 								"fontSize":"24",
-								"width":"30px"
+								"width":"30px",
+								"redDot":true
 							},
 							{
 								"text": "\ue781" ,//原生标题栏增加分享按钮，点击事件可通过页面的 onNavigationBarButtonTap 函数进行监听
@@ -598,7 +647,104 @@
 		// 		}
 		// 	}
 		// }
-	],
+	    
+        ,{
+            "path" : "pages/ShopDetails/affirm/affirmIntegral",
+            "style" : {
+				"navigationBarTitleText":"积分订单",
+				"navigationBarBackgroundColor":"#FFFFFF"
+			}
+        }
+        ,{
+            "path" : "pages/Home/PublicMessage/invite/inviteDetail",
+            "style" : {
+				"navigationBarTitleText":"招聘详情",
+				"navigationBarBackgroundColor":"#FFFFFF"
+			}
+        }
+        ,{
+            "path" : "pages/Home/qiandao",
+            "style" : {
+				"disableScroll":true,
+				"navigationBarTitleText":"我要签到",
+				"navigationBarTextStyle":"white",
+				"app-plus":{
+					"titleNView":{
+						"type":"transparent",
+						"backgroundColor":"#E8211F"
+					}
+				}
+			}
+        }
+        ,{
+            "path" : "pages/My/footmark/footmark",
+            "style" : {}
+        }
+        ,{
+            "path" : "pages/ShopDetails/aaa",
+            "style" : {}
+        }
+        ,{
+            "path" : "pages/ShopDetails/affirm/success_pay",
+            "style" : {
+				"navigationBarTitleText":"付款成功"
+			}
+        }
+        ,{
+            "path" : "pages/My/Enter/showInfo",
+            "style" : {}
+        }
+        ,{
+            "path" : "pages/Home/PublicMessage/invite/success"
+        }
+        ,{
+            "path" : "pages/ShopDetails/affirm/Integral_success",
+            "style" : {}
+        },
+		{
+			"path": "pages/My/Mydata/mydata",
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "个人中心",
+				"app-plus":{
+					"scrollIndicator":"none",//不显示滚动条
+					"titleNView": {
+						"buttons": [
+							{
+								"text": "保存" ,//原生标题栏增加分享按钮，点击事件可通过页面的 onNavigationBarButtonTap 函数进行监听
+								"color":"#CD3233",
+								"fontSize":"16"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"path": "pages/My/Footprint/footprint",
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "我的足迹",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+				}
+			}
+		}
+
+        ,{
+            "path" : "pages/My/logistics/logistics",
+            "style" : {
+				"disableScroll":true,
+				"navigationBarTitleText":"物流信息",
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"backgroundColor":"#f5f5f5",
+				"app-plus":{
+					"scrollIndicator":"none",
+					"bounce":"none"
+				}
+			}
+        }
+    ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": " ",

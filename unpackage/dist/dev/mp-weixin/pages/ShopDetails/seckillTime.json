@@ -1,0 +1,9 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "商品详情",
+  "usingComponents": {
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "tui-numberbox": "/components/numberbox/numberbox",
+    "tui-countdown": "/components/countdown/countdown"
+  }
+}

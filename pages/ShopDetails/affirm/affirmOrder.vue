@@ -1,5 +1,5 @@
 <template>
-	<view>
+	<view class="contain">
 		<!-- 没有添加收货地址 -->
 		<view v-if="!Noaddress" @tap="addAddressClick()" class="affirmOrder-title dis-flex flex-item-cent flex-jus-space">
 			<view class="dis-flex flex-item-cent">
@@ -15,6 +15,7 @@
 				<image class="title-img-one" src="../../../static/address.png"></image>
 				<view class="affirmOrder-title-dizhi">
 					<view class="affirmOrder-title-nickname">{{address.real_name}}  {{address.phone}}</view>
+					<view class="margin-bottom-ml">{{address.province}} {{address.city}}  {{address.district}}</view>
 					<view>{{address.detail}}</view>
 				</view>
 			</view>
@@ -22,6 +23,7 @@
 		</view>
 		
 		<!-- 购买商品种类 循环开始 -->
+			
 		
 		<view  class=" affirmOrder-main" v-for="(item,index) in cartInfo" :key='index'>
 			<view class="flex align-center margin-bottom">
@@ -37,7 +39,7 @@
 						<!-- 商品名称 -->
 						<view class="text-wuer text-sm" >{{item2.productInfo.store_name}}</view>
 						<!-- 商品价格 -->
-						<view>￥{{item2.productInfo.price}}</view>
+						<view>￥{{productPrice(item2,index2,index)}}</view>
 					</view>
 					<view class="affirmOrder-main-right-bottom dis-flex flex-jus-space">
 						<view>类型：{{!!item2.productInfo.attrInfo ? item2.productInfo.attrInfo.suk : '暂无'}}</view>
@@ -54,34 +56,28 @@
 			</view>
 			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
 				<view>买家留言</view>
-				<input class="text-df" maxlength="-1" v-model="mark" placeholder="选填，请先和客服协商一致" />
+				<input class="text-df" maxlength="-1" v-model="item.mark" placeholder="选填，请先和客服协商一致" />
 			</view>
-			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
+			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message" v-if="isProduct(item)">
 				<view>优惠券</view>
 				<view class="dis-flex flex-item-cent">
-					<view @tap="uniPopupClick(item)" :disabled="!!item.usableCoupon" class="affirmOrder-message-youhui">选择优惠券</view>
+					<view @tap="uniPopupClick(item,index)" class="affirmOrder-message-youhui">{{disCountTitle(item,index)}}</view>
 					<view class="lg cuIcon-right margin-left-sm"></view>
 				</view>
 			</view>
 		</view>
+		</view>
+		
+		<!-- 循环结束 -->
 		
 		<view>
-			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
+			<!-- <view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
 				<view>可用红包抵用0.1元</view>
-				<!-- #ifdef MP-ALIPAY -->
-				<switch class='red' @change="IsCard" :class="isCard?'checked':''" :checked="isCard?true:false" color="#CD3233"></switch>
-				<!-- #endif -->
-				
-				<!-- #ifndef MP-ALIPAY -->
-				<switch class='red' @change="IsCard" :class="isCard?'checked':''" :checked="isCard?true:false"></switch>
-				<!-- #endif -->
-				
-			</view>
-			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
-				<view>朋友代付</view>
+			</view> -->
+			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message" @click="shareFirend">
+				<view>朋友代付{{comId}}</view>
 				<view class="lg cuIcon-right margin-left-sm"></view>
 			</view>
-		</view>
 		</view>
 		<!-- 底部合计 -->
 		<view class="affirmOrder-bottom">
@@ -93,16 +89,27 @@
 		</view>
 		
 		
+		<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message margin-top-sm">
+			<view>请选择支付方式</view>
+		</view>
+		<view class="affirmOrder-main pay-load">
+			<radio-group @change="radioChange" style="width: 100%;">
+				<view class="pay"><image src="../../../static/paya.png" mode="" style="width: 44px; height: 44px;"></image>微信支付  <radio color="#1ECD16" value="vx" /></view>
+				<view class="pay"><image src="../../../static/payb.png" mode="" style="width: 44px; height: 44px;"></image>支付宝支付 <radio value="zfb" /></view>
+			 </radio-group>
+		</view>
+		
+		
 		<!-- 优惠券选择 -->
-		<uni-popup ref="shareShow" type="bottom">
+		<uni-popup ref="shareShow" type="bottom" style="z-index: 999;">
 			<view class="margin-left-xl margin-right-xl">
 				<view class="text-center text-three margin-top" style="margin-bottom: 80upx;">店铺优惠</view>
 				<!-- 请选择您的优惠券 -->
-				<view class="margin-bottom-sm"><text>请选择您的优惠券</text></view>
-				<view v-for="(item,index) in disCountList" :key="index" class="flex align-center justify-between shareShow-all">
+				<view class="margin-bottom-sm"><text>选择优惠券</text></view>
+				<view v-if="curDiscountList" v-for="(item,index) in curDiscountList" :key="index" class="flex align-center justify-between shareShow-all">
 					<view></view>
-					<text>优惠券{{item.title}}</text>
-					<view style="font-size: 40upx;"  :class="[item.used?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']" @tap="disCountClick(item)"></view>
+					<view class="dscountTitle"><text >优惠券</text><text>{{item.coupon_title}}</text></view>
+					<view style="font-size: 40upx;"  :class="[item.used?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']" @tap="disCountClick(item,index)"></view>
 				</view>
 				
 				<view class="flex align-center justify-between shareShow-all">
@@ -113,16 +120,16 @@
 				<button @tap="shareShowclose" class="shareShow-button">完成</button>
 			</view>
 		</uni-popup>
-		
 	</view>
 </template>
 
 <script>
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	
-	// 导入账单信息和收货地址
-	import { getAffirmInfo } from '@/network/affirm.js'
+	// 调用网络接口
+	import { getAffirmInfo,placeOrder,payOrders,payorder  } from '@/network/affirm.js'
 	import { getAddress } from '@/network/getProfileData'
+	
 	
 	// 导入用户优惠信息
 	// import { getUserDiscount } from '@/network/getProfileData.js'
@@ -140,41 +147,46 @@
 			return{
 				shareShow:false,
 				Noaddress:false,//是否存在默认地址
-				mark:'',//买家留言
 				isCard:true,//true用红包  false 不用红包
 				discountsType:false,//优惠券选择
 				count:'',
 				cartId:'',
 				token:'',
-				cartInfo:[],
+				cartInfo:[],//订单详情
 				address:{},//地址信息
-				disCountList:[
-					{used:false,title:'xxx店铺'},
-					{used:false,title:'xxx店铺'},
-					{used:false,title:'xxx店铺'},
-					{used:false,title:'xxx店铺'},
-					{used:false,title:'xxx店铺'},
-					{used:false,title:'xxx店铺'},
-					{used:false,title:'xxx店铺'}
-				]  //优惠券列表
+				disCountList:[],//优惠券信息
+				curDiscountList:[] ,//当前循环
+				currentIndex:0,
+				currentIndex2:0,
+				currentPayVal:'',
+				t_price:'',
+				pinkInfo:{},
+				zfb:{}
 			}
 		},
 		onReady() {
 			
 		},
-		onLoad() {
-			
+		onshow() {
+			// 获取用户默认收货地址
+			this.userAddresss(this.isToken)
 		},
-		onShow() {
+		onLoad() {
+			if(Object.keys(this.zfb).length){
+				console.log(this.zfb)
+			}
 			if(this.isToken){
-				if(this.$store.state.cartId == ''){
+				if(!this.$store.state.cartId.length){
 					uni.showToast({
 						title:'未知错误',
 						icon:"none",
+						success() {
+							uni.switchTab({
+								url:"../../Home/home"
+							})
+						}
 					})
-					uni.switchTab({
-						url:"../../Home/home"
-					})
+					
 				}else{
 					// 获取用户默认收货地址
 					this.userAddresss(this.isToken)
@@ -184,12 +196,11 @@
 					this.getAffirmInfo(this.cartId,this.isToken)
 					// 获取用户优惠券 1表示未使用
 					// this.getUserDiscount(1,this.isToken)
-					
 				}
 				
 			}else{
 				uni.showToast({
-					title:'未知错误',
+					title:'未知错误',	
 					icon:"none",
 					
 				})
@@ -199,6 +210,16 @@
 			}
 		},
 		methods:{
+			// 支付方式选中：
+			radioChange(e){
+				this.currentPayVal = e.detail.value
+				console.log(this.currentPayVal)
+			},
+			// 商品价格单个
+			productPrice(item,index2,index){
+				this.$set(item,'totalPrice',item.productInfo.attrInfo ? item.productInfo.attrInfo.price : item.productInfo.price)
+				return item.totalPrice
+			},
 			//列表详情
 			orderMessage(){
 				
@@ -207,9 +228,21 @@
 			getCouponOrder(){
 				
 			},
+			disCountListCurr(){
+				
+			},
 			// 选择优惠券
-			disCountClick(item){
+			disCountClick(item,index){
+				if(!item.used){
+					this.curDiscountList.forEach(x => {
+						x.used = false
+					})
+				}
 				item.used = !item.used
+				if(this.discountsType){
+					this.discountsType = !this.discountsType
+				}
+				this.currentIndex2 = index
 			},
 			//获取用户默认地址
 			userAddresss(token){
@@ -217,7 +250,7 @@
 				.then(res => {
 					if(res.data.code == 200){
 						console.log(res)
-						if(res.data.data == []){
+						if(res.data.data.length == 0){
 							uni.showModal({
 								title:'您还没有设置默认地址，快去设置吧',
 								cancelColor:"#333333",
@@ -227,7 +260,7 @@
 								success(res) {
 									if(res.confirm){
 										uni.navigateTo({
-											url:"../../My/address/addAddress"
+											url:"../../My/address/AllAddress"
 										})
 									}
 								}
@@ -235,7 +268,7 @@
 						}else{
 							this.Noaddress = true
 							this.address= res.data.data
-							
+							this.$store.commit('setShoppingAddress',this.address)
 						}
 						
 							
@@ -253,27 +286,75 @@
 				.then(res => {
 					if(res.data.code == 200){
 						this.cartInfo = res.data.data.cartInfo
-						console.log(res)
+						this.cartInfo.forEach((item,index) => {
+							this.$set(item,'mark','')
+							item.usableCoupon.forEach(x => {
+								this.$set(x,'used',false)
+							})
+							this.disCountList.push(item.usableCoupon)
+							this.t_price = res.data.data.price
+						})
+						// 判断是普通商品购买还是拼团
+						this.isPink()
+						
+						
 					}else{
-						uni.showToast({
-							title:'未知错误'
+						uni.switchTab({
+							url:'../../Home/home',
+							success() {
+								uni.showToast({
+									title:'未知错误'
+								})
+							}
 						})
 					}
 				})
 			},
-			
-			//优惠券选择
-			getDiscountClick(key){
-				this.discountsType = !this.discountsType
+			// 判断订单类型
+			isPink(){
+				this.pinkInfo = this.$store.state.pinkInfo
+					if(this.comId && !this.bargainId && !this.seckillId && !this.pinkId){
+							uni.setNavigationBarTitle({
+								title:`我要开团`
+							})
+					}else if(!this.comId && this.bargainId && !this.seckillId && !this.pinkId){
+						uni.setNavigationBarTitle({
+							title:'砍价促销'
+						})
+					}else if(!this.comId && !this.bargainId && this.seckillId && !this.pinkId){
+						uni.setNavigationBarTitle({
+							title:'秒杀促销'
+						})
+					}else if(this.comId && !this.bargainId && !this.seckillId && this.pinkId ){
+						uni.setNavigationBarTitle({
+							title:`参加${this.pinkInfo.nickname}的团队`
+						})
+					}
+				
+				
 			},
-			uniPopupClick(item){
-				if(!!item.usableCoupon){
-					
+			//优惠券全不选
+			getDiscountClick(){
+				if(!this.discountsType){
+					this.disCountList[this.currentIndex].forEach(x => {
+						x.used = false
+					})
 				}
-				this.$refs.shareShow.open()
+				this.discountsType = true
+			},
+			// 判断商铺是否有优惠券
+			uniPopupClick(item,index){				
+				if(item.usableCoupon != null){
+					this.currentIndex = index
+					this.curDiscountList = this.disCountList[this.currentIndex]
+					this.$refs.shareShow.open()
+				}else{
+					return false
+				}
 			},
 			
 			shareShowclose(){
+				
 				this.$refs.shareShow.close()
 			},
 			
@@ -290,23 +371,114 @@
 					url:'../../My/address/addAddress'
 				})
 			},
+			// 判断是否展示优惠券
+			isProduct(item){
+				if(item.usableCoupon.length){
+					if(this.comId || this.pinkId || this.seckillId || this.bargainId){
+						return false
+					}else{
+						return true
+					}
+				}else{
+					return false
+				}
+			},
 			//提交订单
 			submitOrderClick(){
-				// uni.reLaunch({
-				// 	url:'../../PayOrder/payOrderMessage/payorderMessage'
-				// })
-				let data = []
-				data.status = this.isCard
-				const obj = {}
-				// obj.addressId = this.address
-				// obj.couponId = this.disCountList.id
-				// obj.mark = this.mark
-				// obj.combinationId = this.combinationId || ''
-				// obj.pinkId = this.pinkId || ''
-				// obj.seckill_id = this.seckill_id || ''
-				// obj.bargainId = this.bargainId || ''
-				// obj.key = this.
+				
+				// 测试
+							
+							
+							// uni.navigateTo({
+							// 	url:'../../PayOrder/payOrderMessage/payorderMessage?cid=1'
+							// })
+							
+				// 对提交的数据进行处理
+				this.dealData()
 			},
+			dealData(){
+				if(this.currentPayVal == ''){
+					uni.showToast({
+						title:'请选择支付方式',
+						icon:'none'
+					})
+					return false
+				}
+				let obj = {}
+				let that = this
+				obj.status = this.isCard ? '1':'0' //是否使用红包
+				// 计算买家使用的优惠券
+				obj.data = this.cartInfo.map((item,index) => { 	
+					return {
+						key:item.orderKey,
+						mark:item.mark || '', //买家备注，一个商铺只有一个
+						couponId:this.disCountList[index] ? (this.disCountList[index].filter(x => x.used)[0]?this.disCountList[index].filter(x => x.used)[0].cid:"") : '',	 ////优惠券信息
+						addressId : that.address.id || "", //地址id
+						bargainId:this.bargainId,
+						combinationId:this.comId , //发起拼团id
+						seckill_id:this.seckillId,
+						pinkId:this.pinkId  // 参团id
+					}
+				})			
+				uni.showModal({
+					title:'确定要提交订单么',
+					content:'请认真核对您的收货地址,确保地址正确',
+					success:(res) => {
+						if(res.confirm){
+							
+							placeOrder(JSON.stringify(obj),this.isToken).then(res => {
+								//对返回的数据进行处理
+								if(res.data.code == 200)
+								{
+									console.log(res)
+									this.goPay(res)
+								}else{
+									if(res.data.code == 400){
+										if(res.data.data.orderId){
+											const orderId = res.data.data.orderId
+											uni.showModal({
+												title:'请去我的订单中去结算',
+												content:'您的订单已经注册过了，请先去结算',
+												cancelText:'我再想想',
+												confirmText:'现在就去',
+												success(res) {
+													if(res.confirm){
+														that.$store.commit('setOrderKey',orderId)
+														uni.redirectTo({
+															url:'../../My/MyOrder/orderdetail'
+														})
+													}else{
+														uni.navigateBack({
+															
+														})
+													}
+												}
+											})
+										}else{
+											// #ifdef APP-PLUS
+											plus.nativeUI.toast(res.data.msg)
+											// #endif
+										}
+									}
+									
+								}
+								
+								
+							})
+						}
+					}
+				})
+			},
+			
+			
+			// 朋友代付
+			shareFirend(){
+				uni.showToast({
+					title:'暂未实现',
+					icon:"none"
+				})
+			},
+			
 			//是用红包
 			IsCard(e) {
 				this.isCard = e.detail.value
@@ -314,15 +486,138 @@
 			dealImg(image){
 				return replaceImage(image)
 			},
-			// 获取用户优惠信息
-			// getUserDiscount(types,token){
-			// 	getUserDiscount(types,token)
-			// 	.then(res => {
-			// 		if(res.data.code == 200){
-			// 			this.disCountList = res.data.data
-			// 		}
-			// 	})
-			// }
+			disCountTitle(item,index){
+			 if(item.usableCoupon.length){
+				 if(this.disCountList[index][this.currentIndex2].used){
+					 return this.disCountList[index][this.currentIndex2].coupon_title
+				 }else{
+					 return '不使用优惠券'
+				 }
+			 }else{
+				 return ''
+			 }
+			},
+			// 发起支付
+			goPay(res){
+				// 判断提交方法
+				if(this.comId || this.bargainId || this.seckillId || this.pinkId){
+					this.otherPay(res)
+				}else{
+					this.pay(res)
+				}
+				
+			},
+			// 多订单支付
+			pay(res){
+				const {unified_order,price} = res.data.data
+				const that = this		
+				const method = this.currentPayVal == 'vx' ? 'weixin' : 'alipay'
+				// 调用多商品支付微信接口
+				payOrders(unified_order,method,this.isToken)
+				.then(res => {
+					if(res.data.code == 200){
+						if(method == 'weixin'){
+							that.weixinPay(res.data.data,unified_order,price)
+						}else{
+							that.zfbPay(res.data.data,unified_order,price)
+						}
+						
+					}else{
+						uni.showToast({
+							title:res.data.msg,
+							icon:'none'
+						})
+					}
+				})	
+			},
+			
+			// 但订单支付
+			otherPay(res){
+				const {unified_order,price} = res.data.data
+				const that = this		
+				const method = this.currentPayVal == 'vx' ? 'weixin' : 'alipay'
+				// 调用单商品支付微信接口 
+				payorder(unified_order,method,this.isToken)
+				.then(res => {
+					if(res.data.code == 200){
+						if(method == 'weixin'){
+							that.weixinPay(res.data.data,unified_order,price)
+						}else{
+							that.zfbPay(res.data.data,unified_order,price)
+						}
+					}else{
+						uni.showToast({
+							title:res.data.msg,
+							icon:'none'
+						})
+					}
+				})
+				
+			},
+			
+			// 微信发起支付
+			weixinPay(data,unified_order,price){
+				const that = this	
+				uni.requestPayment({
+					provider:"wxpay",
+					orderInfo:data,
+					service:3,
+					success:(res)=> {
+						if(res.channel.serviceReady){							
+							if(that.comId || that.pinkId){
+								that.doPink(unified_order,price)
+							}else{
+								this.$store.commit('setOrderKey',unified_order)
+								this.goDetail(price)
+							}
+						}else{
+							uni.navigateBack({
+								
+							})
+						}
+					}
+				})
+			},
+			// 支付宝发起支付
+			zfbPay(data,unified_order,price){
+				const that = this
+				uni.requestPayment({
+					provider:"alipay",
+					orderInfo:data.alipay,
+					service:4,
+					success:(res)=> {
+						if(res.channel.serviceReady){	
+							if(that.comId || that.pinkId){
+								that.doPink(unified_order,price)
+							}else{
+								this.$store.commit('setOrderKey',unified_order)
+								this.goDetail(price)
+							}
+						}else{
+							uni.navigateBack({
+								
+							})
+						}
+						this.zfb = res
+					}
+				})
+			},
+			// 跳转页面
+			goDetail(price){
+				console.log(price)
+				uni.redirectTo({
+					url:`success_pay?price=${price}`
+				})
+			},
+			doPink(unified_order,price){
+				
+				// 保存订单id
+				this.$store.commit('setOrderKey',unified_order)
+				uni.redirectTo({
+					url:`../../PayOrder/payOrderMessage/payorderMessage?price=${price}`
+				})
+			}
+			
 		},
 		computed:{
 			// 判断用户token
@@ -338,17 +633,51 @@
 			},
 			//总价 
 			totalPrice(){
-				return this.cartInfo.reduce((prev,x) => {
-					return prev*1 + x.cartInfo.reduce((prev,x) => {
-						return prev + x.productInfo.price*x.cart_num
-					},0)
-				},0).toFixed(2) + '元'
-			}
+				if(this.t_price){
+					// 根据是否有优惠信息计算总价格
+					if(this.disCountList.length){
+						return this.disCountList.reduce((c,d) => {
+							return c-d.filter(x => x.used).reduce((a,x) => a*1 + x.coupon_price*1,0)
+						},this.t_price).toFixed(2) + '元'
+					}else{
+						return this.t_price.toFixed(2) + '元'
+					}
+				}
+			},
+			comId(){
+				return this.cartInfo[0] ? (this.cartInfo[0].cartInfo[0].combination_id ? this.cartInfo[0].cartInfo[0].combination_id : '')  : ''
+			},
+			bargainId(){
+				return this.cartInfo[0] ? (this.cartInfo[0].cartInfo[0].bargain_id ? this.cartInfo[0].cartInfo[0].bargain_id : '')  : ''
+			},
+			seckillId(){
+				return this.cartInfo[0] ? (this.cartInfo[0].seckill_id ? this.cartInfo[0].seckill_id : '')  : ''
+			},
+			pinkId(){
+				return Object.keys(this.pinkInfo).length ? this.pinkInfo.id : ''
+			},
+			
+			
 		}
 	}
 </script>
 
-<style>
+<style scoped>
+	page{
+		margin-bottom: 44px;
+	}
+	.pay-load{
+		height: 450upx;
+	}
+	.pay{
+		height: 44px;
+		line-height: 44px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid #EEEEEE;
+		margin-bottom: 20upx;
+	}
 	.dis-flex{
 		display: flex;
 	}
@@ -435,6 +764,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 0 30upx;
+		z-index: 998;
 	}
 	.affirmOrder-bottom button{
 		width: 236upx;
@@ -470,5 +800,11 @@
 		margin-top: 80upx;
 		border-radius: 50upx;
 		margin-bottom: 20upx;
+		position: relative;
+	}
+	.dscountTitle{
+		display: flex;
+		justify-content: space-between;
+		width: 90%;
 	}
 </style>

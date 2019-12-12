@@ -7,4 +7,4 @@
         })
     },
     [['components/tui-tabs/tui-tabs-create-component']]
-]);                
+]);

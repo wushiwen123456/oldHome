@@ -1,0 +1,9 @@
+{
+  "scrollIndicator": "none",
+  "titleNView": false,
+  "bounce": "vertical",
+  "usingComponents": {
+    "tui-icon": "/components/icon/icon",
+    "uni-load-more": "/components/uni-load-more/uni-load-more"
+  }
+}

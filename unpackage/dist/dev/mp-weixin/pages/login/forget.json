@@ -1,0 +1,7 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "忘记密码",
+  "usingComponents": {
+    "w-button": "/components/watch-login/watch-button"
+  }
+}

@@ -21,24 +21,32 @@
 				</view>
 				
 				<!-- 未使用优惠券 -->
-				<view v-if="currentTab == 0">
-					<view class=" margin-top-xs mydiscounts-main-bg  bg-one">
-						<view class="flex flex-direction margin-bottom-sm">
-							<view class="flex align-center">
-								<view class="text-price text-red text-xxxxl">50</view>
-								<view class=" margin-left-xl text-wuer text-three  text-hide">【晴格木美妆小铺】50元优惠券</view>
-							</view>
-							<view class="flex align-center">
-								<view class="text-sm text-red">满299可用</view>
-								<view class="margin-left-xl text-jiujiujiu text-sm">2019.09.21-2019.10.21</view>
+				<view>
+					<view v-for="(item,index) in countType" :key='index'>
+						<view class="flex align-center bg-white margin-top-sm padding-left-sm">
+							<view class=" flex align-center">
+								<view class="lg cuIcon-shop shoppingCart-title-shop"></view>
+								<view class="text-wuer text-lg text-bold">{{item.shop_info.shop_name}}</view>
 							</view>
 						</view>
-						<view class="mydiscounts-main-bottom">立即使用</view>
+						<view class="mydiscounts-main-bg margin-bottom-sm" v-for="(vo,key) in item.couponList" :class="bgImage">
+							<view class="flex flex-direction margin-bottom-sm">
+								<view class="flex align-center">
+									<view class="text-price text-red text-xxxxl">{{vo.coupon_price}}</view>
+									<view class=" margin-left-xl text-wuer text-three  text-hide">{{vo.coupon_title}}</view>
+								</view>
+								<view class="flex align-center">
+									<view class="text-sm text-red">满{{vo.use_min_price}}可用</view>
+									<view class="margin-left-xl text-jiujiujiu text-sm">{{dealData(vo._add_time,vo._end_time)}}</view>
+								</view>
+							</view>
+							<view class="mydiscounts-main-bottom" @tap="goUse(item)">立即使用</view>
+						</view>
 					</view>
 				</view>
 				
-				<!-- 已使用优惠券 -->
-				<view v-if="currentTab == 1">
+				
+				<!-- <view v-if="currentTab == 1">
 					<view class=" margin-top-xs mydiscounts-main-bg bg-two ">
 						<view class="flex flex-direction margin-bottom-sm">
 							<view class="flex align-center">
@@ -53,8 +61,8 @@
 						<view class="mydiscounts-main-bottom">立即使用</view>
 					</view>
 				</view>
-				
-				<!-- 未使用优惠券 -->
+
+
 				<view v-if="currentTab == 2">
 					<view class=" margin-top-xs mydiscounts-main-bg bg-three">
 						<view class="flex flex-direction margin-bottom-sm">
@@ -69,7 +77,7 @@
 						</view>
 						<view class="mydiscounts-main-bottom">立即使用</view>
 					</view>
-				</view>
+				</view> -->
 				
 				
 			</view>
@@ -84,6 +92,7 @@
 
 <script>
 	import tuiTabs from "@/components/tui-tabs/tui-tabs"
+	import {getUserDiscounts} from '@/network/getProfileData'
 	export default{
 		components: {
 			tuiTabs
@@ -93,6 +102,7 @@
 				currentTab: 0,//当前滑块状态
 				tabs: [{
 					name: "未使用"
+					
 				}, {
 					name: "已使用"
 				}, {
@@ -100,6 +110,7 @@
 				}],
 				windowHeight:0,//屏幕高度
 				dataType:false,//是否存在数据
+				countType:[]
 			}
 		},
 		onLoad() {
@@ -111,10 +122,55 @@
 			    },
 			});
 		},
+		onShow() {
+			if(this.$store.getters.isToken){
+				this.getUserDiscounts(this.currentTab+1,this.$store.getters.isToken)
+			}else{
+				uni.switchTab({
+					url:"../../Home/home"
+				})
+			}
+		},
+		computed:{
+			bgImage(){
+				switch (this.currentTab){
+					case 0 : 
+						return 'bg-one'
+					case 1 : 
+						return 'bg-two'
+					case 2 : 
+						return 'bg-three'
+				}
+			}
+		},
 		methods:{
+			getUserDiscounts(types,token){
+				getUserDiscounts(types,token)
+					.then(res => {
+						if(res.data.code == 200){
+							const obj = res.data.data
+							const keys = Object.keys(obj)
+							const arr = []
+							keys.forEach(x => {
+								arr.push(obj[x])
+							})
+							this.countType = arr
+							console.log(this.countType)
+							if(!res.data.data.length){
+								console.log('暂无优惠券信息')
+							}
+						}
+					})
+			},
+			goUse(item){
+				uni.navigateTo({
+					url:`../../ShopDetails/StoreDetails/storedetails?id=${item.shop_info.shop_id}`
+				})
+			},
 			//切换标签
 			change(e) {
 				this.currentTab = e.index
+				this.getUserDiscounts(this.currentTab+1,this.$store.getters.isToken)
 			},
 			//
 			lqcententClcik(){
@@ -122,6 +178,12 @@
 					url:'DiscpuntsCentent'
 				})
 			},
+			// 处理时间轴
+			dealData(startTime,endTime){
+				const _startTime = startTime.replace(/\//g,'.')
+				const _endTime = endTime.replace(/\//g,'.')
+				return _startTime +' - '+ _endTime
+			}
 		}
 	}
 </script>

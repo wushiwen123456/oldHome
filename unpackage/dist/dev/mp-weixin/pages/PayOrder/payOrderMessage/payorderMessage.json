@@ -1,0 +1,7 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "拼团",
+  "usingComponents": {
+    "tui-countdown": "/components/countdown/countdown"
+  }
+}

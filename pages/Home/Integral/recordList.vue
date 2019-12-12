@@ -1,16 +1,16 @@
 <template>
 	<view>
 		<view v-for="(vo,key) in recordList" :key="key" class="flex align-center bg-white margin-top-xs recordList-all">
-			<image class="recordList-image" src="../../../static/demo23.png"></image>
+			<image class="recordList-image" :src="vo.cart_info.productInfo.image"></image>
 			<view class="margin-left-sm recordList-main-all">
 				<view class="text-wuer text-lg text-bold">兑换成功</view>
-				<view class="recordList-main">您用<text class="text-red-my">100积分</text>兑换欧55件套兑换欧55件套兑换欧55件套兑换欧55件套兑换欧55件套兑换欧55件套</view>
+				<view class="recordList-main">您用<text class="text-red-my">{{vo.cart_info.truePrice}}积分</text>兑换{{vo.cart_info.productInfo.store_name}}一个</view>
 				<view class="flex align-center justify-between">
-					<view class="text-sm text-jiujiujiu">兑换时间：2019年10月26日</view>
+					<view class="text-sm text-jiujiujiu">兑换时间：{{vo.pay_time}}</view>
 					<view @tap="onLongPress(key)" style="font-size: 40upx;" class="lg cuIcon-more"></view>
 				</view>
 			</view>
-			<view v-show="vo.popu" @tap="delListClick" class="recordList-all-popu">
+			<view v-show="vo.popu" @tap="delListClick(vo.id,key)" class="recordList-all-popu">
 				<view>删除记录</view>
 			</view>
 		</view>
@@ -21,26 +21,20 @@
 </template>
 
 <script>
+	import {user_integral,user_integral_remove} from '@/network/sign.js'
 	export default {
 		data() {
 			return {
 				winSize:false,///* 显示遮罩 */
 				windowHeight:0,//高度
-				recordList:[{
-					id:0,
-					popu:false
-				},{
-					id:1,
-					popu:false
-				},{
-					id:2,
-					popu:false
-				}]
+				recordList:[]
 			}
 		},
 		onLoad() {
 			this.getWindowSize();
-			
+			user_integral().then(res =>{
+				this.recordList = res
+			})
 		},
 		methods: {
 			/* 获取窗口尺寸 */
@@ -56,7 +50,6 @@
 				var that = this
 				that.recordList[key].popu = true
 				that.winSize = true
-				
 			},
 			
 			//点击遮罩
@@ -69,8 +62,12 @@
 			},
 			
 			//删除记录
-			delListClick(){
-				this.winSizeClick()
+			delListClick(id,key){
+				var that = this
+				that.winSizeClick()
+				user_integral_remove({id:id}).then(res =>{
+					that.recordList.splice(key,1)
+				})
 			},
 			
 		}
