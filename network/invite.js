@@ -4,15 +4,16 @@ import http from '@/common/http'
 import {replaceImage} from '@/utils/dealUrl'
 
 // 招聘列表
-export function inviteList(page,limit,cate,token){
+export function inviteList(page,limit,cate,token,jingdu,weidu){
 	return http({
 		url:replaceImage('http://www.test.com/ebapi/msg_api/zp_list'),
 		data:{
-			page,limit,cate
+			page,limit,cate,jingdu,weidu
 		},
 		header:{
 			token
-		}
+		},
+		method:"POST"
 	})
 }
 // 招聘详情

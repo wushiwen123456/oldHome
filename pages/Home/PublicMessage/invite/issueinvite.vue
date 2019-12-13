@@ -42,7 +42,7 @@
 						<view class="flex-sub text-bold text-three">联系电话</view>
 						<input class="flex-treble" placeholder="输入招聘者电话" v-model="phone" 	confirm-type="done" />
 					</view>
-					<view class="flex align-start solid-top padding-top-sm">
+					<view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">联系人姓名</view>
 						<input class="flex-treble" placeholder="联系人姓名" v-model="name" />
 					</view>
@@ -52,11 +52,15 @@
 					</view>
 					<view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">招聘岗位</view>
-						<input class="flex-treble" placeholder="列:郑州瑞青人力资源有限公司" v-model="c_job" 	confirm-type="done" />
+						<input class="flex-treble" placeholder="列:程序员/前段工程师/ui设计" v-model="c_job" 	confirm-type="done" />
 					</view>
 					<view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">地址信息</view>
-						<input class="flex-treble" placeholder="具体工作地址" v-model="address" 	confirm-type="done" />
+						<input @click="open_address" @focus="open_address" class="flex-treble" placeholder="公司地址" v-model="address" 	confirm-type="done" />
+					</view>
+					<view class="flex align-center issue-all-heigth">
+						<view class="flex-sub text-bold text-three">办公地点</view>
+						<input class="flex-treble" placeholder="具体工作地址" v-model="xAddress" 	confirm-type="done" />
 					</view>
 					<view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">标题</view>
@@ -95,11 +99,19 @@
 					</view>
 					<view class="flex align-center solid-top issue-all-heigth">
 						<view class="flex-sub text-bold text-three">联系电话</view>
-						<input class="flex-treble" placeholder="输入手机号码" v-model="wordphone" confirm-type="done" />
+						<input class="flex-treble" placeholder="输入手机号码" v-model.number="wordphone" confirm-type="done" />
 					</view>
 					<view class="flex align-center solid-top issue-all-heigth">
 						<view class="flex-sub text-bold text-three">工作类别</view>
 						<input class="flex-treble" placeholder="请输入您的工作类别" v-model="job" confirm-type="done" />
+					</view>
+					<view class="flex align-center solid-top issue-all-heigth">
+						<view class="flex-sub text-bold text-three">工作地点</view>
+						<input class="flex-treble" placeholder="请输入您期望的工作地点" v-model="xAddress" confirm-type="done" />
+					</view>
+					<view class="flex align-start solid-top padding-top-sm">
+						<view class="flex-sub text-bold text-three">个人简介</view>
+						<textarea class="flex-treble text-three" maxlength="-1" v-model="profile" placeholder="请输入您的个人简介"></textarea>
 					</view>
 				</view>
 			</view>
@@ -117,6 +129,15 @@
 			themeColor="#f00"
 		></w-picker>
 		
+		
+		<w-picker 
+		    mode="region"
+		    :defaultVal="['浙江省','杭州市','滨江区']"
+		    :areaCode="['33','3301','330108']"
+		    @confirm="onConfirm2" 
+		    ref="region" 
+		    themeColor="#f00">
+		</w-picker>
 	</view>
 </template>
 
@@ -146,7 +167,9 @@
 				bResult:'请选择',
 				job:''  ,//求职工作类别
 				c_job:'', //招聘职位
-				name:'' //联系人姓名
+				name:'' ,//联系人姓名
+				xAddress:'',//详细地址
+				profile:'',
 			}
 		},
 		methods:{
@@ -163,7 +186,6 @@
 				// 	case "date":
 				// 		break;
 				// }
-				console.log(val)
 			},
 			//点击企业招聘
 			leftClick(){
@@ -185,25 +207,49 @@
 			sexnanClick(){
 				this.sex =  0
 			},
+			// 地址选择开关
+			open_address(){
+				this.$refs.region.show();
+			},
+			// 地址选择
+			onConfirm2(val){
+				this.address = val.result
+				//如果页面需要调用多个mode类型，可以根据mode处理结果渲染到哪里;
+				// switch(this.mode){
+				// 	case "date":
+				// 		break;
+				// }
+			},
 			// 点击发布
 			commit(){
+				// 求职发布
 				if(this.type == 1){
 					const obj = {
 						phone:this.wordphone,
 						name:this.wordname,
 						job:this.job,
 						birth:this.bResult,
-						sex:this.sex
+						sex:this.sex,
+						content:this.profile,
+						xxaddress:this.xAddress
 					}
+					console.log(obj)
 					qz_push(obj,this.$store.getters.isToken).then(res => {
 						if(res.data.code == 200){
+							// uni.redirectTo({
+							// 	url:'success'
+							// })
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast("发布成功");
+							// #endif
+							const index = this.type*1 + 1*1
 							uni.redirectTo({
-								url:'success'
-							})
+								url: `invite?index?index=${index}`
+							});
 						}else{
-							uni.showToast({
-								title:res.data.msg
-							})
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast(res.data.msg);
+							// #endif
 						}
 					})
 				}else{
@@ -217,17 +263,25 @@
 						content:this.content,
 						name:this.name,
 						title:this.title,
-						job:this.c_job
+						job:this.c_job,
+						xxaddress:this.xAddress,
 					}
 					zp_push(obj,this.$store.getters.isToken).then(res => {
 						if(res.data.code == 200){
+							// uni.redirectTo({
+							// 	url:'success'
+							// })
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast("发布成功");
+							// #endif
+							const index = this.type*1 + 1*1
 							uni.redirectTo({
-								url:'success'
-							})
+								url: `invite?index?index=${index}`
+							});
 						}else{
-							uni.showToast({
-								title:res.data.msg
-							})
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast(res.data.msg);
+							// #endif
 						}
 					})
 				}
@@ -254,11 +308,18 @@
 		border-radius: 8upx;
 	}
 	.issueinvite-button{
-		margin:80upx 30upx;
+		position: fixed;
+		bottom: 25upx;
+		left: 35upx;
+		right: 35upx;
 		height:88upx;
 		color: #FFFFFF;
 		font-size: 36upx;
 		background:rgba(205,50,51,1);
 		border-radius:10upx;
+	}
+	.profile{
+		padding-top: 15upx;
+		border-top: #E1E1E1 1px solid;;
 	}
 </style>

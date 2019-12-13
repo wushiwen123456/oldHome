@@ -64,7 +64,8 @@
     "pages/ShopDetails/affirm/Integral_success",
     "pages/My/Mydata/mydata",
     "pages/My/Footprint/footprint",
-    "pages/My/logistics/logistics"
+    "pages/My/logistics/logistics",
+    "pages/Home/PublicMessage/supply/suppleDetail"
   ],
   "window": {
     "navigationBarTextStyle": "black",

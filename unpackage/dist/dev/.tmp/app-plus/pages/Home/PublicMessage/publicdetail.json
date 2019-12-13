@@ -3,6 +3,6 @@
   "navigationBarTitleText": "信息详情",
   "scrollIndicator": "none",
   "usingComponents": {
-    "uni-load-more": "/components/uni-load-more/uni-load-more"
+    "tui-tabs": "/components/tui-tabs/tui-tabs"
   }
 }

@@ -112,17 +112,38 @@
 					image:'../../../static/publick.png',
 					name:'供水电话'
 				},],
-				cateList:[]
+				cateList:[],
+				jingdu:'',
+				weidu:''
 			}
+			
 		},
 		onLoad(){
 			if(this.$store.getters.isToken){
 				this.token = this.$store.getters.isToken
 				
 				// 调用接口和获取当前地理位置
-				this.$store.dispatch('getUserLocation').then(res => {
-					this.dealWps(res)
-				})
+				// this.$store.dispatch('getUserLocation').then(res => {
+				// 	this.dealWps(res)
+				// })
+				
+				
+				
+				
+				// 测试专用
+				const weidu = this.$store.state.userInfo.address.latitude,
+				jingdu = this.$store.state.userInfo.address.longitude
+				this.jingdu = jingdu
+				this.weidu = weidu
+				
+				console.log(weidu)
+				console.log(jingdu)
+				this.pubsicGood({
+					latitude:weidu,
+					longitude:jingdu
+				},this.token)
+				
+				
 				
 				
 			}else{

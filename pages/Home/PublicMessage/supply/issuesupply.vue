@@ -7,7 +7,7 @@
 					<view class="flex align-center flex-treble">
 						<view @tap="leftClick" class="flex align-center">
 							<view :class="[type == 0 ?'text-red-my cuIcon-radiobox':'text-gray cuIcon-round']" style="font-size: 40upx;" class="lg margin-right-xs"></view>
-							<view>供应</view>
+							<view>供应</view>		
 						</view>
 						<view @tap="rightClick" class="flex align-center margin-left-sm">
 							<view :class="[type == 1 ?'text-red-my cuIcon-radiobox':'text-gray cuIcon-round']" style="font-size: 40upx;" class="lg margin-right-xs"></view>
@@ -16,7 +16,7 @@
 					</view>
 				</view>
 				<!-- 供应 页面未定，内容暂时隐藏-->
-				<view v-if="type == 0">
+				<view>
 					<!-- <view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">月薪</view>
 						<view class="flex align-center justify-between flex-treble">
@@ -38,71 +38,32 @@
 						</view>
 					</view> -->
 					<view class="flex align-center issue-all-heigth">
-						<view class="flex-sub text-bold text-three">商户名称</view>
-						<input class="flex-treble" placeholder="输入商户名称" v-model="name" 	confirm-type="done" />
+						<view class="flex-sub text-bold text-three">您的姓名</view>
+						<input class="flex-treble" placeholder="输入您的姓名" v-model="name" 	confirm-type="done" />
 					</view>
 					<view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">联系电话  </view>
-						<input class="flex-treble" placeholder="输入招聘者电话" v-model="phone" 	confirm-type="done" />
+						<input class="flex-treble" placeholder="输入您的电话" v-model="phone" 	confirm-type="done" />
 					</view>
 					<!-- <view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">地址信息</view>
 						<input class="flex-treble" placeholder="具体工作地址" v-model="address" 	confirm-type="done" />
 					</view> -->
 					<view class="flex align-center issue-all-heigth">
-						<view class="flex-sub text-bold text-three">标题</view>
-						<input class="flex-treble" placeholder="请输入标题" v-model="title" 	confirm-type="done" />
+						<view class="flex-sub text-bold text-three">地址</view>
+						<input class="flex-treble" placeholder="输入您 供应/需求 的地址" v-model="address" 	confirm-type="done" />
 					</view>
+					<view class="flex align-center issue-all-heigth">
+						<view class="flex-sub text-bold text-three">标题</view>
+						<input class="flex-treble" placeholder="输入您的标题" v-model="title" 	confirm-type="done" />
+					</view>
+					
 					<view class="flex align-start solid-top padding-top-sm">
 						<view class="flex-sub text-bold text-three">内容</view>
 						<textarea class="flex-treble text-three" maxlength="-1" v-model="content" placeholder="请输入详细内容"></textarea>
 					</view>
 				</view>
 				
-				<!-- 需求页面未定，内容暂时隐藏-->
-				<view v-else>
-					<!-- <view class="flex align-center solid-top issue-all-heigth">
-						<view class="flex-sub text-bold text-three">姓名</view>
-						<input class="flex-treble" placeholder="输入姓名" v-model="wordname" 	confirm-type="done" />
-					</view>
-					<view class="flex align-center issue-all-heigth">
-						<view class="flex-sub text-bold text-three">性别</view>
-						<view class="flex align-center text-bold flex-treble">
-							<view @tap="sexnanClick" :class="[sex == 0 ?'text-blue':'text-gray']"  class="flex align-center margin-right ">
-								<view style="font-size: 40upx;" class="lg cuIcon-male margin-right-xs"></view>
-								<view>男</view>
-							</view>
-							<view  @tap="sexnvClick" :class="[sex == 1 ?'text-pink':'text-gray']" class="flex align-center">
-								<view style="font-size: 40upx;" class="lg cuIcon-female margin-right-xs"></view>
-								<view>女</view>
-							</view>
-						</view>
-					</view>
-					<view @tap="shopTypeClick" class="flex align-center solid-top issue-all-heigth">
-						<view class="flex-sub text-bold text-three">出生年月</view>
-						<view  class="flex-treble">{{birthbay}}</view>
-					</view>
-					<view class="flex align-center solid-top issue-all-heigth">
-						<view class="flex-sub text-bold text-three">联系电话</view>
-						<input class="flex-treble" placeholder="输入手机号码" v-model="wordphone" confirm-type="done" />
-					</view> -->
-					<view class="flex align-center issue-all-heigth">
-						<view class="flex-sub text-bold text-three">商户名称</view>
-						<input class="flex-treble" placeholder="输入商户名称" v-model="name" 	confirm-type="done" />
-					</view>
-					<view class="flex align-center issue-all-heigth">
-						<view class="flex-sub text-bold text-three">联系电话  </view>
-						<input class="flex-treble" placeholder="输入招聘者电话" v-model="phone" 	confirm-type="done" />
-					</view>
-					<view class="flex align-center issue-all-heigth">
-						<view class="flex-sub text-bold text-three">标题</view>
-						<input class="flex-treble" placeholder="请输入标题" v-model="title" 	confirm-type="done" />
-					</view>
-					<view class="flex align-start solid-top padding-top-sm">
-						<view class="flex-sub text-bold text-three">内容</view>
-						<textarea class="flex-treble text-three" maxlength="-1" v-model="content" placeholder="请输入详细内容"></textarea>
-					</view>
-				</view>
 			</view>
 		</view>
 		<button class="issueinvite-button" @click="publicPush">发布</button>
@@ -136,6 +97,7 @@
 				name:'',//公司名称
 				title:'',//标题
 				content:'',//内容
+				address:''
 			}
 		},
 		methods:{
@@ -193,15 +155,17 @@
 					cate:this.type*1+1,
 					phone:this.phone,
 					name:this.name,
-					title:this.title
+					title:this.title,
+					address:this.address
 				}
-				pushPublish(obj,this.$store.getters.isToken).then(res => {
-					if(res.data.code == 200){
-						uni.redirectTo({
-							url:"../invite/success"
-						})
-					}
-				})
+				console.log(obj)
+				// pushPublish(obj,this.$store.getters.isToken).then(res => {
+				// 	if(res.data.code == 200){
+				// 		uni.redirectTo({
+				// 			url:"../invite/success"
+				// 		})
+				// 	}
+				// })
 			}
 		}
 	}

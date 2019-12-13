@@ -198,7 +198,15 @@ const store = new Vuex.Store({
 				uni.getLocation({
 					type:"gcj02",
 					success :(res) =>  {
+						// 储存到缓存中
+						uni.setStorage({
+							key:'addresss',
+							data:res
+						})
 						resolve(res)
+					},
+					fail:(err) => {
+						reject(err)
 					}
 				})
 			})

@@ -16,6 +16,8 @@
 			}
 		},
 		onShow: function() {
+			const pages = getCurrentPages()
+			console.log(pages)
 		},
 		onHide: function() {
 			console.log('App Hide')

@@ -743,7 +743,18 @@
 					"bounce":"none"
 				}
 			}
-        }
+        },
+		{
+			"path": "pages/Home/PublicMessage/supply/suppleDetail",
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "我的供应",
+				"app-plus":{
+					"scrollIndicator":"none"//不显示滚动条
+					
+				}
+			}
+		}
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
