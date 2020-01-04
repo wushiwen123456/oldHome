@@ -1,13 +1,15 @@
 <template>
-	<mescroll-uni :down="downOption" @down="downCallback" :up="upOption" @up="upCallback" ref="mescroll">
-	<view v-if="Object.keys(List).length != 0">
+	
+	<view>
 		<tui-tabs class="tui" selectedColor="#D14243" sliderBgColor="#D14243" :tabs="navbar" :currentTab="currentTab - 1" @change="change" itemWidth="50%"></tui-tabs>
+		<mescroll-uni :down="downOption" @down="downCallback" :up="upOption" @up="upCallback" ref="mescroll" :top="70">
 			<view v-if="currentTab == 1">
 				<view v-for="(vo,key) in List" @click="inDetail(vo)" :key="key" class="flex align-center justify-between bg-white margin-top-xs padding">
 					<view>
-						<view class="text-wuer text-lg text-bold margin-bottom-xs">{{vo.company}}</view>
-						<view class="text-jiujiujiu text-sm-erliu">{{vo.address}}{{vo.sTime}}</view>
-						<view class="margin-top-sm text-red-my text-bold text-df">{{vo.see ? '面议' : vo.min + '-' + vo.max}}</view> 
+						<view class="text-wuer text-lg text-bold margin-bottom-xs"><text class="text-gray text-sm margin-right">公司名称：</text>{{vo.company}}</view>						
+						<view class="text-black text-lg margin-bottom-xs "><text class="text-gray text-sm margin-right">招聘岗位：</text>{{vo.job}}</view>
+						<view class="text-jiujiujiu text-sm-erliu text-cut" style="width: 554upx;"><text class="text-gray text-sm margin-right">工作地点：</text>{{vo.address}}</view>
+						<view class="margin-top-sm text-red-my text-bold text-df"><text class="text-gray text-sm margin-right">薪资：</text>{{vo.see ? '面议' : vo.min + '-' + vo.max}}</view> 
 					</view>
 					<view class="flex flex-direction align-end">
 						<view class="text-jiujiujiu text-sm">{{vo.sTime}}</view>
@@ -39,9 +41,10 @@
 					</view>
 				</view>
 			</view>
-	</view>
+		</mescroll-uni>
 	<Modal v-model="show1" title='提示' text='您的位置显示异常,是否重新获取位置？' @confirm="setLoction" />
-	</mescroll-uni>
+	</view>
+
 </template>
 
 <script>
@@ -159,6 +162,7 @@
 			},
 			change(e) {
 				this.currentTab = e.index*1 + 1
+				this.List = []
 				this.$refs.mescroll.mescroll.resetUpScroll()
 			},
 			goNavBar() {

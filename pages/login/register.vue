@@ -10,14 +10,14 @@
 				<view class="login-all">
 					<view class="login-message">
 						<image src="../../static/phone.png"></image>
-						<input class="input-textlength" confirm-type="done" v-model="phone" placeholder="请输入手机号码" />
+						<input class="input-textlength" confirm-type="done" type="number" v-model="phone" placeholder="请输入手机号码" />
 					</view>
 				</view>
 				<view class="login-all">
 					<view class="flex align-center justify-between">
 						<view class="login-message">
 							<image src="../../static/name.png"></image>
-							<input class="input-textlength" v-model="code" placeholder="请输入验证码" />
+							<input class="input-textlength" type="number" v-model="code" placeholder="请输入验证码" />
 						</view>
 						<view  class="solid-left">
 							<view class="margin-left" @tap="getCode">{{codeTip}}</view>
@@ -33,7 +33,7 @@
 				<view class="login-all">
 					<view class="login-message">
 						<image src="../../static/name.png"></image>
-						<input class="input-textlength" confirm-type="done" v-model="nickname" placeholder="实名认证" />
+						<input class="input-textlength" confirm-type="done" v-model="nickname" placeholder="请输入您的姓名" />
 					</view>
 				</view>
 				<view @tap="shopTypeClick" class="login-all">
@@ -58,7 +58,7 @@
 			
 		</canvas>
 		
-		
+		<x-modal v-model="show1" title="提示" :text="msg" @cancel="reset" @confirm="reset"/>
 	</view>
 </template>
 
@@ -98,6 +98,8 @@
 				codeTip:"获取验证码",
 				currentTime: '60', //倒数计时
 				getCodebutton:false,
+				msg:'',
+				show1:false
 			}
 		},
 		onLoad() {
@@ -152,7 +154,6 @@
 					})
 					return
 				}
-				console.log(that.password.length)
 				if(that.password.length < 6){
 					uni.showToast({
 						title:'密码最少为6位',
@@ -183,11 +184,7 @@
 					})
 				    return false
 				}
-				that.isRotate = true
-				
-				setTimeout(function(){
-					that.isRotate = false
-				},3000)
+				that.isRotate = true				
 				
 				let data = {
 					phone:that.phone,
@@ -198,15 +195,22 @@
 					code:that.code
 				}
 				register(data).then(res => {
-						// 注册成功,跳转到登录
-						uni.navigateTo({
-							url:`login?phone=${data.phone}`,
-						})
+						if(res.data.code == 200){
+							// 注册成功,跳转到登录
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast('注册成功',{duration:'long'})
+							// #endif
+							that.isRotate = false
+							uni.navigateTo({
+								url:'login'
+							})
+						}else{
+							that.isRotate = false
+							this.msg = res.data.msg
+							this.show1 = true
+						}
 				}).catch(res => {
-					uni.showToast({
-						title:res.data.msg,
-						icon:'none'
-					})
+					
 				})
 				
 			},
@@ -251,6 +255,14 @@
 					})
 				}
 				
+			},
+			reset(){
+				this.phone = ''
+				this.code = ''
+				this.password = ''
+				this.nickname = ''
+				this.sex = ''
+				this.idnum = ''
 			}
 			
 			

@@ -1,125 +1,138 @@
 <template>
-	<view class="contain">
-		<!-- 没有添加收货地址 -->
-		<view v-if="!Noaddress" @tap="addAddressClick()" class="affirmOrder-title dis-flex flex-item-cent flex-jus-space">
-			<view class="dis-flex flex-item-cent">
-				<image class="title-img-ones" src="../../../static/editaddress.png" ></image>
-				<view>新增收货地址</view>
-			</view>
-			<view class="lg text-gray cuIcon-right" ></view>
-		</view>
+	<view>
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 		
-		<!-- 存在收货地址 -->
-		<view v-if="Noaddress" @tap="shippingAddressClick" class="affirmOrder-titles dis-flex flex-item-cent flex-jus-space">
-			<view class="dis-flex flex-item-cent">
-				<image class="title-img-one" src="../../../static/address.png"></image>
-				<view class="affirmOrder-title-dizhi">
-					<view class="affirmOrder-title-nickname">{{address.real_name}}  {{address.phone}}</view>
-					<view class="margin-bottom-ml">{{address.province}} {{address.city}}  {{address.district}}</view>
-					<view>{{address.detail}}</view>
-				</view>
-			</view>
-			<image class="title-img-two"  ></image>
-		</view>
-		
-		<!-- 购买商品种类 循环开始 -->
-			
-		
-		<view  class=" affirmOrder-main" v-for="(item,index) in cartInfo" :key='index'>
-			<view class="flex align-center margin-bottom">
-				<view style="font-size: 40upx;" class="lg cuIcon-shop margin-right-xs"></view>
-				<!-- 商铺名称 -->
-				<view>{{item.shop_info.shop_name}}</view>
-			</view>
-			<view class="dis-flex" v-for="(item2,index2) in item.cartInfo" :key="index2">
-				<!-- 商品图片 -->
-				<image :src="dealImg(item2.productInfo.image)"></image>
-				<view class="affirmOrder-main-right">
-					<view class="dis-flex flex-jus-space">
-						<!-- 商品名称 -->
-						<view class="text-wuer text-sm" >{{item2.productInfo.store_name}}</view>
-						<!-- 商品价格 -->
-						<view>￥{{productPrice(item2,index2,index)}}</view>
-					</view>
-					<view class="affirmOrder-main-right-bottom dis-flex flex-jus-space">
-						<view>类型：{{!!item2.productInfo.attrInfo ? item2.productInfo.attrInfo.suk : '暂无'}}</view>
-						<view>×{{item2.cart_num}}</view>
-					</view>
-				</view>
-			</view>
-		
-		
-		<view>
-			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
-				<view>运费</view>
-				<view style="color: #959494;">{{post}}</view>
-			</view>
-			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
-				<view>买家留言</view>
-				<input class="text-df" maxlength="-1" v-model="item.mark" placeholder="选填，请先和客服协商一致" />
-			</view>
-			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message" v-if="isProduct(item)">
-				<view>优惠券</view>
+		<view class="contain" v-if="cartInfo.length">
+			<!-- 没有添加收货地址 -->
+			<view v-if="!Noaddress" @tap="addAddressClick()" class="affirmOrder-title dis-flex flex-item-cent flex-jus-space">
 				<view class="dis-flex flex-item-cent">
-					<view @tap="uniPopupClick(item,index)" class="affirmOrder-message-youhui">{{disCountTitle(item,index)}}</view>
+					<image class="title-img-ones" src="../../../static/editaddress.png" ></image>
+					<view>新增收货地址</view>
+				</view>
+				<view class="lg text-gray cuIcon-right" ></view>
+			</view>
+			
+			<!-- 存在收货地址 -->
+			<view v-if="Noaddress" @tap="shippingAddressClick" class="affirmOrder-titles dis-flex flex-item-cent flex-jus-space">
+				<view class="dis-flex flex-item-cent">
+					<image class="title-img-one" src="../../../static/address.png"></image>
+					<view class="affirmOrder-title-dizhi">
+						<view class="affirmOrder-title-nickname">{{address.real_name}}  {{address.phone}}</view>
+						<view class="margin-bottom-ml">{{address.province}} {{address.city}}  {{address.district}}</view>
+						<view>{{address.detail}}</view>
+					</view>
+				</view>
+				<image class="title-img-two"  ></image>
+			</view>
+			
+			<!-- 购买商品种类 循环开始 -->
+				
+			
+			<view  class=" affirmOrder-main" v-for="(item,index) in cartInfo" :key='index'>
+				<view class="flex align-center margin-bottom">
+					<view style="font-size: 40upx;" class="lg cuIcon-shop margin-right-xs"></view>
+					<!-- 商铺名称 -->
+					<view>{{item.shop_info.shop_name}}</view>
+				</view>
+				<view class="dis-flex margin-top-sm margin-bottom-sm" v-for="(item2,index2) in item.cartInfo" :key="index2">
+					<!-- 商品图片 -->
+					<image :src="dealImg(item2.productInfo.image)"></image>
+					<view class="affirmOrder-main-right">
+						<view class="dis-flex flex-jus-space">
+							<!-- 商品名称 -->
+							<view class="text-wuer text-cut text-sm" >{{item2.productInfo.store_name}}</view>
+							<!-- 商品价格 -->
+							<view class="text-price text-red">{{productPrice(item2,index2,index)}}</view>
+						</view>
+						<view class="affirmOrder-main-right-bottom dis-flex flex-jus-space">
+							<view class="text-cut" style="width: 500upx;">类型：{{!!item2.productInfo.attrInfo ? item2.productInfo.attrInfo.suk : '暂无'}}</view>
+							<view>×{{item2.cart_num}}</view>
+						</view>
+					</view>
+				</view>
+			
+			
+			<view>
+				<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
+					<view>运费</view>
+					<view style="color: #959494;">{{post}}</view>
+				</view>
+				<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
+					<view>买家留言</view>
+					<input class="text-df" maxlength="-1" v-model="item.mark" placeholder="选填，请先和客服协商一致" />
+				</view>
+				<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message" v-if="isProduct(item)">
+					<view>优惠券</view>
+					<view class="dis-flex flex-item-cent">
+						<view @tap="uniPopupClick(item,index)" class="affirmOrder-message-youhui">{{disCountTitle(item,index)}}</view>
+						<view class="lg cuIcon-right margin-left-sm"></view>
+					</view>
+				</view>
+			</view>
+			</view>
+			
+			<!-- 循环结束 -->
+			
+			<view>
+				<view class="cu-form-group" v-if="isShowCard">
+					<view>可用红包抵用0.1元</view>
+					<switch @change="SwitchA" :class="switchA?'checked':''" :checked="switchA?true:false"></switch>
+				</view>
+				<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message" @click="shareFirend">
+					<view>朋友代付{{comId}}</view>
 					<view class="lg cuIcon-right margin-left-sm"></view>
 				</view>
 			</view>
-		</view>
-		</view>
-		
-		<!-- 循环结束 -->
-		
-		<view>
-			<!-- <view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message">
-				<view>可用红包抵用0.1元</view>
-			</view> -->
-			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message" @click="shareFirend">
-				<view>朋友代付{{comId}}</view>
-				<view class="lg cuIcon-right margin-left-sm"></view>
-			</view>
-		</view>
-		<!-- 底部合计 -->
-		<view class="affirmOrder-bottom">
-			<view class="flex align-center">
-				<view >合计:</view>
-				<view class="text-price text-red text-xxl">{{totalPrice}}</view>
-			</view>
-			<button @tap="submitOrderClick" >提交订单</button>
-		</view>
-		
-		
-		<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message margin-top-sm">
-			<view>请选择支付方式</view>
-		</view>
-		<view class="affirmOrder-main pay-load">
-			<radio-group @change="radioChange" style="width: 100%;">
-				<view class="pay"><image src="../../../static/paya.png" mode="" style="width: 44px; height: 44px;"></image>微信支付  <radio color="#1ECD16" value="vx" /></view>
-				<view class="pay"><image src="../../../static/payb.png" mode="" style="width: 44px; height: 44px;"></image>支付宝支付 <radio value="zfb" /></view>
-			 </radio-group>
-		</view>
-		
-		
-		<!-- 优惠券选择 -->
-		<uni-popup ref="shareShow" type="bottom" style="z-index: 999;">
-			<view class="margin-left-xl margin-right-xl">
-				<view class="text-center text-three margin-top" style="margin-bottom: 80upx;">店铺优惠</view>
-				<!-- 请选择您的优惠券 -->
-				<view class="margin-bottom-sm"><text>选择优惠券</text></view>
-				<view v-if="curDiscountList" v-for="(item,index) in curDiscountList" :key="index" class="flex align-center justify-between shareShow-all">
-					<view></view>
-					<view class="dscountTitle"><text >优惠券</text><text>{{item.coupon_title}}</text></view>
-					<view style="font-size: 40upx;"  :class="[item.used?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']" @tap="disCountClick(item,index)"></view>
+			<!-- 底部合计 -->
+			<view class="affirmOrder-bottom">
+				<view class="flex align-center">
+					<view >合计:</view>
+					<view class="text-price text-red text-xxl">{{totalPrice}}</view>
 				</view>
-				
-				<view class="flex align-center justify-between shareShow-all">
-					<view></view>
-					<view class="text-three">不使用优惠券</view>
-					<view style="font-size: 40upx;"  :class="[discountsType?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']" @tap="getDiscountClick"></view>
-				</view>
-				<button @tap="shareShowclose" class="shareShow-button">完成</button>
+				<button @tap="submitOrderClick" >提交订单</button>
 			</view>
-		</uni-popup>
+			
+			
+			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message margin-top-sm">
+				<view>请选择支付方式</view>
+			</view>
+			<view class="affirmOrder-main pay-load">
+				<radio-group @change="radioChange" style="width: 100%;">
+					<view class="pay"><image src="../../../static/paya.png" mode="" style="width: 44px; height: 44px;"></image>微信支付  <radio color="#1ECD16" value="vx" /></view>
+					<view class="pay"><image src="../../../static/payb.png" mode="" style="width: 44px; height: 44px;"></image>支付宝支付 <radio value="zfb" /></view>
+				 </radio-group>
+			</view>
+			
+			
+			<!-- 优惠券选择 -->
+			<uni-popup ref="shareShow" type="bottom" class="popup-bottom">
+				<view class="margin-left-xl margin-right-xl">
+					<view class="text-center text-three margin-top" style="margin-bottom: 80upx;">店铺优惠</view>
+					<!-- 请选择您的优惠券 -->
+					<view class="margin-bottom-sm"><text>选择优惠券</text></view>
+					<view v-if="curDiscountList" v-for="(item,index) in curDiscountList" :key="index" class="flex align-center justify-between shareShow-all">
+						<view></view>
+						<view class="dscountTitle"><text >优惠券</text><text>{{item.coupon_title}}</text></view>
+						<view style="font-size: 40upx;"  :class="[item.used?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']" @tap="disCountClick(item,index)"></view>
+					</view>
+					
+					<view class="flex align-center justify-between shareShow-all">
+						<view></view>
+						<view class="text-three">不使用优惠券</view>
+						<view style="font-size: 40upx;"  :class="[discountsType?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']" @tap="getDiscountClick"></view>
+					</view>
+					<button @tap="shareShowclose" class="shareShow-button">完成</button>
+				</view>
+			</uni-popup>
+		</view>
+		<x-modal v-model="show1" 
+					title='提示' 
+					text='您还没有设置默认地址,是否前往设置' 
+					confirm-text="立即设置" 
+					cancel-text="返回"   
+					@confirm="setDefaultAddress" 
+					@cancel="goBack"/>
+		
 	</view>
 </template>
 
@@ -145,9 +158,10 @@
 		},
 		data(){
 			return{
+				show1:false,
 				shareShow:false,
 				Noaddress:false,//是否存在默认地址
-				isCard:true,//true用红包  false 不用红包
+				isCard:false,//true用红包  false 不用红包
 				discountsType:false,//优惠券选择
 				count:'',
 				cartId:'',
@@ -161,31 +175,28 @@
 				currentPayVal:'',
 				t_price:'',
 				pinkInfo:{},
-				zfb:{}
+				zfb:{},
+				isLoad:false,
+				switchA:false
 			}
 		},
 		onReady() {
-			
+			this.$refs.loading.open()
 		},
-		onshow() {
-			// 获取用户默认收货地址
-			this.userAddresss(this.isToken)
+		onShow() {
+			if(this.isLoad){
+				// 获取用户默认收货地址
+				this.userAddresss(this.isToken)
+			}
 		},
 		onLoad() {
+			this.isLoad = true
 			if(Object.keys(this.zfb).length){
 				console.log(this.zfb)
 			}
 			if(this.isToken){
 				if(!this.$store.state.cartId.length){
-					uni.showToast({
-						title:'未知错误',
-						icon:"none",
-						success() {
-							uni.switchTab({
-								url:"../../Home/home"
-							})
-						}
-					})
+					
 					
 				}else{
 					// 获取用户默认收货地址
@@ -251,20 +262,8 @@
 					if(res.data.code == 200){
 						console.log(res)
 						if(res.data.data.length == 0){
-							uni.showModal({
-								title:'您还没有设置默认地址，快去设置吧',
-								cancelColor:"#333333",
-								confirmColor:"#333333",
-								showCancel:false,
-								confirmText:"立即设置",
-								success(res) {
-									if(res.confirm){
-										uni.navigateTo({
-											url:"../../My/address/AllAddress"
-										})
-									}
-								}
-							})
+							this.show1 = true
+							this.Noaddress = false
 						}else{
 							this.Noaddress = true
 							this.address= res.data.data
@@ -284,16 +283,18 @@
 			getAffirmInfo(cartId,token){
 				getAffirmInfo(cartId,token)
 				.then(res => {
+					this.$refs.loading.close()
 					if(res.data.code == 200){
-						this.cartInfo = res.data.data.cartInfo
-						this.cartInfo.forEach((item,index) => {
-							this.$set(item,'mark','')
+						let obj = res.data.data.cartInfo
+						obj.forEach((item,index) => {
+							item.mark = ''
 							item.usableCoupon.forEach(x => {
-								this.$set(x,'used',false)
+								x.used = false
 							})
 							this.disCountList.push(item.usableCoupon)
 							this.t_price = res.data.data.price
 						})
+						this.cartInfo = obj
 						// 判断是普通商品购买还是拼团
 						this.isPink()
 						
@@ -332,6 +333,9 @@
 					}
 				
 				
+			},
+			SwitchA(e){
+				this.switchA = e.detail.value
 			},
 			//优惠券全不选
 			getDiscountClick(){
@@ -385,7 +389,10 @@
 			},
 			//提交订单
 			submitOrderClick(){
-				
+				if(!this.Noaddress){
+					this.show1 = true
+					return
+				}
 				// 测试
 							
 							
@@ -406,7 +413,7 @@
 				}
 				let obj = {}
 				let that = this
-				obj.status = this.isCard ? '1':'0' //是否使用红包
+				obj.status = this.switchA ? '1':'0' //是否使用红包
 				// 计算买家使用的优惠券
 				obj.data = this.cartInfo.map((item,index) => { 	
 					return {
@@ -478,10 +485,15 @@
 					icon:"none"
 				})
 			},
-			
-			//是用红包
-			IsCard(e) {
-				this.isCard = e.detail.value
+			// 返回商品详情
+			goBack(){
+				
+			},
+			// 设置默认地址
+			setDefaultAddress(){
+				uni.navigateTo({
+					url:'../../My/address/AllAddress'
+				})
 			},
 			dealImg(image){
 				return replaceImage(image)
@@ -530,7 +542,6 @@
 					}
 				})	
 			},
-			
 			// 但订单支付
 			otherPay(res){
 				const {unified_order,price} = res.data.data
@@ -571,10 +582,11 @@
 								this.goDetail(price)
 							}
 						}else{
-							uni.navigateBack({
-								
-							})
+							uni.navigateBack()
 						}
+					},
+					fail() {
+						uni.navigateBack()
 					}
 				})
 			},
@@ -599,6 +611,9 @@
 							})
 						}
 						this.zfb = res
+					},
+					fail() {
+						uni.navigateBack()
 					}
 				})
 			},
@@ -655,6 +670,11 @@
 			},
 			pinkId(){
 				return Object.keys(this.pinkInfo).length ? this.pinkInfo.id : ''
+			},
+			isShowCard(){
+				if(this.cartInfo.length){
+					return this.cartInfo.length == 1 && this.pinkId == '' && this.comId == '' && this.bargainId == '' && this.seckillId == ''
+				}
 			},
 			
 			
@@ -764,7 +784,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 0 30upx;
-		z-index: 998;
+		z-index: 1;
 	}
 	.affirmOrder-bottom button{
 		width: 236upx;
@@ -806,5 +826,8 @@
 		display: flex;
 		justify-content: space-between;
 		width: 90%;
+	}
+	.popup-bottom{
+		z-index: 999;
 	}
 </style>

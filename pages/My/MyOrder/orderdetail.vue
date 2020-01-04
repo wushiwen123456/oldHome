@@ -1,143 +1,158 @@
 <template>
-	<view v-if="Object.keys(this.detailData).length != 0">
-		<!-- 代付款 -->
-		<view v-if="pageType == 0" class="orderdetail-all-background orderdetail-background-one text-white">
-			<view class="text-lg margin-bottom-xs">等待买家付款</view>
-			<view class="text-sm">{{detailData._status._msg}}</view>
-		</view>
-		<!-- 代发货 -->
-		<view v-if="pageType == 1" class="orderdetail-all-background orderdetail-background-two text-white">
-			<view class="text-lg margin-bottom-xs">待发货</view>
-			<view class="text-sm">72小时内发货</view>
-		</view>
-		<!-- 已发货 -->
-		<view v-if="pageType == 2" class="orderdetail-all-background orderdetail-background-three text-white">
-			<view class="text-lg margin-bottom-xs">卖家已发货</view>
-			<view class="text-sm">还剩4天3时自动确认</view>
-		</view>
-		<!-- 快递 -->
-		<view v-if="pageType == 2" class="padding-left padding-right bg-white">
-			<view class="flex align-center justify-between padding-top-xl padding-bottom-xl solid-bottom">
-				<view class="flex align-center">
-					<image class="orderdetail-image" src="../../../static/informa.png" ></image>
-					<view class="margin-left-sm">
-						<view class="flex align-center orderdetail-totleone-text margin-bottom-xs">
-							<view class="text-df ">圆通快递</view>
-							<view class="margin-left-sm">YT4146131398527</view>
+	<view>
+		<view v-if="Object.keys(this.detailData).length != 0">
+			
+			<!-- 代付款 -->
+			<view v-if="pageType == 0" class="orderdetail-all-background orderdetail-background-one text-white">
+				<view class="text-lg margin-bottom-xs">等待买家付款</view>
+				<view class="text-sm">{{detailData._status._msg}}</view>
+			</view>
+			<!-- 代发货 -->
+			<view v-if="pageType == 1" class="orderdetail-all-background orderdetail-background-two text-white">
+				<view class="text-lg margin-bottom-xs">待发货</view>
+				<view class="text-sm">72小时内发货</view>
+			</view>
+			<!-- 已发货 -->
+			<view v-if="pageType == 2" class="orderdetail-all-background orderdetail-background-three text-white">
+				<view class="text-lg margin-bottom-xs">卖家已发货</view>
+				<view class="text-sm">还剩4天3时自动确认</view>
+			</view>
+			<!-- 交易成功 -->
+			<view v-if="pageType == 4" class="orderdetail-all-background orderdetail-background-three text-white">
+				<view class="text-lg margin-bottom-xs">交易成功</view>
+				<!-- <view class="text-sm">还剩4天3时自动确认</view> -->
+			</view>
+			
+			
+			<!-- 快递 -->
+			<view v-if="pageType == 2" @click="goWuliu" class="padding-left padding-right bg-white">
+				<view class="flex align-center justify-between padding-top-xl padding-bottom-xl solid-bottom">
+					<view class="flex align-center">
+						<image class="orderdetail-image" src="../../../static/informa.png" ></image>
+						<view class="margin-left-sm">
+							<view class="flex align-center orderdetail-totleone-text margin-bottom-xs">
+								<view class="text-df ">{{detailData.delivery_name}}</view>
+								<view class="margin-left-sm">{{detailData.delivery_id}}</view>
+							</view>
+							<!-- <view>2019/10/24  17:39:00</view> -->
 						</view>
-						<view>2019/10/24  17:39:00</view>
 					</view>
-				</view>
-				<view class=" flex align-center orderdetail-titleone-right" @click="copyOrder('t')">
-					<image src="../../../static/code.png"></image>
-					<view>复制</view>
-				</view>
-			</view>
-		</view>
-		<!-- 收货地址 -->
-		<view class="flex align-center bg-white padding-lr padding-tb-sm ">
-			<view >
-				<image class="orderdetail-image" src="../../../static/address.png"></image>
-			</view>
-			<view class="text-width margin-left-sm">
-				<view class="flex align-center text-black text-bold margin-bottom-xs">
-					<view class="text-three">{{detailData.real_name}}</view>
-					<view class="text-df margin-left-sm">{{detailData.user_phone}}</view>
-				</view>
-				<view>{{detailData.user_address}}</view>
-			</view>
-		</view>
-		
-		
-		<view class="bg-white margin-tb-sm">
-			<view class="flex align-center padding-left padding-top-sm padding-bottom-sm" @click.stop="goInfoStore(detailData)">
-				<view style="font-size: 36upx;" class="lg cuIcon-shop margin-right-sm"></view>
-				<view class="text-sm" style="color: #636362;" >{{detailData.shopInfo ? detailData.shopInfo.shop_name : ''}}</view>
-			</view>
-			<view @click="goInfoDetail(item,index)" class="flex align-start margin-left margin-right"  v-if="Object.keys(detailData).length" v-for="(item,index) in detailData.cartInfo" :key="index">
-				<view class="mybooking-image" v-if="item.productInfo">
-					<image :src="item.productInfo.attrInfo ? item.productInfo.attrInfo.image : item.productInfo.image"></image>
-				</view>
-				<view class="text-width margin-left-sm ">
-					<view class="flex align-center justify-between">
-						<view class="flex-five text-hieed">{{item.productInfo.store_name}}</view>
-						<view class="text-price text-red flex-sub text-center">{{item.productInfo.attrInfo ? item.productInfo.attrInfo.price : item.productInfo.price}}</view>
-					</view>
-					<view class="flex align-center justify-between margin-top-xs">
-						<view class="flex-five text-jiujiujiu text-sm">规格:{{item.productInfo.attrInfo ? item.productInfo.attrInfo.suk : '默认类型'}}</view>
-						<view class="flex-sub text-center">x{{detailData.total_num}}</view>
-					</view>
-					<view v-if="pageType == 1 || pageType == 2 || pageType == 3" @click.stop="tuikuan(item)" class="flex align-center justify-end margin-top margin-bottom">
-						<view class="tuikuan">退款</view>
-					</view>
-				</view>
-			</view>
-		</view>
-		
-		
-		
-		<view class="bg-white">
-			<view class="margin-lr padding-top-sm padding-bottom-xs text-sm-erliu">
-				<view class="flex align-center justify-between orderdetail-line-height">
-					<view class=" text-black">商品金额</view>
-					<view class="text-jiujiujiu">￥{{detailData.total_price}}</view>
-				</view>
-				<view class="flex align-center justify-between orderdetail-line-height">
-					<view class="text-black">运费</view>
-					<view class="text-jiujiujiu">￥{{detailData.pay_postage}}</view>
-				</view>
-				<view class="flex align-center justify-between orderdetail-line-height">
-					<view class="text-black">优惠券</view>
-					<view class="text-jiujiujiu">{{parseInt(detailData.coupon_price) == 0 ? '未使用优惠券' : '-￥' + detailData.coupon_price}}</view>
-				</view>
-				<view class="flex align-center justify-between orderdetail-line-height">
-					<view class="text-black">红包抵扣</view>
-					<view class="text-jiujiujiu">未使用红包	</view>
-				</view>
-			</view>
-			<view class="solid-top flex align-center justify-between orderdetail-height">
-				<view class="padding-left text-black">实付款</view>
-				<view class="padding-right text-red-my text-xl text-price ">{{detailData.pay_price}}</view>
-			</view>
-		</view>
-		
-		<view class="bg-white margin-top-sm text-black" ref='order'>
-			<view class="margin-lr padding-top-sm padding-bottom-xs text-sm-erliu">
-				<view class="orderdetail-line-height">订单备注：{{detailData.mark == '' ? '无' : detailData.mark}}</view>
-				<view class="flex align-center justify-between">
-					<view class="flex align-center orderdetail-line-height">
-						<view>订单编号：</view>
-						<view>{{detailData.order_id}}</view>
-					</view>
-					<view class=" flex align-center orderdetail-titleone-right" @click="copyOrder('p')">
+					<view class=" flex align-center orderdetail-titleone-right" @tap.stop="copyOrder('t')">
 						<image src="../../../static/code.png"></image>
 						<view>复制</view>
 					</view>
 				</view>
-				<view class="orderdetail-line-height">创建时间：{{ dealAddtime }}</view>
-				<view v-if="pageType != 0" class="orderdetail-line-height">交易时间：{{detailData._pay_time}}</view>
-				<view v-if="pageType != 0" class="orderdetail-line-height">支付方式：{{detailData.pay_type == 'weixin' ? '微信支付' : '支付宝支付'}}</view>
-				<view v-if="pageType == 2" class="orderdetail-line-height">交易时间：2019/10/24  17:39:00</view>
 			</view>
-			<!-- 选择支付方式 -->
-			<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message margin-top-sm" v-if="pageType == 0">
-				<view>请选择支付方式</view>
+			<!-- 收货地址 -->
+			<view class="flex align-center bg-white padding-lr padding-tb-sm ">
+				<view >
+					<image class="orderdetail-image" src="../../../static/address.png"></image>
+				</view>
+				<view class="address_ad margin-left-sm">
+					<view class="flex align-center text-black text-bold margin-bottom-xs">
+						<view class="text-three">{{detailData.real_name}}</view>
+						<view class="text-df margin-left-sm">{{detailData.user_phone}}</view>
+					</view>
+					<view class="text-cut">{{detailData.user_address}}</view>
+				</view>
 			</view>
-			<view class="affirmOrder-main" v-if="pageType == 0">
-				<radio-group @change="closePopupsSharClick" style="width: 100%;">
-					<view class="pay"><image src="../../../static/paya.png" mode="" style="width: 44px; height: 44px;"></image>微信支付  <radio color="#1ECD16" value="vx" /></view>
-					<view class="pay"><image src="../../../static/payb.png" mode="" style="width: 44px; height: 44px;"></image>支付宝支付 <radio value="zfb" /></view>
-				 </radio-group>
+			
+			
+			<view class="bg-white margin-tb-sm">
+				<view class="flex align-center padding-left padding-top-sm padding-bottom-sm" @click.stop="goInfoStore(detailData)">
+					<view style="font-size: 36upx;" class="lg cuIcon-shop margin-right-sm"></view>
+					<view class="text-sm" style="color: #636362;" >{{detailData.shopInfo ? detailData.shopInfo.shop_name : ''}}</view>
+				</view>
+				<view @click="goInfoDetail(item,index)" class="flex align-start margin-left margin-right"  v-if="Object.keys(detailData).length" v-for="(item,index) in detailData.cartInfo" :key="index">
+					<view class="mybooking-image" v-if="item.productInfo">
+						<image :src="item.productInfo.attrInfo ? item.productInfo.attrInfo.image : item.productInfo.image"></image>
+					</view>
+					<view class="text-width margin-left-sm ">
+						<view class="flex align-center justify-between">
+							<view class="flex-five text-hieed">{{item.productInfo.store_name}}</view>
+							<view class="text-price text-red flex-sub text-center">{{item.productInfo.attrInfo ? item.productInfo.attrInfo.price : item.productInfo.price}}</view>
+						</view>
+						<view class="flex align-center justify-between margin-top-xs">
+							<view class="flex-five text-jiujiujiu text-sm">规格:{{item.productInfo.attrInfo ? item.productInfo.attrInfo.suk : '默认类型'}}</view>
+							<view class="flex-sub text-center">x{{detailData.total_num}}</view>
+						</view>
+						<view v-if="dealTuikuan(item)" @click.stop="tuikuan(item)" class="flex align-center justify-end margin-top margin-bottom">
+							<view class="tuikuan">退款</view>
+						</view>
+					</view>
+				</view>
 			</view>
+			
+			
+			
+			<view class="bg-white">
+				<view class="margin-lr padding-top-sm padding-bottom-xs text-sm-erliu">
+					<view class="flex align-center justify-between orderdetail-line-height">
+						<view class=" text-black">商品金额</view>
+						<view class="text-jiujiujiu">￥{{detailData.total_price}}</view>
+					</view>
+					<view class="flex align-center justify-between orderdetail-line-height">
+						<view class="text-black">运费</view>
+						<view class="text-jiujiujiu">￥{{detailData.pay_postage}}</view>
+					</view>
+					<view class="flex align-center justify-between orderdetail-line-height">
+						<view class="text-black">优惠券</view>
+						<view class="text-jiujiujiu">{{parseInt(detailData.coupon_price) == 0 ? '未使用优惠券' : '-￥' + detailData.coupon_price}}</view>
+					</view>
+					<view class="flex align-center justify-between orderdetail-line-height">
+						<view class="text-black">红包抵扣</view>
+						<view class="text-jiujiujiu">未使用红包	</view>
+					</view>
+				</view>
+				<view class="solid-top flex align-center justify-between orderdetail-height">
+					<view class="padding-left text-black">实付款</view>
+					<view class="padding-right text-red-my text-xl text-price ">{{detailData.pay_price}}</view>
+				</view>
+				<view class="solid-top flex align-center justify-around orderdetail-height">
+					<view class="ord-tab" v-if="pageType == 2" @tap="lookWuliu" ><text class="cuIcon-deliver margin-right-sm" v-if=""></text>查看物流</view>
+					<view class="ord-tab" @tap="goChat"><text class="cuIcon-comment margin-right-sm"></text>联系卖家</view>
+				</view>
+			</view>
+			
+			<view class="bg-white margin-top-sm text-black" ref='order'>
+				<view class="margin-lr padding-top-sm padding-bottom-xs text-sm-erliu">
+					<view class="orderdetail-line-height">订单备注：{{detailData.mark == '' ? '无' : detailData.mark}}</view>
+					<view class="flex align-center justify-between">
+						<view class="flex align-center orderdetail-line-height">
+							<view>订单编号：</view>
+							<view>{{detailData.order_id}}</view>
+						</view>
+						<view class=" flex align-center orderdetail-titleone-right" @click="copyOrder('p')">
+							<image src="../../../static/code.png"></image>
+							<view>复制</view>
+						</view>
+					</view>
+					<view class="orderdetail-line-height">创建时间：{{ dealAddtime }}</view>
+					<view v-if="pageType != 0" class="orderdetail-line-height">交易时间：{{detailData._pay_time}}</view>
+					<view v-if="pageType != 0" class="orderdetail-line-height">支付方式：{{detailData.pay_type == 'weixin' ? '微信支付' : '支付宝支付'}}</view>
+					<view v-if="pageType == 2" class="orderdetail-line-height">交易时间：2019/10/24  17:39:00</view>
+				</view>
+				<!-- 选择支付方式 -->
+				<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message margin-top-sm" v-if="pageType == 0">
+					<view>请选择支付方式</view>
+				</view>
+				<view class="affirmOrder-main" v-if="pageType == 0">
+					<radio-group @change="closePopupsSharClick" style="width: 100%;">
+						<view class="pay"><image src="../../../static/paya.png" mode="" style="width: 44px; height: 44px;"></image>微信支付  <radio color="#1ECD16" value="vx" /></view>
+						<view class="pay"><image src="../../../static/payb.png" mode="" style="width: 44px; height: 44px;"></image>支付宝支付 <radio value="zfb" /></view>
+					 </radio-group>
+				</view>
+			</view>
+			<view style="height: 300upx;" v-if="pageType == 0"></view>
+			<view class="orderdetail-botom bg-white" v-if="pageType == 0">
+				<button @tap="renfundClick" class="mybooking-button mybooking-button-colse">{{stateTextLeft}}</button>
+				<button @tap="rightClick" class="mybooking-button">{{stateTextRight}}</button>
+			</view>
+			
+			
+			
 		</view>
-		<view style="height: 300upx;" v-if="pageType == 0"></view>
-		<view class="orderdetail-botom bg-white" v-if="pageType == 0">
-			<button @tap="renfundClick" class="mybooking-button mybooking-button-colse">{{stateTextLeft}}</button>
-			<button @tap="rightClick" class="mybooking-button">{{stateTextRight}}</button>
-		</view>
-		
-		
-		
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -173,7 +188,7 @@
 			}
 		},
 		onLoad(e) {
-			// this.pageType = e.payimgType
+
 		},
 		onShow() {
 			const id = this.$store.state.orderKey
@@ -193,11 +208,22 @@
 			else{
 				 this.$store.dispatch('detailOrder')
 				 	.then(res => {
-				 		this.dealRes(res)
+						this.$refs.loading.close()
+				 		if(res.data.code == 200){
+							this.dealRes(res)
+						}else{
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast(res.data.msg,{duration:'long'})
+							// #endif
+						}
 				 	})
 			}
 			
 			
+		},
+		onReady() {
+			console.log(this.$refs.loading)
+			this.$refs.loading.open()
 		},
 		methods:{
 			// 立即支付
@@ -210,6 +236,13 @@
 			},
 			cacelBackMoney(){
 				
+			},
+			// 查看物流
+			lookWuliu(){
+				const id = this.detailData.order_id
+				uni.navigateTo({
+					url:`/pages/My/logistics/logistics?id=${id}`
+				})
 			},
 			showModel(){
 
@@ -271,7 +304,10 @@
 						data:orderId
 					})
 				}else{
-					
+					const  id = this.detailData.delivery_id
+					uni.setClipboardData({
+						data:id
+					})
 				}
 				
 			},
@@ -285,6 +321,18 @@
 			},
 			common(){
 				
+			},
+			// 是否显示退款
+			dealTuikuan(item){
+				if(item.combination_id || item.seckill_id || item.bargain_id){
+					return false
+				}else{
+					if(1 <= this.pageType && 3 >= this.pageType){
+						return true
+					}else{
+						return false
+					}
+				}
 			},
 			// 处理res
 			dealRes(res){
@@ -327,9 +375,10 @@
 			// 退款退货
 			tuikuan(item){
 				item.phone = this.detailData.user_phone
+				const id = this.detailData.order_id
 				this.$store.commit('setProductInfo',item)
 				uni.navigateTo({
-					url:'refund'
+					url:`refund?id=${id}`
 				})
 			},
 			// 进入商铺
@@ -341,15 +390,35 @@
 			},
 			// 进入商品详情页
 			goInfoDetail(item,index){
-				const id = item.productInfo.id
+				if(item.combination_id){
+					this.$store.commit('setcombinId',item.combination_id)
+					uni.navigateTo({
+						url:"../../ShopDetails/groubBooking"
+					})
+				}else{
+					const id = item.productInfo.id
+					uni.navigateTo({
+						url:`../../ShopDetails/shopDetails?id=${id}`
+					})
+				}
+			},
+			// 聊天
+			goChat(){
+				let shopInfo = JSON.stringify(this.detailData.shopInfo)
 				uni.navigateTo({
-					url:`../../ShopDetails/shopDetails?id=${id}`
+					url:'/pages/ShopDetails/informtion/informtion?shopInfo=' + shopInfo
 				})
 			},
 			//取消订单
 			renfundClick(){
 				this.cancelOrder()
 			},	
+			goWuliu(){
+				const id = this.detailData.order_id
+				uni.navigateTo({
+					url:`../logistics/logistics?id=${id}`
+				})
+			}
 		},
 		
 		computed:{
@@ -383,7 +452,7 @@
 	}
 </script>
 
-<style>
+<style scoped lang="scss">
 	.pay{
 		height: 44px;
 		line-height: 44px;
@@ -476,5 +545,21 @@
 		border-radius: 5px;
 		font-size: 28upx;
 		border: 1px solid #666;
+	}
+	.padding-top{
+		padding-top: 6upx !important;
+	}
+	.padding-top-sm{
+		padding-top: 6upx !important;
+	}
+	.address_ad{
+		width: 588upx;
+	}
+	.ord-tab{
+		font-size: 30upx;
+		text{
+			color: #CD3233;
+			font-weight: 700;
+		}
 	}
 </style>

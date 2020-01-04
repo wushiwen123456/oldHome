@@ -548,6 +548,7 @@
 				this.hasSel = false;
 				this.fHideImg();
 				this.noBar || uni.showTabBar();
+				this.$emit('closeImg')
 			},
 			fPreview() {
 				if(this.fPreviewing) return;

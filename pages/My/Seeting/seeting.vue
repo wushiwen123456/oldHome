@@ -104,10 +104,10 @@
 				this.$store.commit('logout')
 				this.token = false
 				this.$refs.popup.close()
-				uni.showToast({
-					title:'退出成功',
-					icon:'none'
-				})
+				uni.removeStorageSync('Message_key')
+				// #ifdef APP-PLUS
+				plus.nativeUI.toast('已退出登录',{duration:'long'})
+				// #endif
 			},
 			// 切换账号
 			changeUser(){

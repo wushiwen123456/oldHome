@@ -24,17 +24,17 @@
 /* 垂直间距 */
 /* 透明度 */
 /* 文章场景相关 */
-page.data-v-7fb0e6a8, #success_pay.data-v-7fb0e6a8 {
+page.data-v-7bf47883, #success_pay.data-v-7bf47883 {
   height: 100%;
   overflow: hidden;
 }
-page.data-v-7fb0e6a8 {
+page.data-v-7bf47883 {
   background-color: #eeeeee;
 }
-.m-t.data-v-7fb0e6a8 {
+.m-t.data-v-7bf47883 {
   margin-top: 30rpx;
 }
-.show-banner.data-v-7fb0e6a8 {
+.show-banner.data-v-7bf47883 {
   height: 360rpx;
   width: 100%;
   display: -webkit-box;
@@ -48,11 +48,11 @@ page.data-v-7fb0e6a8 {
           align-items: center;
   background-color: #ff7e00;
 }
-.show-banner image.data-v-7fb0e6a8 {
+.show-banner image.data-v-7bf47883 {
     width: 350rpx;
     height: 350rpx;
 }
-.orderInfo.data-v-7fb0e6a8 {
+.orderInfo.data-v-7bf47883 {
   background-color: #fff;
   padding: 40rpx 30rpx 20rpx;
   color: #333;
@@ -60,32 +60,32 @@ page.data-v-7fb0e6a8 {
   line-height: 1.8;
   box-shadow: 0 3px 4px rgba(0, 0, 0, 0.1);
 }
-.orderInfo .i-phone.data-v-7fb0e6a8 {
+.orderInfo .i-phone.data-v-7bf47883 {
     text-transform: uppercase;
 }
-.orderInfo .i-title.data-v-7fb0e6a8 {
+.orderInfo .i-title.data-v-7bf47883 {
     font-weight: 600;
     font-size: 32rpx;
 }
-.orderInfo text.data-v-7fb0e6a8 {
+.orderInfo text.data-v-7bf47883 {
     margin-right: 14rpx;
 }
-.orderInfo .i-address.data-v-7fb0e6a8 {
+.orderInfo .i-address.data-v-7bf47883 {
     padding-bottom: 20rpx;
     border-bottom: 1px solid #c8c7cc;
 }
-.orderInfo .i-payf.data-v-7fb0e6a8 {
+.orderInfo .i-payf.data-v-7bf47883 {
     padding-top: 30rpx;
 }
-.orderInfo .i-payf .i-price.data-v-7fb0e6a8 {
+.orderInfo .i-payf .i-price.data-v-7bf47883 {
       color: #ff7e00;
 }
-.orderInfo .i-payf .i-price text.data-v-7fb0e6a8 {
+.orderInfo .i-payf .i-price text.data-v-7bf47883 {
         font-weight: 700;
         margin-left: 10rpx;
         font-size: 32rpx;
 }
-.orderInfo .i-buttons.data-v-7fb0e6a8 {
+.orderInfo .i-buttons.data-v-7bf47883 {
     display: -webkit-box;
     display: -webkit-flex;
     display: flex;
@@ -93,7 +93,7 @@ page.data-v-7fb0e6a8 {
             justify-content: space-around;
     padding: 20rpx 50rpx;
 }
-.safe-call.data-v-7fb0e6a8 {
+.safe-call.data-v-7bf47883 {
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
   padding: 20rpx;
   background-color: #fff;
@@ -101,7 +101,7 @@ page.data-v-7fb0e6a8 {
   color: #333;
   font-size: 30rpx;
 }
-.safe-call .s-title.data-v-7fb0e6a8 {
+.safe-call .s-title.data-v-7bf47883 {
     padding: 15rpx 0;
     font-weight: 600;
     font-size: 32rpx;

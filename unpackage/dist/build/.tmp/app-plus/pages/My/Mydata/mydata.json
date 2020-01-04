@@ -11,6 +11,7 @@
       }
     ]
   },
+  "bounce": "none",
   "usingComponents": {
     "w-picker": "/components/w-picker/w-picker",
     "avatar": "/components/yq-avatar/yq-avatar"

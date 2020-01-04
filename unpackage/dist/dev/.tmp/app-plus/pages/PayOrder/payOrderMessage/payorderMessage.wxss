@@ -24,6 +24,10 @@
 /* 垂直间距 */
 /* 透明度 */
 /* 文章场景相关 */
+page, .content {
+  height: 100vh;
+  overflow: hidden;
+}
 /* 隐藏scroll-view滚动条*/
 ::-webkit-scrollbar {
   width: 0;
@@ -58,7 +62,6 @@
 .bookingMessage-title-left {
   height: 96rpx;
   position: relative;
-  border-radius: 50%;
   height: 96rpx;
   width: 96rpx;
   border: #FFFFFF 2rpx solid;
@@ -67,6 +70,7 @@
 .bookingMessage-title-left .bookingMessage-title-headimgone {
     width: 100%;
     height: 100%;
+    border-radius: 50%;
 }
 .bookingMessage-head-text {
   z-index: 99;
@@ -92,7 +96,7 @@
   width: 660rpx;
   height: 92rpx;
   background-color: #CD3233;
-  margin-top: 80rpx;
+  margin-top: 40rpx;
   border-radius: 46rpx;
   color: #FFFFFF;
   font-size: 34rpx;
@@ -102,7 +106,7 @@
   color: #999999;
   font-size: 28rpx;
   text-align: center;
-  padding: 22rpx 0 34rpx 0;
+  padding-top: 25rpx;
 }
 .bookingMessage-bottom {
   margin-top: 20rpx;
@@ -308,5 +312,8 @@
   font-size: 34rpx;
   text-align: center;
   color: #333;
+}
+.text-fail {
+  color: #e54d42 !important;
 }
 

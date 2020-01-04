@@ -1,9 +1,9 @@
 {
   "scrollIndicator": "none",
   "titleNView": false,
-  "bounce": "vertical",
+  "bounce": "none",
   "usingComponents": {
     "tui-icon": "/components/icon/icon",
-    "uni-load-more": "/components/uni-load-more/uni-load-more"
+    "mescroll-uni": "/components/mescroll-uni/mescroll-uni"
   }
 }

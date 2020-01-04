@@ -543,4 +543,19 @@
           align-items: center;
   background-color: #fff;
 }
+.sell-message {
+  height: 50rpx;
+  background-color: #fff;
+  padding-left: 15rpx;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+}
+.sell-message .sell-item {
+    height: 50rpx;
+    line-height: 50rpx;
+}
 

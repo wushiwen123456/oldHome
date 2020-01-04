@@ -3,15 +3,15 @@
 		<view class="bg-white margin-tb-sm">
 			<view  class="flex align-start margin-lr padding-top">
 				<view class="mybooking-image">
-					<image src="../../../static/56524a9a3b6bdab0753eb8ed922d57d.png"></image>
+					<image :src="itemInfoAttr.image || ''"></image>
 				</view>
 				<view class="text-width margin-left-sm ">
 					<view class="flex align-center justify-between">
-						<view class="flex-five text-hieed">{{itemInfo.productInfo.store_name}}</view>
-						<view class="text-price text-red flex-sub text-center">{{itemInfo.productInfo.attrInfo ? itemInfo.productInfo.attrInfo.price : itemInfo.productInfo.price}}</view>
+						<view class="flex-five text-hieed">{{itemInfo.productInfo.store_name || '无名小店'}}</view>
+						<view class="text-price text-red flex-sub text-center">{{itemInfoAttr.price || ''}}</view>
 					</view>
 					<view class="flex align-center justify-between margin-top-xs">
-						<view class="flex-five text-jiujiujiu text-sm">规格： {{itemInfo.productInfo.attrInfo ? itemInfo.productInfo.attrInfo.suk : '默认类型'}}</view>
+						<view class="flex-five text-jiujiujiu text-sm">规格： {{itemInfoAttr.suk || '默认规格'}}</view>
 						<view class="flex-sub text-center">x{{itemInfo.cart_num}}</view>
 					</view>
 				</view>
@@ -33,13 +33,17 @@
 				<view class="text-wuer margin-right-lg">联系电话</view>
 				<view>{{itemInfo.phone}}</view>
 			</view>
+			<view class="cu-form-group text-black align-start beizhu">
+				<view class="title">备注</view>
+				<textarea maxlength="-1" v-model="textareaBInput" placeholder="退款备注,标明退款原因注意事项等等"></textarea>
+			</view>
 		</view>
 		<button @tap="issuebutton" class="refund-button">发布申请</button>
 		
 		<uni-popup ref="popup" type="bottom" >
 			<view>
 				<view style="color: #000000;" class="flex align-center justify-center text-lg refund-heigth-two">退款原因</view>
-				<view v-for="(vo,key) in list" :key="key" @click="listItemCLick(vo,key)" class="margin-lr-sm">
+				<view v-if="list.length" v-for="(vo,key) in list" :key="key" @click="listItemCLick(vo,key)" class="margin-lr-sm">
 					<view class="flex align-center justify-between refund-heigth-two">
 						<view class="text-black text-bold text-three text-lg">{{vo.title}}</view>
 						<view :class="[vo.type?'cuIcon-roundcheckfill text-red-my':'cuIcon-round  text-gray']" style="font-size: 40upx;" class="lg"></view>
@@ -62,36 +66,58 @@
 
 <script>
 	import uniPopup  from "@/components/uni-popup/uni-popup"
+	import {getRegard,publishRegard} from '@/network/refund'
 	export default{
 		components: {
 			uniPopup,
 		},
-		onLoad() {
+		onLoad(e) {
+			this.token = this.$store.getters.isToken
+			// 获取退款理由
+			this.getRegard()
 			this.itemInfo = this.$store.state.tProduct
+			this.itemInfoAttr = this.$store.state.tProduct.productInfo.attrInfo || ''
+			if(e.id){
+				this.uni = e.id
+			}else{
+				uni.switchTab({
+					url:'../../Home/home'
+				})
+			}
+			
 		},
 		data(){
 			return{
 				itemInfo:{},
 				cause:'请选择退款原因',
-				list:[{
-					title:'拍错/多拍/不想要',
-					type:false
-				},{
-					title:'协商一致退款',
-					type:true
-				},{
-					title:'缺货',
-					type:false
-				},{
-					title:'未按约定时间发货',
-					type:false
-				},{
-					title:'其他',
-					type:false
-				}]
+				list:[],
+				itemInfoAttr:{},
+				token:'',
+				textareaBInput:'',
+				uni:''
 			}
 		},
 		methods:{
+			getRegard(){
+				getRegard(this.token).then(res => {
+					if(res.data.code == 200){
+						this.list = res.data.data.map((x,index) => {
+							return {
+								title:x,
+								type:false
+							}
+						})
+					}else{
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('获取信息失败请重试')
+						// #endif
+					}
+				}).catch(err => {
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('网络好像出了点问题')
+					// #endif
+				})
+			},
 			//发布申请
 			issuebutton(){
 				this.outSharClick()
@@ -115,7 +141,24 @@
 			},
 			//提交成功弹出
 			outSharClick(){
-				this.$refs.popups.open()
+				const type = this.list.find(x => x.type) || ''
+				if(!type){
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('请填写退款原因')
+					// #endif
+					return
+				}
+				const data = {
+					text:this.textareaBInput,
+					refund_reason_wap_img:'',
+					refund_reason_wap_explain:type.title,
+					uni:this.uni
+				}
+				publishRegard(data,this.token).then(res => {
+					if(res.data.code == 200){
+						this.$refs.popups.open()
+					}
+				})
 			},
 			//提交成功关闭
 			closeSharClick(){
@@ -172,5 +215,8 @@
 	.popups-center{
 		width:578upx;
 		height:418upx;
+	}
+	.beizhu{
+		padding: 0 !important;
 	}
 </style>

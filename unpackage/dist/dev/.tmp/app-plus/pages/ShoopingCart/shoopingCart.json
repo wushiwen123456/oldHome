@@ -12,8 +12,10 @@
       }
     ]
   },
+  "bounce": "nonemy",
   "usingComponents": {
+    "x-loading": "/components/loding/w-loading",
     "modal": "/components/x-modal/x-modal",
-    "mescroll-uni": "/components/mescroll-uni/mescroll-uni"
+    "w-button": "/components/watch-login/watch-button"
   }
 }

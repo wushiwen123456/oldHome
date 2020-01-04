@@ -41,7 +41,7 @@
 				<view @tap="closePopupsClick" hover-class="havor-class" class="popups-txt">取消</view>
 			</view>
 		</uni-popup>
-		
+		<x-loading text="加载中..." mask="true" click="true" ref="loading"  />
 	</view>
 </template>
 
@@ -70,6 +70,7 @@
 			
 		},
 		onReady() {
+			this.$refs.loading.open()
 		},
 		methods: {
 			// 放大图片
@@ -79,6 +80,7 @@
 			//获取商品评论列表
 			commentlist(){
 				productCommont(this.productId).then( res =>{
+					this.$refs.loading.close()
 					if(res.data.code == 200){
 					let list = res.data.data
 					this.dealRes(list)

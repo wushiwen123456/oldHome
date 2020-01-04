@@ -18,6 +18,7 @@
 				</view>
 			</scroll-view>
 		</block>
+		 <x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -39,6 +40,7 @@
 			}
 		},
 		onLoad: function(options) {
+			console.log(options)
 			setTimeout(() => {
 				uni.getSystemInfo({
 					success: (res) => {
@@ -52,9 +54,11 @@
 					}
 				});
 			}, 50)
+			
 			// 获取分类信息
 			getCategory().then(res => {
 				if(res.data.code == 200){
+					this.$refs.loading.close()
 					const arr = res.data.data
 					arr.forEach(x => {
 						x.child.forEach(y => {
@@ -64,9 +68,14 @@
 					})
 					this.tabbar = arr
 					this.List = this.tabbar[0].child
-					console.log(this.List)
+					if(options.index){
+						this.currentTab = index
+					}
 				}
 			})
+		},
+		onReady() {
+			this.$refs.loading.open()
 		},
 		methods: {
 			// 点击标题切换当前页时改变样式
@@ -105,7 +114,7 @@
 			//点击二级分类
 			classifyClick(id,name){
 				uni.navigateTo({
-					url:'../HM-search/HM-searchList?cid=' + id + '&search=' + name + '&id=' + name
+					url:`../HM-search/HM-searchList?cid=${id}&name=${name}`
 				})
 			}
 			

@@ -2,5 +2,6 @@
   "navigationBarBackgroundColor": "#FFFFFF",
   "navigationBarTitleText": "消息",
   "scrollIndicator": "none",
+  "bounce": "none",
   "usingComponents": {}
 }

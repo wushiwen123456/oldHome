@@ -24,21 +24,21 @@
 /* 垂直间距 */
 /* 透明度 */
 /* 文章场景相关 */
-page.data-v-a85c02ca, .total-wrap.data-v-a85c02ca {
+page.data-v-8a3046a8, .total-wrap.data-v-8a3046a8 {
   background-color: #f5f5f5;
   height: 100%;
   overflow: hidden;
 }
-.m-t.data-v-a85c02ca {
+.m-t.data-v-8a3046a8 {
   margin-top: 20rpx;
 }
-.total-wrap.data-v-a85c02ca {
+.total-wrap.data-v-8a3046a8 {
   width: 100vw;
   height: 100%;
   box-sizing: border-box;
   background-color: #f5f5f5;
 }
-.total-wrap .logistics-title.data-v-a85c02ca {
+.total-wrap .logistics-title.data-v-8a3046a8 {
     height: 72rpx;
     box-sizing: border-box;
     padding: 36rpx 0 8rpx;
@@ -48,7 +48,7 @@ page.data-v-a85c02ca, .total-wrap.data-v-a85c02ca {
     font-family: 'PingFangSC-Medium';
     text-align: left;
 }
-.product-wrapper.data-v-a85c02ca {
+.product-wrapper.data-v-8a3046a8 {
   display: -webkit-box;
   display: -webkit-flex;
   display: flex;
@@ -58,17 +58,17 @@ page.data-v-a85c02ca, .total-wrap.data-v-a85c02ca {
   background-color: #fff;
   padding: 20rpx 30rpx 36rpx;
 }
-.product-wrapper .product-image.data-v-a85c02ca {
+.product-wrapper .product-image.data-v-8a3046a8 {
     width: 140rpx;
     height: 140rpx;
     margin-right: 20rpx;
 }
-.product-wrapper .product-image image.data-v-a85c02ca {
+.product-wrapper .product-image image.data-v-8a3046a8 {
       width: 100%;
       height: 100%;
       border-radius: 10rpx;
 }
-.product-wrapper .product-info.data-v-a85c02ca {
+.product-wrapper .product-info.data-v-8a3046a8 {
     -webkit-box-flex: 1;
     -webkit-flex: 1;
             flex: 1;
@@ -79,7 +79,7 @@ page.data-v-a85c02ca, .total-wrap.data-v-a85c02ca {
     color: #333;
     font-size: 28rpx;
 }
-.product-wrapper .product-info .p-title.data-v-a85c02ca {
+.product-wrapper .product-info .p-title.data-v-8a3046a8 {
       display: -webkit-box;
       display: -webkit-flex;
       display: flex;
@@ -87,10 +87,10 @@ page.data-v-a85c02ca, .total-wrap.data-v-a85c02ca {
       -webkit-justify-content: space-between;
               justify-content: space-between;
 }
-.product-wrapper .product-info .p-title .p-price.data-v-a85c02ca {
+.product-wrapper .product-info .p-title .p-price.data-v-8a3046a8 {
         color: #666666;
 }
-.product-wrapper .product-info .p-other.data-v-a85c02ca {
+.product-wrapper .product-info .p-other.data-v-8a3046a8 {
       display: -webkit-box;
       display: -webkit-flex;
       display: flex;
@@ -99,7 +99,7 @@ page.data-v-a85c02ca, .total-wrap.data-v-a85c02ca {
               justify-content: space-between;
       color: #666;
 }
-.logistics-info.data-v-a85c02ca {
+.logistics-info.data-v-8a3046a8 {
   padding: 30rpx 34rpx;
   background-color: #fff;
   display: -webkit-box;
@@ -112,7 +112,7 @@ page.data-v-a85c02ca, .total-wrap.data-v-a85c02ca {
   -webkit-align-items: center;
           align-items: center;
 }
-.logistics-info .l-message.data-v-a85c02ca {
+.logistics-info .l-message.data-v-8a3046a8 {
     -webkit-box-flex: .9;
     -webkit-flex: .9;
             flex: .9;
@@ -126,15 +126,15 @@ page.data-v-a85c02ca, .total-wrap.data-v-a85c02ca {
     -webkit-align-items: center;
             align-items: center;
 }
-.logistics-info .l-message image.data-v-a85c02ca {
+.logistics-info .l-message image.data-v-8a3046a8 {
       width: 80rpx;
       height: 80rpx;
       margin-right: 20rpx;
 }
-.logistics-info .l-message .l-text.data-v-a85c02ca {
+.logistics-info .l-message .l-text.data-v-8a3046a8 {
       line-height: 1.6;
 }
-.logistics-info .l-message .l-order.data-v-a85c02ca {
+.logistics-info .l-message .l-order.data-v-8a3046a8 {
       font-size: 28rpx;
       width: 100%;
       color: #333;
@@ -142,21 +142,21 @@ page.data-v-a85c02ca, .total-wrap.data-v-a85c02ca {
       overflow: hidden;
       white-space: nowrap;
 }
-.logistics-info .l-message .l-order text.data-v-a85c02ca {
+.logistics-info .l-message .l-order text.data-v-8a3046a8 {
         color: #999;
         margin-right: 15rpx;
 }
-.logistics-info .l-copy.data-v-a85c02ca {
+.logistics-info .l-copy.data-v-8a3046a8 {
     padding: 5rpx 8rpx;
     color: #999;
     border: 1px solid #c8c7cc;
     border-radius: 10rpx;
 }
-.scroll-wrapper.data-v-a85c02ca {
+.scroll-wrapper.data-v-8a3046a8 {
   background-color: #fff;
   padding: 15rpx 34rpx 0;
 }
-.scroll-wrapper .track.data-v-a85c02ca {
+.scroll-wrapper .track.data-v-8a3046a8 {
     background-color: #fff;
 }
 

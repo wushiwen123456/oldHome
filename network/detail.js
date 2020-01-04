@@ -29,7 +29,8 @@ export function getAddCart(option,token){
 		},
 		header:{
 			token
-		}
+		},
+		showModel:true
 	})
 }
 
@@ -50,7 +51,8 @@ export function payNow(option,token){
 		},
 		header:{
 			token
-		}
+		},
+		showModel:true
 	})
 }
 

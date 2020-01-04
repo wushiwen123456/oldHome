@@ -2,5 +2,8 @@
   "navigationBarBackgroundColor": "#FFFFFF",
   "navigationBarTitleText": "积分明细",
   "scrollIndicator": "none",
-  "usingComponents": {}
+  "bounce": "none",
+  "usingComponents": {
+    "x-loading": "/components/loding/w-loading"
+  }
 }

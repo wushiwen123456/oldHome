@@ -1,5 +1,5 @@
 <template>
-	 <mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption">
+	 <view>
 	<view id="home">
 		<view class="flex align-end home-title-search bg-white">
 			<view class="flex align-center justify-between home-search-all-one">
@@ -9,7 +9,7 @@
 						<view class="text-df text-jiujiujiu">搜索商品</view>
 					</view>
 				</view>
-				<image class="home-title-message-img" src="../../static/homeMeesage.png" ></image>
+				<image @tap="goMessage" class="home-title-message-img" src="../../static/homeMeesage.png" ></image>
 			</view>
 		</view>
 		
@@ -32,7 +32,7 @@
 				<view style="font-size: 44upx;" class="lg text-black cuIcon-list padding-left"></view>
 			</view>
 		</view>
-		
+		<mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption" :top="204">
 		<swiper 
 			style="min-height: 255upx;" 
 			class="screen-swiper square-dot" 
@@ -68,7 +68,7 @@
 			
 		<view   
 			v-if="isShowIndex"
-			class="bg-white margin-top-xs flex align-center home-new-all">
+			class="bg-white margin-top-xs flex align-center home-new-all margin-bottom">
 			
 			<image class="home-new-image" src="../../static/newimg.png"></image>
 			<swiper vertical autoplay circular interval="3000" class="tui-swiper margin-right">
@@ -80,7 +80,7 @@
 		<!-- 新闻new -->
 		
 		<!-- 优惠券 -->
-		<view
+		<!-- <view
 			v-if="isShowIndex"
 		     class="flex align-center justify-between youhui-all-margin youhuiquan-color">
 			<view class="home-youhui-all">
@@ -97,7 +97,7 @@
 					<view class="text-xs">新人专属</view>
 				</view>
 			</view>
-		</view>
+		</view> -->
 		
 		<view class="tui-product-list margin-top" >
 			<view class="tui-product-container">
@@ -135,9 +135,12 @@
 				</block>
 			</view>
 		</view>
-		
-		<view class="red-pack" @click="qian">
-			<image src="../../static/redpack.png"></image>
+		</mescroll-uni>
+		<view class="red-pack" @tap="qian" v-if="!isRemoveQian">
+			<view class="r-box">
+				<image src="../../static/redpack.png"></image>
+				<text @tap.stop="removeQian" class="sm text-white cuIcon-roundclose"></text>
+			</view>
 		</view>
 		<!-- <uni-load-more v-if="loadingimg" :loadingType="loadingType" ></uni-load-more> -->
 		
@@ -152,7 +155,8 @@
 			</view>
 		</uni-popup>
 	</view>
-	</mescroll-uni>
+	 <x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
+	</view>
 </template>
 
 <script>
@@ -247,16 +251,23 @@
 						tip: '暂无相关数据'
 					}
 				},
+				isLoading2:false,
+				isRemoveQian:false ,//是否删除红包
+				loadingOnce:false
 			}
 		},
 		onLoad(){
 			// 获取主页上面数据
 			this._getHomeData()
 		},
+		onReady() {
+			if(!this.loadingOnce){
+				this.$refs.loading.open()
+			}
+		},
 		methods:{			
 			// 搜索事件
 			search(){
-				this.$store.commit('setSearchType','product')
 				uni.navigateTo({
 					url:'../HM-search/HM-search'
 				})
@@ -267,6 +278,7 @@
 					const mes = this.$refs.mescroll.mescroll
 					const obj = this.tabs_3[index]
 					this.current_3 = index
+					this.productList = []
 					if(this.current_3 != 0){
 						this.isShowIndex = false
 						this.homeTabs = obj
@@ -309,6 +321,9 @@
 					})
 				}else if(num == 6){
 					//易物平台
+					uni.navigateTo({
+						url:'Barter/BaterClsaaify'
+					})
 				}else if(num == 7){
 					//更多
 				}
@@ -322,7 +337,7 @@
 			// 其余tab八宫格监听点击
 			classifyClick(id,name){
 				uni.navigateTo({
-					url:'../HM-search/HM-searchList?cid=' + id + '&search=' + name + '&id=' + name
+					url:`../HM-search/HM-searchList?cid=${id}&name=${name}`
 				})
 			},
 			//商品详情页
@@ -333,8 +348,11 @@
 			},
 			// 获取上面数据
 			_getHomeData(obj){
-				
+				uni.hideTabBar()
 				getHomeData().then(res => {
+					uni.showTabBar()
+					this.$refs.loading.close()
+					this.loadingOnce = true
 					if(res.statusCode == 200){
 						this.swiperList = res.data.data.banner
 						this.newsList = res.data.data.roll
@@ -350,6 +368,8 @@
 						})
 						this.tabs_3 = list
 					}
+				}).catch(err => {
+					uni.showTabBar()
 				})
 			},
 			// 获取下面商品数据.
@@ -360,7 +380,10 @@
 					hideModel:true,
 					cid:cid || ''
 				}).then(res => {
+					this.$refs.loading.close()
+					this.loadingOnce = true
 					if(res.statusCode == 200){
+						
 						const obj = res.data.data
 						const arr = res.data.data.map(item => {
 							return replaceImage(item.image)
@@ -431,6 +454,14 @@
 				// #ifdef APP-PLUS
 				plus.nativeUI.previewImage(arr,index)
 				// #endif
+			},
+			goMessage(){
+				uni.navigateTo({
+					url:'/pages/My/Inform/inform'
+				})
+			},
+			removeQian(){
+				this.isRemoveQian = true
 			}
 		}
 	}
@@ -643,5 +674,14 @@
 	.popModel{
 		position: fixed;
 		top: 42px;
+	}
+	.r-box{
+		position: relative;
+	}
+	.r-box text{
+		position: absolute;
+		right: 0;
+		top: 0;
+		font-size: 20upx;
 	}
 </style>

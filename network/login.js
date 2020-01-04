@@ -79,3 +79,10 @@ export function resetPwd(option){
 	})
 }
 
+// 检测版本
+export function app_update(){
+	return http({
+		url:replaceImage('/ebapi/public_api/app_update'),
+		method:"GET"
+	})
+}

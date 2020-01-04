@@ -1,40 +1,30 @@
 <template>
 	<view>
 		<view class="addAddress">
-			<view class="addAddress-all">
-				<view class="addAddress-left">
+			<view class="cu-form-group">
 					<view class="addAddress-left-txt">收货人</view>
 					<input type="text" v-model="real_name"  placeholder="姓名" />
-				</view>
-				<view></view>
 			</view>
-			<view class="addAddress-all">
-				<view class="addAddress-left">
-					<view>联系手机</view>
-					<input type="text" v-model="phone" placeholder="手机号" />
-				</view>
-				<view></view>
+			<view class="cu-form-group">
+				<view class="title">联系手机</view>				
+				<input type="digit" v-model="phone" placeholder="手机号" />
 			</view>
-			<view class="addAddress-all">
-				<view class="addAddress-left">
-					<view>邮编</view>
-					<input type="text" v-model="post_code" placeholder="邮编" />
-				</view>
-				<view></view>
+			<view class="cu-form-group">
+					<view class="title">邮编</view>
+					<input type="digit" v-model="post_code" placeholder="邮编" />
 			</view>
-			<view @tap="openonConfirmClick" class="addAddress-all address-info">
-				<view class="addAddress-left">
-					<view>地址信息</view>
-					<input type="text" v-model="resultInfo" disabled="true" placeholder="请选择" />
-				</view>
-				<view></view>
+			<view @tap="openonConfirmClick" class="cu-form-group">
+				<view class="title">地址信息</view>
+				<input type="text" v-model="resultInfo" disabled="true" placeholder="请选择" />
 			</view>
-			<view class="addAddress-alltexts">
-				<view class="addAddress-alltext">
-					<view class="addAddress-alltext-text">详细地址</view>
-					<textarea class="text-df" v-model="detail"  placeholder="填写收货地址" ></textarea>
-				</view>
-				<view></view>
+			<view class="cu-form-group align-start">
+				<view class="title">详细地址</view>
+				<textarea maxlength="-1" v-model="detail"  placeholder="填写收货地址" ></textarea>
+			</view>
+
+			<view class="cu-form-group">
+				<view class="title">是否设置为默认收货地址</view>
+				<switch @change="chooseDefault" :class="is_default?'checked':''" :checked="is_default?true:false"></switch>
 			</view>
 			
 		</view>
@@ -49,13 +39,12 @@
 			ref="picker" 
 			themeColor="#f00">
 		</w-picker>
+		<x-modal  v-model="show1" title='提示' text='请前往登录' @confirm="goLogin" />
 	</view>
 </template>
 
 <script>
 	import wPicker from "@/components/w-picker/w-picker.vue";
-	
-	import Modal from '@/components/x-modal/x-modal'
 	
 	// 添加地址接口:
 	import {addAddress} from '@/network/getProfileData'
@@ -73,22 +62,20 @@
 				showPickerStatus: false,
 				searchKey: "",
 				real_name:'', //收货人姓名
-				is_default:1,//1默认，0不默认
+				is_default:true,//1默认，0不默认
 				phone:'',//收货人电话
 				detail:'',//收货人详细地址
 				resultInfo:'',//三级联动
 				id:'',//地址id，默认为空
 				post_code:'' ,//邮编
 				addressArr:[],//发送的地址格式
-				linkList:[]//三级联动数据
+				linkList:[],//三级联动数据
+				show1:false
 			}
 		},
 		onNavigationBarButtonTap(e){
 			this.saveClick()
 		},
-		onBackPress() {
-			
-		},	
 		onLoad(option){
 			if(Object.keys(this.$store.state.address).length){
 				const obj = this.$store.state.address
@@ -98,8 +85,18 @@
 				this.is_default = obj.is_default
 				this.real_name = obj.real_name
 			}
+			const token = this.$store.getters.isToken
+			if(token){
+				this.token = token
+			}else{
+				this.show1 = true
+			}
 		},
 		methods: {
+			// 设置用户默认地址
+			chooseDefault(e){
+				this.is_default = e.detail.value
+			},
 			//打开三级联动
 			openonConfirmClick(){
 				this.$refs.picker.show();
@@ -140,7 +137,7 @@
 				}
 				else{
 					let data = {
-						is_default:this.is_default,
+						is_default:this.is_default ? 1 : 0,
 						real_name:this.real_name,
 						phone:this.phone,
 						detail:this.detail,
@@ -152,39 +149,24 @@
 				}
 			},
 			addAddress(data){
-				uni.showModal({
-					title:'是否把此地址作为默认发货地址 ',
-					content:'Is Defalult?',
-					cancelColor:"#333333",
-					confirmColor:"#333333",
-					confirmText:"立即设置",
-					cancelText:'暂不设置',
-					success:(res)=> {
-						if(res.confirm){
-							data.is_default = 1
-							
-						}else{
-							data.is_default = 0
-						}
-						if(this.isToken){
-							addAddress(data,this.isToken).then(res => {
-								if(res.data.code == 200){
-									uni.navigateBack()
-								}else{
-									uni.showToast({
-										title:'未知错误',
-										icon:"none"
-									})
-								}
-							})
-						}else{
-							uni.navigateTo({
-								url:"../../login/login"
-							})
-						}
+				addAddress(data,this.isToken).then(res => {
+					if(res.data.code == 200){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('设置成功',{duration:'long'})
+						// #endif
+						uni.navigateBack()
+					}else{
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast(res.data.msg,{duration:'long'})
+						// #endif
 					}
 				})
 				
+			},
+			goLogin(){
+				uni.navigateTo({
+					url:'../../login/login'
+				})
 			}
 		},
 		computed:{

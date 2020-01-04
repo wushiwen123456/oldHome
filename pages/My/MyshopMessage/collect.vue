@@ -1,25 +1,29 @@
 <template>
 	<view>
-		<view v-for="(vo,key) in recordList" :key="key" class="flex align-center bg-white margin-top-xs recordList-all">
-			<image class="recordList-image" :src="vo.image"></image>
-			<view class="margin-left-sm recordList-main-all flex flex-direction justify-between">
-				<view class="recordList-main">{{vo.store_name}}</view>
-				<view class="bg-red recordList-main-centent">买过的店</view>
-				<view class="flex align-center justify-between">
-					<view class="text-sm-erliu flex align-center text-jiujiujiu">
-						<view class="text-price text-xxl text-red text-bold">{{vo.price}}</view>
-						<view class="margin-left-sm">销量{{vo.sales}}</view>
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
+		<view v-if="hasData">
+			<view v-for="(vo,key) in recordList" @tap="goDetail(vo,key)" :key="key" class="flex align-center bg-white margin-top-xs recordList-all">
+				<image class="recordList-image" :src="vo.image"></image>
+				<view class="margin-left-sm recordList-main-all flex flex-direction justify-between">
+					<view class="recordList-main">{{vo.store_name}}</view>
+					<view class="bg-red recordList-main-centent">买过的店</view>
+					<view class="flex align-center justify-between">
+						<view class="text-sm-erliu flex align-center text-jiujiujiu">
+							<view class="text-price text-xxl text-red text-bold">{{vo.price}}</view>
+							<view class="margin-left-sm">销量{{vo.sales}}</view>
+						</view>
+						<view @tap.stop="onLongPress(key)" style="font-size: 40upx;" class="lg cuIcon-more"></view>
 					</view>
-					<view @tap="onLongPress(key)" style="font-size: 40upx;" class="lg cuIcon-more"></view>
+				</view>
+				<view v-show="vo.popu" @tap.stop="delListClick" class="recordList-all-popu">
+					<view @tap.stop="unCollect(vo,key)">取消收藏</view>
 				</view>
 			</view>
-			<view v-show="vo.popu" @tap="delListClick" class="recordList-all-popu">
-				<view @click="unCollect(vo,key)">取消收藏</view>
-			</view>
+			<view v-show="winSize" @tap="winSizeClick" class="winSize-zehzaho" :style="{ height: windowHeight + 'px'}"></view>
 		</view>
-		<view v-show="winSize" @tap="winSizeClick" class="winSize-zehzaho" :style="{ height: windowHeight + 'px'}"></view>
-		
-	</view>
+		<view class="userNodes" v-else>
+			您还没有收藏商品哦
+		</view>
 	</view>
 </template>
 
@@ -33,19 +37,16 @@
 				winSize:false,///* 显示遮罩 */
 				windowHeight:0,//高度
 				recordList:[],
-				pages:1
+				pages:1,
+				hasData:false
 			}
 		},
 		onLoad() {
 			this.getWindowSize();
-			if(!this.isToken){
-				uni.navigateTo({
-					url:'../../login/login'
-				})
-			}
-		},
-		onShow() {
 			this.profileCollect(this.pages,this.isToken)
+		},
+		onReady() {
+			this.$refs.loading.open()
 		},
 		methods: {
 			// 取消收藏
@@ -76,10 +77,13 @@
 			profileCollect(page,token){
 				profileCollect(page,token)
 					.then(res => {
-						console.log(res)
 						if(res.data.code == 200){
+							this.$refs.loading.close()
+							if(res.data.data.length){
+								this.hasData = true
+							}
 							this.recordList = res.data.data
-							console.log(this.recordList)
+							
 						}
 					})
 			},
@@ -112,6 +116,11 @@
 			delListClick(){
 				this.winSizeClick()
 			},
+			goDetail(vo,item){
+				uni.navigateTo({
+					url:`/pages/ShopDetails/shopDetails?id=${vo.pid}`
+				})
+			}
 			
 		},
 		computed:{

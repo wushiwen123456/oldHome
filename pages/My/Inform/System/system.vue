@@ -1,7 +1,7 @@
 <template>
 	<view class="bg-white" :style="{ 'min-height': windowHeight + 'px'}">
 		
-		<view v-if="!Nodat">
+		<view v-if="Nodata">
 			<view class="flex align-center system-all solid-bottom padding-left padding-right">
 				<view class="system-left-image">
 					<image src="../../../../static/inffimma.png"></image>
@@ -15,14 +15,10 @@
 				</view>
 			</view>
 			
+		</view>	
+		<view v-else class="empty-img" :style="{height:style.height + 'px',transform:'translateY(-10%)'}">
+			<image src="/static/nodatamessage.png" mode="widthFix"></image>
 		</view>
-		
-		
-		
-		<view v-else class="nodata">
-			<image src="../../../../static/nodataa.png"></image>
-		</view>
-		
 		
 	</view>
 </template>
@@ -33,16 +29,15 @@
 			return{
 				windowHeight:0,//屏幕高度
 				Nodata:false,//有无数据
+				style:{
+					height:''
+				},
 			}
 		},
 		onLoad() {
 			var that = this
-			uni.getSystemInfo({
-			    success: function (res) {
-					that.windowHeight = res.windowHeight
-			        console.log('屏幕高度为'+res.windowHeight);
-			    }
-			});
+			const view = uni.getSystemInfoSync()
+			this.style.height = view.windowHeight;
 		},
 		methods:{
 			

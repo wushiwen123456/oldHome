@@ -1,42 +1,36 @@
-<template>
-	<view class="margin-top-xs">
-		<scroll-view scroll-y scroll-with-animation class="tab-view" :scroll-top="scrollTop" :style="{height:height+'px',top:top+'px'}">
-			<view v-for="(item,index) in tabbar" :key="index" class="tab-bar-item" :class="{'active':currentTab==index}"
-			 :data-current="index" @tap.stop="swichNav(item,index)">
-				<text>{{item.label}}</text>
+<template>	
+	<view class="content">
+		<!-- 左边滚动 -->
+		<scroll-view scroll-y class="left-aside" >
+			<view 
+				class="f-item b-b text-cut"
+				v-for="(item,index) in tabbar" :key="index"
+				@tap="swichNav(item,index)"
+				:class="{active:index == currentTab}"
+				>
+				{{item.label}}
+				
 			</view>
 		</scroll-view>
-		<block>
-			<scroll-view scroll-y class="right-box" :style="{height:height+'px',top:top+'px'}">
-				<!--内容部分 start 自定义可删除-->
-					
-				<view class="class-item">
-					<view class="class-name">全部县</view>																	
-					<!-- 县区遍历 -->
-					<view class="g-container">
-						<view class="g-box" v-for="(vo,key) in currentList" :key="key">
-							<view   @click="xianClick(vo,key)" class="g-title" :class="{'xian-curry' : key==xianCurry}">{{vo.label}}</view>
-						</view>	
-					</view>
-					
-					<!-- 商品遍历 -->
-					<view  v-if="hotList.length" @tap='itemClick(item,index)' class="flex align-center bg-white padding margin-top-xs" v-for="(item,index) in hotList" :key = 'index'>
-						<view class="native-list-image">
-							<image :src="item.image"></image>
-						</view>
-						<view class="margin-left-sm text-width">
-							<view class="text-sm-erliu text-black text-hide"><text class="bg-grey text-xs padding-lr-xs margin-right-sm native-txt-red">{{item.procince}}特产</text>{{item.store_name}}</view>
-							<view class="navtive-center">200g</view>
-							<view class="flex align-center justify-between">
-								<view class="text-price text-bold text-red text-lg" >{{item.price}}</view>
-								<view class="text-jiujiujiu text-sm">销量{{item.stock}}</view>
-							</view>
-						</view>
+		<!-- 右边滚动 -->
+		<scroll-view scroll-y scroll-with-animation class="right-aside" @scroll="asideScroll" :scroll-top="scrollTop" >
+			<view class="right-con" v-if="item" v-for="(item,index) in tabbar" :key="index" :id="'main' + item.value">
+				<view @click="xianClick(item,index)" class="view-box text-cut">
+					<text>{{item.label}}</text>
+				</view>
+				<view class="t-list">
+					<view 
+						v-if="item.child"
+						class="t-item" 
+						v-for="(vo,key) in item.child" :key="key" 
+						:class="{'set-item1':(key+1) %3 != 0}" 
+						hover-class="hover-itmeclick"
+						@click="xianClick(vo,key)">
+						<text class="text-cut">{{vo.label}}</text>
 					</view>
 				</view>
-				<!--内容部分 end 自定义可删除-->
-			</scroll-view>
-		</block>
+			</view>
+		</scroll-view>		
 	</view>
 </template>
 
@@ -46,6 +40,8 @@
 	// 获取县区
 	import area from '@/components/w-picker/city-data/area'
 	
+	// 获取省份
+	import province from '@/components/w-picker/city-data/province'
 	// 获取数据
 	import { getDetailData } from '@/network/Home'
 	
@@ -63,62 +59,91 @@
 				xianCurry:0,
 				page:1,
 				hotList:[],
-				procince:""
+				procince:"",
+				area:area,
+				currentProvince:-1,
+				areaCity:{},
+				gridCol:3,
+				gridBorder:false,
+				sizeCalcState:false
 			}
 		},
 		onLoad: function(options) {
-			console.log(options)
 			 this.province = options.name
 			uni.setNavigationBarTitle({
 			    title: options.name
 			});
-			setTimeout(() => {
-				uni.getSystemInfo({
-					success: (res) => {
-						let header = 92;
-						let top = 0;
-						//#ifdef H5
-						top = 44;
-						//#endif
-						this.height = res.windowHeight - uni.upx2px(header)
-						this.top = top + uni.upx2px(header)
-					}
-				});
-			}, 50)
+			const view = uni.getSystemInfoSync()
+			this.height = view.windowHeight;
 			// 根据addressId获取城市
 			this.getCitys(options.id)	
 			// 默认加载第一页数据
-			this.getDetailData(options.name,this.tabbar[this.currentTab].label,this.currentArea.label)
+			// this.getDetailData(options.name,this.tabbar[this.currentTab].label,this.currentArea.label)
 		},
 		methods: {
 			// 获取城市
 			getCitys(id){
 				const arr = []
-				citys.forEach(x => {
-					 x.forEach(x => {
+				let p_index
+				citys.forEach((z,q) => {
+					 z.forEach((x,index) => {
 						const a = x.value.slice(0,2)
 						if(a == id){
 							arr.push(x)
 						}
 					})
 				})
+				// 判断载入省份的index
+				province.forEach((x,index) => {
+					if(x.value == id) p_index = index				
+				})
+				arr.forEach((x,index) => {
+					x.child = area[p_index][index]
+				})
 				this.tabbar = arr
 			},
-			
-			
-			
-			// 点击县标签切换样式
+			// 点击县标签
 			xianClick(vo,key){
-				this.xianCurry = key
-				// 请求数据
-				// 点击不同县进行加载数据
-				this.getDetailData(this.province,this.tabbar[this.currentTab].label,this.currentArea.label)
+				const province = this.province
+				uni.redirectTo({
+					url:`native?province=${province}`
+				})
+				
 			},
 			
-			// 点击标题切换当前页时改变样式,并加载数据
+			// 点击标题切换当前页时改变样式
 			swichNav(item,index){
 				this.currentTab = index
-				this.getDetailData(this.province,this.tabbar[this.currentTab].label,this.currentArea.label)	
+				if(!this.sizeCalcState){
+					this.calcSize()
+				}
+				this.scrollTop = item.top
+			},
+			// 滚动时监听
+			asideScroll(e){
+				const top = e.detail.scrollTop
+				if(!this.sizeCalcState){
+					this.calcSize()
+				}
+				const tabs = this.tabbar.filter(x => x.top <= top)
+				if(tabs.length > 0 ){
+					this.currentTab = tabs.length-1
+				}
+			},
+			// 计算tabBar右侧栏每个高度信息
+			calcSize(){
+				let h = 0
+				this.tabbar.forEach(x => {
+					let view = uni.createSelectorQuery().select('#main' + x.value)
+					view.fields({
+						size:true
+					},data => {
+						x.top = h
+						h += data.height+24*1
+						x.bottom = h
+					}).exec()
+				})
+				this.sizeCalcState = true
 			},
 			//判断当前滚动超过一屏时，设置tab标题滚动条。
 			checkCor: function() {
@@ -150,7 +175,6 @@
 			},
 			// 根据区名加载数据
 			getDetailData(province,city,area){
-				console.log(province,city,area)
 				getDetailData({
 					is_hot:1,
 					province:province.replace('馆',''),
@@ -219,229 +243,114 @@
 	}
 </script>
 
-<style>
-
-	/* 左侧导航布局 start*/
-
-	/* 隐藏scroll-view滚动条*/
-	.native-list-image image{
-		height: 180upx;
-		width: 180upx;
-	}
-	.native-txt-red{
-		width:86upx;
-		height:40upx;
-		background:rgba(205,50,51,1);
-		border-radius:16upx;
-		font-size: 20upx;
-	}
-	.navtive-center{
-		width: auto;
-		display:inline-block !important;
-		display:inline;
-		height: 40upx;
-		line-height: 40upx;
-		margin: 16upx 0;
-		padding: 0 10upx;
-		background: #F9F9F9;
-		color: #999999;
-		font-size: 22upx;
-	}
-	::-webkit-scrollbar {
-		width: 0;
-		height: 0;
-		color: transparent;
-	}
-
-	.tui-searchbox {
-		width: 100%;
-		height: 92upx;
-		padding: 0 30upx;
-		box-sizing: border-box;
-		background: #fff;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		position: fixed;
-		left: 0;
-		top: 0;
-		/* #ifdef H5 */
-		top: 44px;
-		/* #endif */
-		z-index: 100;
-	}
-
-	.tab-view {
-		/* height: 100%; */
-		width: 200upx;
-		position: fixed;
-		left: 0;
-		z-index: 10;
-	}
-
-	.tab-bar-item {
-		width: 200upx;
-		height: 110upx;
-		background: #FFF;
-		box-sizing: border-box;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 26upx;
-		color: #444;
-		font-weight: 400;
-	}
-
-	.active {
-		position: relative;
-		color: #333333;
-		font-size: 30upx;
-		font-weight: 600;
-		background: #F8F8F8;
-	}
-
-	.active::before {
-		content: "";
+<style lang="scss">
+	/*边框*/
+	.b-b:after,
+	.b-t:after {
 		position: absolute;
-		border-left: 8upx solid #E41F19;
+		z-index: 3;
+		left: 0;
+		right: 0;
+		height: 0;
+		content: '';
+		transform: scaleY(.5);
+		border-bottom: 1px solid #E4E7ED;
+	}
+	
+	.b-b:after {
+		bottom: 0;
+	}
+	
+	.b-t:after {
+		top: 0;
+	}
+	page,.content{
 		height: 100%;
-		left: 0;
+		background-color: #f8f8f8;
 	}
-
-	.xian-curry{
-		background: #CD3233!important;
-		color: #FFF;
-	}
-
-	/* 左侧导航布局 end*/
-
-	.right-box {
-		width: 100%;
-		position: fixed;
-		padding-left: 220upx;
-		box-sizing: border-box;
-		left: 0;
-	}
-
-	.page-view {
-		width: 100%;
-		overflow: hidden;
-		padding-top: 20upx;
-		padding-right: 20upx;
-		box-sizing: border-box;
-		padding-bottom: env(safe-area-inset-bottom);
-	}
-
-	.swiper {
-		width: 100%;
-		height: 220upx;
-		border-radius: 12upx;
-		overflow: hidden;
-		transform: translateZ(0);
-	}
-
-	/* #ifdef APP-PLUS || MP */
-	.swiper .wx-swiper-dot {
-		width: 8upx;
-		height: 8upx;
-		display: inline-flex;
-		background: none;
-		justify-content: space-between;
-	}
-
-	.swiper .wx-swiper-dot::before {
-		content: '';
-		flex-grow: 1;
-		background: rgba(255, 255, 255, 0.8);
-		border-radius: 16upx;
-		overflow: hidden;
-	}
-
-	.swiper .wx-swiper-dot-active::before {
-		background: #fff;
-	}
-
-	.swiper .wx-swiper-dot.wx-swiper-dot-active {
-		width: 16upx;
-	}
-
-	/* #endif */
-
-	/* #ifdef H5 */
-	>>>.swiper .uni-swiper-dot {
-		width: 8rpx;
-		height: 8rpx;
-		display: inline-flex;
-		background: none;
-		justify-content: space-between;
-	}
-
-	>>>.swiper .uni-swiper-dot::before {
-		content: '';
-		flex-grow: 1;
-		background: rgba(255, 255, 255, 0.8);
-		border-radius: 16rpx;
-		overflow: hidden;
-	}
-
-	>>>.swiper .uni-swiper-dot-active::before {
-		background: #fff;
-	}
-
-	>>>.swiper .uni-swiper-dot.uni-swiper-dot-active {
-		width: 16rpx;
-	}
-
-	/* #endif */
-
-	.slide-image {
-		width: 100%;
-		height: 220upx;
-	}
-
-	.class-item {
-		background: #fff;
-		width: 100%;
-		min-height: 100vh;
-		box-sizing: border-box;
-		padding: 20upx;
-		margin-bottom: 20upx;
-		border-radius: 12upx;
-	}
-
-	.class-name {
-		font-size: 32upx;
-		font-weight: bold;
-	}
-
-	.g-container {
-		/* padding-top: 20upx; */
+	.content{
 		display: flex;
-		display: -webkit-flex;
-		justify-content: flex-start;
-		flex-direction: row;
-		flex-wrap: wrap;
 	}
-
-	.g-box {
-		width: 33.3333%;
-		text-align: center;
-		padding-top: 40upx;
+	.left-aside{
+		flex-shrink: 0;
+		width: 200upx;
+		height: 100%;
+		background-color: #fff;
 	}
-
-	.g-image {
-		width: 120upx;
-		height: 120upx;
-	}
-
-	.g-title {
+	.f-item{
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width:158upx;
-		height:66upx;
-		background:rgba(248,248,248,1);
-		border-radius:10upx;
+		width: 100%;
+		height: 100upx;
 		font-size: 28upx;
+		color: #333333;
+		position: relative;
+		&.active{
+			color: $uni-text-color-base;
+			background-color: #f8f8f8;
+			&.before{
+				content: '';
+				position: absolute;
+				left: 0;
+				top: 50%;
+				transform: translateY(-50%);
+				height: 36upx;
+				width: 8upx;
+				background-color: $uni-text-color-base;
+				border-radius: 0 4px 4px 0;
+				opacity: .8;
+			}
+		}
+	}
+	.right-aside{
+		flex: 1;
+		overflow: hidden;
+		padding: 29upx 15upx;
+		background-color: #fff;
+	}
+	.cu-avatar{
+		font-size: 28upx !important;
+	}
+	
+	.view-box{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		text{
+			padding: 15upx 25upx;
+			background-color: #e54d42;
+			color: #FFFFFF;
+			font-size: 30upx;
+			border-radius: 10upx;
+		}
+		
+	}
+	.t-list{
+		display: flex;
+		flex-wrap: wrap;
+		margin-bottom: 20upx;
+		.t-item{
+			width: 158upx;
+			height: 66upx;
+			margin-top: 20upx;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background-color: #F8F8F8;
+			color: #333;
+			font-size: 28upx;
+			border-radius: 10upx;
+		}
+	}
+	.set-item1{
+		margin-right: 20upx;
+	}
+	.right-con{
+		margin-bottom: 48upx;
+	}
+	.hover-itmeclick{
+		background-color: #CD3233 !important;
+		color: #FFFFFF !important;
 	}
 </style>

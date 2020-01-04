@@ -1,0 +1,9 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "地区详情",
+  "scrollIndicator": "none",
+  "bounce": "none",
+  "usingComponents": {
+    "uni-popup": "/components/uni-popup/uni-popup"
+  }
+}

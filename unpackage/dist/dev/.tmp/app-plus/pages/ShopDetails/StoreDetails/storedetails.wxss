@@ -172,5 +172,22 @@
 	font-size: 24rpx;
 	color: #656565;
 }
-/* 商品列表*/
+.nav-item{
+	-webkit-box-flex: 1;
+	-webkit-flex: 1;
+	        flex: 1;
+}
+.nav-item-text{
+	padding-left: 16rpx;
+}
+.nav-item-text text{
+	font-size: 32rpx;
+}
+.native-txt-red{
+	width:86rpx;
+	height:40rpx;
+	background:rgba(205,50,51,1);
+	border-radius:16rpx;
+	font-size: 20rpx;
+}
 

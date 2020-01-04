@@ -9,7 +9,7 @@
 					</view>
 				</view>
 				<view class="grid padding-bottom text-center col-5">
-					<view v-for="(voList,keylist) in publicList" :key="keylist">
+					<view @click="goPhone(voList)" v-for="(voList,keylist) in publicList" :key="keylist">
 						<view class="public-title-all">
 							<image :src="voList.image"></image>
 							<view>{{voList.name}}</view>
@@ -53,6 +53,7 @@
 				</tui-collapse>
 			</block>
 		</view>
+		 <x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -83,34 +84,44 @@
 				publicList:[
 				{
 					image:'../../../static/publica.png',
-					name:'报警电话'
+					name:'报警电话',
+					phone:'110'
 				},{
 					image:'../../../static/publicb.png',
-					name:'火警电话'
+					name:'火警电话',
+					phone:'119'
 				},{
 					image:'../../../static/publicc.png',
-					name:'急救电话'
+					name:'急救电话',
+					phone:'120'
 				},{
 					image:'../../../static/publicd.png',
-					name:'交通事故'
+					name:'交通事故',
+					phone:'122'
 				},{
 					image:'../../../static/publice.png',
-					name:'高速救援'
+					name:'高速救援',
+					phone:'12122'
 				},{
 					image:'../../../static/publicf.png',
-					name:'供电线路'
+					name:'供电线路',
+					phone:'13713257960'
 				},{
 					image:'../../../static/publicg.png',
-					name:'供暖电话'
+					name:'供暖电话',
+					phone:'68890222'
 				},{
 					image:'../../../static/publich.png',
-					name:'燃气公司'
+					name:'燃气公司',
+					phone:'037163796760'
 				},{
 					image:'../../../static/publicj.png',
-					name:'有线电视'
+					name:'有线电视',
+					phone:'96196'
 				},{
 					image:'../../../static/publick.png',
-					name:'供水电话'
+					name:'供水电话',
+					phone:'037167680000'
 				},],
 				cateList:[],
 				jingdu:'',
@@ -121,28 +132,19 @@
 		onLoad(){
 			if(this.$store.getters.isToken){
 				this.token = this.$store.getters.isToken
-				
 				// 调用接口和获取当前地理位置
-				// this.$store.dispatch('getUserLocation').then(res => {
-				// 	this.dealWps(res)
-				// })
-				
-				
-				
-				
-				// 测试专用
-				const weidu = this.$store.state.userInfo.address.latitude,
-				jingdu = this.$store.state.userInfo.address.longitude
-				this.jingdu = jingdu
-				this.weidu = weidu
-				
-				console.log(weidu)
-				console.log(jingdu)
-				this.pubsicGood({
-					latitude:weidu,
-					longitude:jingdu
-				},this.token)
-				
+				this.$store.dispatch('getUserLocation').then(res => {
+					this.dealWps(res)
+				}).catch(err => {
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('获取地理位置失败',{duration:'long'})
+					// #endif
+					if(this.$refs.loading){
+						this.$refs.loading.close()
+					}
+					uni.navigateBack()
+				})
+
 				
 				
 				
@@ -160,6 +162,9 @@
 				})
 			}
 		},
+		onReady() {
+			this.$refs.loading.open()
+		},
 		methods:{
 			goGongqiu(){
 				uni.navigateTo({
@@ -174,6 +179,12 @@
 			change3(e) {
 				//可关闭自身
 				this.current = this.current == e.index ? -1 : e.index
+			},
+			// 拨打电话
+			goPhone(vo){
+				uni.makePhoneCall({
+					phoneNumber:vo.phone
+				})
 			},
 			// 根据经度纬度确定位置
 			dealWps(address){
@@ -190,6 +201,7 @@
 			// 获取分类信息数据
 			pubsicGood(location,token){
 				pubsicGood(location,token).then(res => {
+					this.$refs.loading.close()
 					if(res.data.code == 200){
 						const list = res.data.data
 						this.dataList = list.map(x => {

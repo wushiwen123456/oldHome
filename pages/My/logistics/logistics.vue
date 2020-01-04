@@ -1,6 +1,6 @@
 <template>
 	<view class="total-wrap">
-		<view class="product-wrapper" v-if="productList.length" v-for="(item,index) in productList" :key=(index)>
+		<view class="product-wrapper" v-if="productList.length" v-for="(item,index) in productList" :key="index">
 		  <view class="product-image">
 			  <image :src="item.productInfo.attrInfo ? item.productInfo.attrInfo.image : item.productInfo.image"></image>
 		  </view>
@@ -39,6 +39,7 @@
 				</block>
 			</view>
 		</scroll-view>
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -164,14 +165,14 @@ export default {
 	}
   },
   onReady() {
-
-
+	this.$refs.loading.open()
   },
   
   methods:{
 	  // 网络加载方法
 	  queryLogistics(id){
 		  queryLogistics(id,this.token).then(res =>{
+				this.$refs.loading.close()
 			  if(res.data.code == 200){
 				  let data = res.data.data
 				  // 处理商品图片数据\

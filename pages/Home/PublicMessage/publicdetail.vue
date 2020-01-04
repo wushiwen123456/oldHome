@@ -1,77 +1,28 @@
 <template>
-	<view>
-		<tui-tabs class="tui" selectedColor="#D14243" sliderBgColor="#D14243" :tabs="navbar" :currentTab="currentTab" @change="change" itemWidth="50%"></tui-tabs>
-		
+	<view>	
 		<!-- 列表项 -->
 		<view v-if="currentTab == 0">
-			<view v-for="(vo,key) in List" :key="key" class="flex align-center justify-between bg-white piblic-height margin-top-xs padding-lr">
+			<view v-for="(vo,key) in List" @click="goMap(vo)" :key="key" class="flex align-center justify-between bg-white piblic-height margin-top-xs padding-lr">
 				<view>
 					<view class="text-wuer text-lg text-bold margin-bottom-xs">{{vo.title}}</view>
 					<view class="text-jiujiujiu text-sm-erliu">{{vo.address}}</view>
 				</view>
 				<view class="flex flex-direction align-end">
 					<view class="text-jiujiujiu text-sm" v-if="vo.km">距离您{{vo.km}}千米</view>
-					<view @tap="callPhone(vo.phone)" class="flex align-center public-phone-button">
+					<view @click.stop="callPhone(vo.phone)" class="flex align-center public-phone-button">
 						<image src="../../../static/codephone.png"></image>
 						<view>联系它</view>
 					</view>
 				</view>
 			</view>
-		</view>
-		
-		<!-- 地图项 -->
-		<view v-else class="map-option">
-			<map class="map-item" :latitude="latitude" :longitude="longitude" :controls="mapControls" @markertap="markertap" @controltap="controltap" :markers="covers">
-				
-				
-				
-				
-				
-				<cover-view class="cov-content">
-					<view class="shop-title">已选门店</view>
-					<view class="shop-content">
-						<image src="../../../static/1.png" class="s-image"></image>
-						<view class="s-text">
-							<view class="sg s-text-title">郑州紫荆山旗舰店</view>
-							<view class="sg s-text-address">河南省郑州市是是是是舒服的是是是是是是是是是是是是是是是</view>
-							<view class="s-text-bottom flex justify-between">
-								<view class="text-red text-bold">
-									<text class="lg cuIcon-locationfill"></text>
-									<text>165m</text>
-								</view>
-								<text class="s-text-my">距您最近</text>
-							</view>
-						</view>
-					</view>
-					<view class="shop-bottom">
-						<view class="shop-item">
-							<text class="lg cuIcon-home"></text>
-							<text class="shop-item-text">进店</text>
-						</view>
-						<view class="shop-item">
-							<image src="/static/iconfont/icon-navigation.svg" mode=""></image>
-							<text class="shop-item-text">导航</text>
-						</view>
-						<view class="shop-item">
-							
-							<text class="lg cuIcon-phone"></text>
-							<text class="shop-item-text">咨询</text>
-						</view>
-					</view>
-				</cover-view>
-			</map>
-		</view>
+		</view>			
+		 <x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
-<script>
-	import tuiTabs from "@/components/tui-tabs/tui-tabs"
-	
+<script>	
 	import { pubDetailData } from '@/network/Home'
 	export default{
-		components:{
-			tuiTabs
-		},
 		data(){
 			return{
 				loadingimg:false,//login加载
@@ -87,8 +38,8 @@
 				}],
 				currentTab:0,
 				title: 'map',
-				latitude: 39.909,
-				longitude: 116.39742,
+				latitude: '',
+				longitude:'',
 				covers: [{
 					latitude: 39.909,
 					longitude: 116.39742,
@@ -106,20 +57,28 @@
 				mapControls:[{
 						position:{
 							left:15,
-							top:15
+							top:25,
+							width:34,
+							height:34
 						},
 						id:1,
-						iconPath:'/static/iconfont/navgation.svg',
+						iconPath:'/static/iconfont/mylocation.png',
 						clickable:true
 					
 					},
-				]
+				],
 			}
 		},
 		onLoad(option) {
 			const token = this.$store.getters.isToken,
 			id = option.id,
 			{latitude,longitude} = this.$store.state.userInfo.address
+			// // 测试专用
+			//  this.latitude = latitude,
+			// this.longitude = longitude
+			
+			// this._latitude = latitude
+			// this._longitude = longitude
 			// 获取信息
 			this.pubDetailData({
 				cate:id,
@@ -128,6 +87,9 @@
 				page:this.page,
 				limit:10
 			},token)
+		},
+		onReady() {
+			this.$refs.loading.open()
 		},
 		methods:{
 			callPhone(phone){
@@ -138,30 +100,31 @@
 			},
 			// 根据位置信息获取数据
 			pubDetailData(obj,token){
-				console.log(obj)
-				pubDetailData(obj,token).then(res => {
+				pubDetailData(obj,token)
+				.then(res => {
+					this.$refs.loading.close()
 					if(res.data.code == 200){
-						this.List = res.data.data
+						let arr = res.data.data
+						arr.forEach(x => {
+							x.isChoose = false
+						})
+						this.List = arr
 					}
+				}).catch(err => {
+					this.$refs.loading.close()
 				})
 			},
-			change(e){
-				this.currentTab = e.index
+			// 进入详情页
+			goMap(vo){
+				this.List.forEach(x => {
+					x.isChoose = false
+				})
+				vo.isChoose = true
+				this.$store.commit('setPublicMessage',this.List)
+				uni.navigateTo({
+					url:'invite/mapdetail'
+				})
 			},
-			// 点击地图控件出发函数
-			controltap(e){
-				console.log(e)
-				
-				// latitude: 39.909,
-				// longitude: 116.39742,
-				this.latitude = 39.909
-				this.longitude = 116.39742
-			},
-			// 点击标记地时触发 
-			markertap(e) {
-				console.log(e)
-			}
-			
 		}
 	}
 </script>
@@ -188,28 +151,35 @@
 		height: 162upx;
 	}
 	.map-item{
-		height: 100vh;
+		height: 600upx;
 		width: 100%;
+		position: fixed;
+		top: 44px;
 	}
 	.cov-content{
 		position: fixed;
-		bottom: 25upx;
-		left: 15upx;
-		right: 15upx;
-		height: 300upx;
-		background-color: #fff;
-		border-radius: 20upx;
-		padding: 20upx 25upx;
+		top: 600upx;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		overflow: hidden;
+		background-color: #f5f5f5;
+		
 		.shop-title{
 			color: #999;
-			font-size: 28upx;	
+			font-size: 28upx;
+			height: 50upx;
 			line-height: 1.8;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			.st-arrow{
+				transition: 0.5s ease-in-out;
+			}
 		}
 		.shop-content{
-			height: 200upx;
 			display: flex;
-			justify-content: space-between;
-			align-items: center;
+			flex-direction: column;
 			color: #999;
 			font-size: 28upx;
 			image{
@@ -220,7 +190,6 @@
 			}
 			.s-text{
 				flex: 1;
-				width: 230upx;
 				line-height: 1.8;
 				font-size: 28upx;
 				color: #999;
@@ -257,6 +226,16 @@
 			width: 30upx;
 			height: 30upx;
 			vertical-align: -4upx;
+			
 		}
+	}
+	.scroll-shop-wrapper{
+		height: calc(100% - 25px);
+	}
+	.shop-c{
+		height: 220upx;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
 	}
 </style>

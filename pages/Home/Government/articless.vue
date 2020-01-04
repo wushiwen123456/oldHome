@@ -1,14 +1,18 @@
 <template>
-	<view class="bg-white">
-		<view class="margin-lr">
-			<view class="text-wuer text-xl text-bold">{{html.title}}</view>
-			<view class="flex align-center margin-tb">
-				<view style="color: #BFBFBF">{{html.add_time}}</view>
-				<view class="margin-left-sm text-jiujiujiu">阅读数{{html.browse_num}}</view>
+		<view>
+			<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
+			<view class="bg-white">
+				<video v-if="html.video" class="video" :src="html.video" :autoplay="true" ></video>
+				<view class="margin-lr" >
+					<view class="text-wuer text-xl text-bold">{{html.title}}</view>
+					<view class="flex align-center margin-tb">
+						<view style="color: #BFBFBF">{{html.add_time}}</view>
+						<view class="margin-left-sm text-jiujiujiu">阅读数{{html.browse_num}}</view>
+					</view>
+					<parser v-if="html.content" :html="html.content"></parser>
+				</view>
 			</view>
-			<parser v-if="html.content" :html="html.content"></parser>
 		</view>
-	</view>
 </template>
 
 <script>
@@ -33,18 +37,26 @@
 				const token = this.$store.getters.isToken
 				this.getNewsDetail(id,token)
 			}
+			const res = uni.getSystemInfoSync()
+			this.contentHeight = res.windowHeight
+			
 		},
 		onNavigationBarButtonTap(){
 			this.shareInfo()
 		},
 		data(){
 			return{
-				html:{}
+				html:{}	,
+				contentHeight:0
 			}
+		},
+		onReady() {
+			this.$refs.loading.open()
 		},
 		methods:{
 			getNewsDetail(id,token){
 				getNewsDetail(id,token).then(res => {
+					this.$refs.loading.close()
 					this.html = res.data.data
 				})
 			},
@@ -82,9 +94,11 @@
 						summary:shareInfo.desc||"",
 						success:(res)=>{
 							console.log("success:" + JSON.stringify(res));
+							uni.hideLoading()
 						},
 						fail:(err)=>{
 							console.log("fail:" + JSON.stringify(err));
+							uni.hideLoading()
 						}
 					};
 					switch (index) {
@@ -93,6 +107,10 @@
 							shareObj.scene="WXSceneSession";
 							shareObj.type=0;
 							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.showLoading({
+								title:'加载中...',
+								mask:true
+							})
 							uni.share(shareObj);
 							break;
 						case 1:
@@ -100,6 +118,10 @@
 							shareObj.scene="WXSenceTimeline";
 							shareObj.type=0;
 							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.showLoading({
+								title:'加载中...',
+								mask:true
+							})
 							uni.share(shareObj);
 							break;
 						case 2:
@@ -133,5 +155,10 @@
 	}
 </script>
 
-<style>
+<style lang="scss">
+	.video{
+		height: 500upx;
+		width: 100%;
+	}
+	
 </style>

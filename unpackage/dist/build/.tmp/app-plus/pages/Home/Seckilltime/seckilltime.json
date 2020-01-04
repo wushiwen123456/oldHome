@@ -2,7 +2,9 @@
   "navigationBarBackgroundColor": "#FFFFFF",
   "navigationBarTitleText": "限时秒杀",
   "scrollIndicator": "none",
+  "bounce": "none",
   "usingComponents": {
+    "x-loading": "/components/loding/w-loading",
     "tui-countdown": "/components/countdown/countdown"
   }
 }

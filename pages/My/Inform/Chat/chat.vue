@@ -1,16 +1,18 @@
 <template>
-	<view class="bg-white" :style="{ height: winSize.height + 'px'}">
+	<view class="bg-white">
 		<view v-if="NOdata">
 			<view class="list">
-				<view class="flex_col" @longpress="onLongPress" :class="{'active':pickerUserIndex==index}" @tap="listTap" v-for="(item,index) in userList"
+				<view class="flex_col" @longpress="onLongPress" :class="{'active':pickerUserIndex==index}" @tap="listTap(item)" v-for="(item,index) in userList"
 				 :key="index" :data-index="index">
 					<image src="../../../../static/demo3.png" mode="aspectFill"></image>
-					<view class="flex_grow">
+					<view class="flex_grow" v-if="item.isLoad">
 						<view class="flex_col">
-							<view class="flex_grow">{{item.name}}</view>
-							<view class="time">{{item.time}}</view>
+							<view class="flex_grow">{{item.user.shop_name}}</view>
 						</view>
-						<view class="info">{{item.info}}</view>
+						<view class="flex justify-between">
+							<view class="info">{{item.lastData.content}}</view>
+							<view class="time">{{item.lastData.time}}</view>
+						</view>
 					</view>
 				</view>
 			</view>
@@ -22,18 +24,23 @@
 		</view>
 		
 		<!-- 暂无数据 -->
-		<view v-else class="nodata">
-			<image src="../../../../static/nodataa.png"></image>
+		<view v-else class="empty-img" :style="{height:style.height + 'px',transform:'translateY(-10%)'}">
+			<image src="/static/nodatamessage.png" mode="widthFix"></image>
 		</view>
 		
 	</view>
 </template>
 
 <script>
+	// 聊天列表接口
+	import { chatList,chatData } from '@/network/getProfileData'
+	
+	// 导入工具类
+	import { replaceImage } from '@/utils/dealUrl'
 	export default{
 		data(){
 			return{
-				NOdata:true,//暂无数据
+				NOdata:false,//暂无数据
 				userList: [],
 				/* 窗口尺寸 */
 				winSize: {},
@@ -46,13 +53,20 @@
 				/* 弹窗定位样式 */
 				popStyle: "",
 				/* 选择的用户下标 */
-				pickerUserIndex: -1
+				pickerUserIndex: -1,
+				style:{
+					height:''
+				},
 			}
 		},
 		onLoad() {
-			this.getListData();
-			this.getWindowSize();
 			
+			this.getWindowSize();
+			this.token = this.$store.getters.isToken
+			const view = uni.getSystemInfoSync()
+			this.style.height = view.windowHeight;
+			
+			this.getListData();
 			// #ifdef H5
 			document.onLong = function(e) {
 				var e = e || window.event;
@@ -62,28 +76,50 @@
 		},
 		methods: {
 			/* 列表触摸事件 */
-			listTap() {
+			listTap(item) {
 				/* 因弹出遮罩问题，所以需要在遮罩弹出的情况下阻止列表事件的触发 */
 				if (this.showShade) {
 					return;
 				}
+				const obj = {
+					expressageFen:item.user.expressage_score,
+					produceFen:item.user.product_score,
+					serviceFen:item.user.service_score,
+					totalFen:item.user.zong,
+					storeName:item.user.shop_name,
+					storeLogo:item.user.shop_logo,
+					storeId:item.user.shop_id
+					
+				}
+				const str = JSON.stringify(obj)
 				uni.navigateTo({
-					url:'../../../ShopDetails/informtion/informtion'
+					url:`../../../ShopDetails/informtion/informtion?shopInfo=${str}`
 				})
 		
 				console.log("列表触摸事件触发")
 			},
 			/* 获取列表数据 */
 			getListData() {
-				let list = [];
-				for (let i = 0; i < 5; i++) {
-					list.push({
-						"name": `第${i+1}个用户`,
-						"time": '5月20日',
-						"info": `这是第${i+1}个用户的聊天信息`
-					})
-				}
-				this.userList = list;
+				const that = this
+				chatList(that.token).then(res => {
+					if(res.data.code == 200){
+						const list = res.data.data.shopGroup
+						list.forEach(x => {
+							x.user.shop_logo = replaceImage(x.user.shop_logo)
+							x.isLoad = false
+							// 获取每个聊天对象的消息记录
+							chatData(that.token,x.group_id).then(res => {
+								if(res.data.code == 200){
+									x.lastData = res.data.data[res.data.data.length-1]
+									// that.userList.push(x)
+									x.isLoad = true
+								}
+							})
+						})
+						that.userList = list
+					}
+				})
+				
 			},
 			/* 获取窗口尺寸 */
 			getWindowSize() {
@@ -162,6 +198,11 @@
 </style>
 
 <style scoped lang="scss">
+	page,.bg-white{
+		height: 100%;
+		overflow: hidden;
+		background-color: #fff;
+	}
 	/* 列式弹性盒子 */
 	.flex_col {
 		display: flex;
@@ -226,7 +267,7 @@
 				}
 
 				.time {
-					width: 150upx;
+					width: 280upx;
 					text-align: right;
 				}
 
@@ -234,6 +275,7 @@
 					overflow: hidden;
 					text-overflow: ellipsis;
 					white-space: nowrap;
+					width: 375upx;
 				}
 			}
 		}

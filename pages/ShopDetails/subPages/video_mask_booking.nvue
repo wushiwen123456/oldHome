@@ -1,0 +1,56 @@
+<template>
+	<view class="content" @click="myClick">
+		<video :src="mp4Src" v-if="mp4Src" ref="video" :loop="true"  :auto-play="true" :page-gesture="true" class="video-wrapper" controls></video>
+	</view>
+</template>
+									
+<script>
+	export default {
+		data() {
+			return {
+				mp4Src:''
+			}
+		},
+		methods: {
+			myClick(){
+				const view = uni.getCurrentSubNVue()
+				view.hide()
+			}
+		},
+		created() {
+			// 在 subNVue/vue 页面注册事件监听方法  
+			// $on(eventName, callback)  
+			uni.$on('videoDetail', (data) => {  
+				console.log(data)
+			   this.mp4Src = data.video
+			})
+		},
+		beforeDestroy() {
+			uni.$off('videoDetail')
+		},
+		mounted() {
+			var ws = plus.webview.currentWebview();
+			console.log(ws)
+			ws.addEventListener('hide',() => {
+				this.$refs.video.pause()
+			},false)
+			ws.addEventListener('show',() => {
+				if(this.mp4Src){
+					this.$refs.video.play()
+				}
+			},false)
+		},
+		
+	}
+</script>
+
+<style>
+	.content{
+		justify-content: center;
+		align-items: center;
+	}
+	.video-wrapper{ 
+		height: 300px;
+		width: 350px;
+ 	}
+</style>

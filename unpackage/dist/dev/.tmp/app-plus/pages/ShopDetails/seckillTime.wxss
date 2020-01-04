@@ -450,4 +450,28 @@
           align-items: center;
   background-color: #fff;
 }
+.select-dianpu {
+  color: #FFFFFF;
+  background: #CD3233;
+  padding: 16rpx 30rpx;
+  border-radius: 46rpx;
+}
+.pay-right {
+  width: 380rpx;
+  background-color: #CD3233;
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: bold;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+          justify-content: center;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+  position: relative;
+  height: 100rpx;
+}
 

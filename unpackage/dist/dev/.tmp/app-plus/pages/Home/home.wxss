@@ -222,4 +222,13 @@
 	position: fixed;
 	top: 42px;
 }
+.r-box{
+	position: relative;
+}
+.r-box text{
+	position: absolute;
+	right: 0;
+	top: 0;
+	font-size: 20rpx;
+}
 

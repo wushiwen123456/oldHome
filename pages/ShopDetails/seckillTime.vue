@@ -1,316 +1,303 @@
 <template>
-	<view v-if="Object.keys(detailData).length">
-		<!-- head -->
-		<view class="shopDetails-title" >
-			<swiper class="screen-swiper" :hidden="!autoplay">
-				<swiper-item>
-					<video id="myVideo" v-if="videoUrl" :src="videoUrl"
-				 autoplay="false" loop muted show-play-btn controls objectFit="contain" @pause="ZhanTing" @ended="ZhanTing"></video>
-				</swiper-item>
-			</swiper>
-			<swiper :hidden="autoplay" class="screen-swiper" circular="true"
-			 :autoplay="!autoplay" interval="3500" duration="500" :current="swiperNum" @change="swiperChange">
-				<swiper-item @tap="BoFang" v-if="videoUrl" class="item1">
-					<image src="/static/play/larkcloud_play.png" mode="aspectFill"></image>
-				</swiper-item>
-				<swiper-item @tap="swiperDetail" v-for="(item,index) in swiperList">
-					<image :src="item.url" mode="widthFix"></image>
-				</swiper-item>
-			</swiper>
-			<view class="shopDetails-title-select">
-				<view class="shopDetails-title-left"></view>
-					<view class="flex align-center">
-						<view v-if="videoUrl" @tap="selectPlayClick" :class="[swiperNum == 0 ? 'select-title-type' : '']" class="shopDetails-title-play">
-							<view class="lg  cuIcon-playfill"></view>
-							<view>视频</view>
-						</view>
-						<view v-if="videoUrl" @tap="selectimageClick" :class="[ swiperNum == 0 ?'':'select-title-type']" class="shopDetails-title-play margin-left-sm ">图片</view>
-					</view>
-				<view class="shopDetails-title-num">{{swiperNum + 1}}/{{videoUrl ? swiperList.length + 1 : swiperList.length}}</view>
-			</view>
-		</view>
-		
-		
-		
-		
-		
-		
-		<view class="seckilltime-background">
-			<view class="flex align-center margin-left-sm">
-				<view style="font-size: 70upx;" class="text-price">{{detailData.storeInfo.price}}</view>
-				<view class="text-xs margin-left-xs" style="color: #FFD4D2;">
-					<view class="seckilltime-yuanjiage">￥{{detailData.storeInfo.ot_price}}</view>
-					<view>仅剩:{{detailData.storeInfo.stock}}份</view>
-				</view>
-			</view>
-			<view class="flex flex-direction align-center justify-center margin-right">
-				<view class="text-red-my text-sm margin-bottom-xs">限时秒杀</view>
-				<tui-countdown :time="timeList" :colonSize="40" color="#fff" :width="44" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
-			</view>
-		</view>
-		<view class="bg-white padding-left">
-			<view>
-				<view class="flex align-center justify-between margin-right-sm">
-					<view class="flex align-center margin-top-xs margin-bottom-xs">
-						<!-- 暂无折扣信息 -->
-						<!-- <view class="cu-tag bg-red-my shopDetails-title-height">店铺红包满149减10</view> -->
-						<view class="cu-tag bg-red-my shopDetails-title-height">购买得积分</view>
-					</view>
-					<!-- 暂无折扣信息 -->
-					<view @tap="outloginClick" class="flex align-center">
-						<!-- <view class="text-gray text-sm">领券</view>
-						<view class="lg text-gray cuIcon-right"></view> -->
-					</view>
-				</view>
-				
-				<view class="flex align-center margin-top-sm margin-bottom-sm">
-					<view class="flex-four text-three shopDetails-title-name"></view>
-					<view @tap="outloginSharClick" class="flex-sub flex align-center justify-center shopDetails-title-shar">
-						<view class="lg cuIcon-forward margin-right-xs"></view>
-						<view>转发</view>
-					</view>
-				</view>
-				<view class="flex align-center justify-between padding-bottom-sm margin-right-sm text-jiujiujiu">
-					<view>快递:<text class="margin-left-sm">免运费</text></view>
-					<view>销量{{detailData.storeInfo.sales}}</view>
-				</view>
-			</view>
-		</view>
-		<!-- head end -->
-		
-		<!-- 保障 -->
-		<!-- <view class="bg-white margin-top-xs flex align-center justify-between shopDetails-baozhanng">
-			<view class="flex text-sm-erliu">
-				<view class="text-jiujiujiu ">保障</view>
-				<view class="margin-left-sm">假一赔四·上门取退·极速退款·七天无理由退换</view>
-			</view>
-			<view class="lg text-jiujiujiu cuIcon-right"></view>
-		</view> -->
-		<!-- 保障end -->
-		
-		<!-- 选择 -->
-		<view @tap="outloginShopClick" class="bg-white margin-top-xs padding-bottom-sm">
-			<view class=" flex align-center justify-between shopDetails-baozhanng">
-				<view class="flex text-sm-erliu">
-					<view class="text-jiujiujiu ">选择</view>
-					<view class="margin-left-sm">颜色  种类 </view>
-				</view>
-				<view class="lg text-jiujiujiu cuIcon-right"></view>
-			</view>
-			<view class="flex align-center shopDetails-select-image">
-				<view class="flex-yidw">
-					<image v-for="(vo,key) in detailData.productValue" :key="key" class="shopDetails-image" :src="vo.image"></image>
-				</view>
-				<view class="flex-sub shopDetails-image-select" v-if="detailData.productValue">共有{{Object.keys(detailData.productValue).length}}种类型可选</view>
-				<view class="flex-sub shopDetails-image-select" v-if="!detailData.productValue">暂无选择种类</view>
-			</view>
-		</view>
-		<!-- 选择 end -->
-		
-		<!-- 评价 -->
-		<view class="bg-white margin-top-xs">
-			<view class="flex align-center justify-between shopDetails-baozhanng">
-				<view >商品评价</view>
-				<view class="flex text-sm-erliu align-center">
-					<view class="text-red-my margin-right-sm"  v-if="Object.keys(commont).length != 0" @click="goMoreCommont">查看更多</view>
-					<view style="margin-top: 4upx;" class="lg text-jiujiujiu cuIcon-right"></view>
-				</view>
-			</view>
-			<view class="padding-left padding-right padding-bottom-lg" v-if="Object.keys(commont).length != 0">
-				<view class="flex align-center margin-top-xs">
-					<image class="comment-image-all" :src="commont.avatar"></image>
-					<view class="text-jiujiujiu text-sm margin-left-xs">{{commont.nickname}}</view>
-				</view>
-				<view style="margin-top: 10upx;">{{commont.comment ? commont.comment : '未作出评价，系统默认好评'}}</view>
-				<view class="common-pics">
-					<image v-for="(item,index) in commont.pics" @click="goDetail(item)" :src="item"></image>
-				</view>
-			</view>
-		</view>
-		<view class="no-comment padding-left padding-right padding-bottom-lg" v-if="Object.keys(commont).length == 0">
-			该商品暂无评论，快来抢沙发
-		</view>
-		<!-- 评价 end -->
-		
-		
-		<!-- 店铺介绍 -->
-		<view class="bg-white margin-top-xs shop-deleat-all">
-			<view class="flex align-center justify-between margin-bottom-sm">
-				<view class="flex">
-					<image class="shop-introduce-img" src="../../static/demo9.png" ></image>
-					<view class="margin-left-sm flex flex-direction justify-between">
-						<view class="shop-detal-name">{{detailData.shop_info.shop_name}}</view>
-						<view class="flex align-center text-xs shop-experience">
-							<view>综合体验</view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-						</view>
-					</view>
-				</view>
-				<view @tap="shopClick(1)" class="cu-btn round select-title-type">进入店铺</view>
-			</view>
-			<view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
-				<view class="flex align-center flex-sub ">
-					<view>商品评分</view>
-					<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.product_score}}</view>
-					<view class="shop-pingfen" >平</view>
-				</view>
-				<view class="flex align-center flex-sub ">
-					<view>物流评分</view>
-					<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.expressage_score}}</view>
-					<view class="shop-pingfen" >平</view>
-				</view>
-				<view class="flex align-center flex-sub ">
-					<view>服务评分</view>
-					<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.service_score}}</view>
-					<view class="shop-pingfen" >平</view>
-				</view>
-			</view>
-		</view>
-		<!-- 店铺介绍 end -->
-		
-		
-		<!-- 推荐商品 -->
-		<view class="bg-white">
-			<view @tap="shopClick(1)" class="margin-top-xs flex align-center justify-between shopDetails-baozhanng">
-				<view>推荐商品</view>
-				<view class="flex text-sm-erliu align-center">
-					<view class="text-red-my margin-right-sm">查看全部</view>
-					<view style="margin-top: 4upx;" class="lg text-jiujiujiu cuIcon-right"></view>
-				</view>
-			</view>
-			<view class="flex align-center padding-left padding-right">
-				<view class="flex-sub" v-for="(item,index) in detailData.recommend_goods">
-					<image class="tuijian-shop-three-image" :src="item.image"></image>
-					<view class="text-sm-erliu text-black">{{item.store_name}}</view>
-					<view class="text-red-my text-sm-erliu margin-top-sm margin-bottom-sm">￥{{item.price}}</view>
-				</view>
-				
-			</view>
-		</view>
-		
-		<!-- 推荐商品 end-->
-		<view style="height: 74upx;color: #525253;" class="flex align-center justify-center">———— 商品详情 ————</view>
-		<!-- 文本分割线 -->
-		
-		<!-- 商品介绍 -->
 		<view>
-			<image :src="detailData.storeInfo.image" mode="widthFix" style="width: 100%;"></image>
+			<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
+			<view v-if="Object.keys(detailData).length">
+				<!-- head -->
+				<view class="shopDetails-title" >
+					<swiper :hidden="autoplay" class="screen-swiper" circular="true"
+					 :autoplay="!autoplay" interval="3500" duration="500" :current="swiperNum" @change="swiperChange">
+						<swiper-item @tap="BoFang" v-if="videoUrl" class="item1">
+							<image src="/static/play/larkcloud_play.png" mode="aspectFill"></image>
+						</swiper-item>
+						<swiper-item @tap="swiperDetail" v-for="(item,index) in swiperList">
+							<image :src="item.url" mode="widthFix"></image>
+						</swiper-item>
+					</swiper>
+					<view class="shopDetails-title-select">
+						<view class="shopDetails-title-left"></view>
+							<view class="flex align-center">
+								<view v-if="videoUrl" @tap="selectPlayClick" :class="[swiperNum == 0 ? 'select-title-type' : '']" class="shopDetails-title-play">
+									<view class="lg  cuIcon-playfill"></view>
+									<view>视频</view>
+								</view>
+								<view v-if="videoUrl" @tap="selectimageClick" :class="[ swiperNum == 0 ?'':'select-title-type']" class="shopDetails-title-play margin-left-sm ">图片</view>
+							</view>
+						<view class="shopDetails-title-num">{{swiperNum + 1}}/{{videoUrl ? swiperList.length + 1 : swiperList.length}}</view>
+					</view>
+				</view>
+				
+				
+				
+				
+				
+				
+				<view class="seckilltime-background">
+					<view class="flex align-center margin-left-sm">
+						<view style="font-size: 70upx;" class="text-price">{{detailData.storeInfo.price}}</view>
+						<view class="text-xs margin-left-xs" style="color: #FFD4D2;">
+							<view class="seckilltime-yuanjiage">￥{{detailData.storeInfo.ot_price}}</view>
+							<view>仅剩:{{detailData.storeInfo.stock}}份</view>
+						</view>
+					</view>
+					<view class="flex flex-direction align-center justify-center margin-right">
+						<view class="text-red-my text-sm margin-bottom-xs">限时秒杀</view>
+						<tui-countdown :time="skillTime" :colonSize="40" color="#fff" :width="44" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
+					</view>
+				</view>
+				<view class="bg-white padding-left">
+					<view class="flex align-center">
+						<view class="text-red-my text-xxxl text-bold">￥{{detailData.storeInfo ? detailData.storeInfo.price : ''}}</view>
+					</view>	
+						<view>
+							<view class="flex align-center justify-between margin-right-sm">
+								<view class="flex align-center margin-top-xs margin-bottom-xs">
+									<view class="cu-tag bg-red-my shopDetails-title-height">购买得积分</view>
+								</view>
+							</view>
+							
+							<view class="flex align-center margin-top-sm margin-bottom-sm">
+								<view class="flex-four text-three shopDetails-title-name">{{detailData.storeInfo ?  detailData.storeInfo.info : ''}}</view>
+								<view @tap="outloginSharClick" class="flex-sub flex align-center justify-center shopDetails-title-shar">
+									<view class="lg cuIcon-forward margin-right-xs"></view>
+									<view>转发</view>
+								</view>
+							</view>
+							<view class="flex align-center justify-between padding-bottom-sm margin-right-sm text-jiujiujiu">
+								<view>快递:<text class="margin-left-sm" v-if="detailData.storeInfo">{{detailData.storeInfo.is_postage == 1 ? '免运费' : detailData.storeInfo.postage + '元'}}</text></view>
+								<view>销量{{detailData.storeInfo ? detailData.storeInfo.sales : ''}}</view>
+							</view>
+						</view>
+				</view>
+				<!-- head end -->
+				
+				<!-- 保障 -->
+				<!-- <view class="bg-white margin-top-xs flex align-center justify-between shopDetails-baozhanng">
+					<view class="flex text-sm-erliu">
+						<view class="text-jiujiujiu ">保障</view>
+						<view class="margin-left-sm">假一赔四·上门取退·极速退款·七天无理由退换</view>
+					</view>
+					<view class="lg text-jiujiujiu cuIcon-right"></view>
+				</view> -->
+				<!-- 保障end -->
+				
+				<!-- 选择 -->
+				<view @tap="outloginShopClick" class="bg-white margin-top-xs padding-bottom-sm">
+					<view class=" flex align-center justify-between shopDetails-baozhanng">
+						<view class="flex text-sm-erliu">
+							<view class="text-jiujiujiu ">选择</view>
+							<view class="margin-left-sm">颜色  种类 </view>
+						</view>
+						<view class="lg text-jiujiujiu cuIcon-right"></view>
+					</view>
+					<view class="flex align-center shopDetails-select-image">
+						<view class="flex-yidw">
+							<image v-for="(vo,key) in detailData.productValue" :key="key" class="shopDetails-image" :src="vo.image"></image>
+						</view>
+						<view class="flex-sub shopDetails-image-select" v-if="detailData.productValue">共有{{Object.keys(detailData.productValue).length}}种类型可选</view>
+						<view class="flex-sub shopDetails-image-select" v-if="!detailData.productValue">暂无选择种类</view>
+					</view>
+				</view>
+				<!-- 选择 end -->
+				
+				<!-- 评价 -->
+				<view class="bg-white margin-top-xs">
+					<view class="flex align-center justify-between shopDetails-baozhanng">
+						<view >商品评价</view>
+						<view class="flex text-sm-erliu align-center">
+							<view class="text-red-my margin-right-sm"  v-if="Object.keys(commont).length != 0" @click="goMoreCommont">查看更多</view>
+							<view style="margin-top: 4upx;" class="lg text-jiujiujiu cuIcon-right"></view>
+						</view>
+					</view>
+					<view class="padding-left padding-right padding-bottom-lg" v-if="Object.keys(commont).length != 0">
+						<view class="flex align-center margin-top-xs">
+							<image class="comment-image-all" :src="commont.avatar"></image>
+							<view class="text-jiujiujiu text-sm margin-left-xs">{{commont.nickname}}</view>
+						</view>
+						<view style="margin-top: 10upx;">{{commont.comment ? commont.comment : '未作出评价，系统默认好评'}}</view>
+						<view class="common-pics">
+							<image v-for="(item,index) in commont.pics" @click="goDetail(item)" :src="item"></image>
+						</view>
+					</view>
+				</view>
+				<view class="no-comment padding-left padding-right padding-bottom-lg" v-if="Object.keys(commont).length == 0">
+					该商品暂无评论，快来抢沙发
+				</view>
+				<!-- 评价 end -->
+				
+				
+				<!-- 店铺介绍 -->
+				<view class="bg-white margin-top-xs shop-deleat-all">
+					<view class="flex align-center justify-between margin-bottom-sm">
+						<view class="flex">
+							<image class="shop-introduce-img" src="../../static/demo9.png" ></image>
+							<view class="margin-left-sm flex flex-direction justify-between">
+								<view class="shop-detal-name">{{detailData.shop_info.shop_name}}</view>
+								<view class="flex align-center text-xs shop-experience">
+									<view>综合体验</view>
+									<tui-rate :current="detailData.shop_info.zong*1" normal="#ccc" active="#FF5400" :size="10"></tui-rate>
+								</view>
+							</view>
+						</view>
+						<view @tap="shopClick(1)" class="select-dianpu">进入店铺</view>
+					</view>
+					<view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
+						<view class="flex align-center flex-sub ">
+							<view>商品评分</view>
+							<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.product_score}}</view>
+							<view class="shop-pingfen" >平</view>
+						</view>
+						<view class="flex align-center flex-sub ">
+							<view>物流评分</view>
+							<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.expressage_score}}</view>
+							<view class="shop-pingfen" >平</view>
+						</view>
+						<view class="flex align-center flex-sub ">
+							<view>服务评分</view>
+							<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.service_score}}</view>
+							<view class="shop-pingfen" >平</view>
+						</view>
+					</view>
+				</view>
+				<!-- 店铺介绍 end -->
+				
+				
+				<!-- 推荐商品 -->
+				<view class="bg-white">
+					<view @tap="shopClick(1)" class="margin-top-xs flex align-center justify-between shopDetails-baozhanng">
+						<view>推荐商品</view>
+						<view class="flex text-sm-erliu align-center">
+							<view class="text-red-my margin-right-sm">查看全部</view>
+							<view style="margin-top: 4upx;" class="lg text-jiujiujiu cuIcon-right"></view>
+						</view>
+					</view>
+					<view class="flex align-center padding-left padding-right">
+						<view class="flex-sub" style="margin-right: 20upx;" v-for="(item,index) in detailData.recommend_goods" :key="index" @click="recommClick(item,index)">
+							<image class="tuijian-shop-three-image" :src="item.image"></image>
+							<view class="text-sm-erliu text-black text-cut" style="width: 200upx;">{{item.store_name}}</view>
+							<view class="text-red-my text-sm-erliu margin-top-sm margin-bottom-sm">￥{{item.price}}</view>
+						</view>	
+					</view>
+				</view>
+				
+				<!-- 推荐商品 end-->
+				<view style="height: 74upx;color: #525253;" class="flex align-center justify-center">———— 商品详情 ————</view>
+				<!-- 文本分割线 -->
+				
+				<!-- 商品介绍 -->
+				<view>
+					<image :src="detailData.storeInfo.image" mode="widthFix" style="width: 100%;"></image>
+				</view>
+				<!-- 商品介绍end -->
+				
+				<view style="height: 100upx;"></view>
+				
+				<!-- 底部操作条 -->
+				<view class="cu-bar bg-white tabbar border shop shopDetails-bottom-all">
+					<view class="flex align-center text-xs tab-bar-bottom">
+						<view @tap="shopClick(1)" class="flex flex-direction align-center justify-center tab-bar-item">
+							<image class="shop-bottom-kefu" src="../../static/shop.png"></image>
+							<view>店铺</view>
+						</view>
+						<view @tap="serviceClick(1)" class="flex flex-direction align-center justify-center tab-bar-item">
+							<image class="shop-bottom-kefu" src="../../static/kefu.png"></image>
+							<view>客服</view>
+						</view>
+						<view @tap="collectClick(1)" class="flex flex-direction align-center justify-center tab-bar-item">
+							<image class="shop-bottom-kefu" src="../../static/collect.png" v-show="!detailData.storeInfo.userCollect"></image>
+							<!-- 已收藏 -->
+							<image src="../../static/collectClick.png" class="shop-bottom-kefu" v-show="detailData.storeInfo.userCollect"></image>
+							<view>{{detailData.storeInfo.userCollect ? '已收藏' : '收藏'}}</view>
+						</view>
+					</view>
+						<!-- <view @tap="outloginShopClick" class="shopDetails-bottom-button button-left">快来买呀~</view> -->
+						<view @tap="outloginShopClick" class="pay-right">立即购买</view>
+				</view>
+				<!-- 底部操作条end -->
+				
+				<!-- 选择优惠券 -->
+				<!-- <uni-popup ref="popups" type="bottom">
+					<view class="shopDetails-bottom-popups">
+						<view @tap="closePopupsClick" class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos"></view>
+						<view class="text-lg text-center text-wuer">优惠</view>
+						<view class="text-jiujiujiu text-df">促销</view>
+						<view class="flex align-center margin-top margin-bottom-xl">
+							<view class="bg-red-my text-xs shopDetails-bottom-popups-jifen">积分</view>
+							<view class="text-sm-erliu">购买可得24积分</view>
+						</view>
+						<view class="text-jiujiujiu text-df margin-bottom">领券</view>
+						<view class="flex align-center justify-between shopDetails-bottom-popups-backone text-red-my" v-for="(item,index) in disCountList" :key="index">
+							<view>
+								<view class="flex align-center">
+									<view class="text-price text-xxxl text-red margin-right-xs">{{item.coupon_price}}</view>
+									<view class="text-df">商品优惠券</view>
+								</view>
+								<view class="text-sm">满39使用</view>
+								<view class="text-sm">有效期2019.10.18-2019.11.10</view>
+							</view>
+							<view class="text-three text-bold">立即领取</view>
+						</view>
+						<view class="flex align-center justify-between shopDetails-bottom-popups-backtwo text-red-my">
+							<view>
+								<view class="flex align-center">
+									<view class="text-price text-xxxl text-red margin-right-xs">80</view>
+									<view class="text-df">商品优惠券</view>
+								</view>
+								<view class="text-sm">满39使用</view>
+								<view class="text-sm">有效期2019.10.18-2019.11.10</view>
+							</view>
+							<view class="text-three text-bold">立即领取</view>
+						</view>
+					</view>
+				</uni-popup> -->
+				
+				<!-- 分享 -->
+				<uni-popup ref="popup" type="bottom" >
+					<view @tap="closePopupsSharClick" class="lg text-gray cuIcon-roundclose margin-top-sm margin-right shopDetails-bottom-popups-clos"></view>
+					<view class="share-popup-all">
+						<view @tap="shareShowClick(vo,key)" v-for="(vo,key,item) in shareList" :key="key" class="share-popup-sx">
+							<image :src="vo.img"></image>
+							<view style="font-size: 26upx;">{{vo.name}}</view>
+						</view>
+					</view>
+				</uni-popup>
+				
+				<!-- 选择商品属性 -->
+				<uni-popup ref="popupbottom" type="bottom" >
+					<view class="popupbottom-all">
+						<view class="flex justify-between solid-bottom">
+							<view class="flex align-end margin-bottom-lg ">
+								<image class="popupbottom-shop-img" v-if="detailData.storeInfo" @click="openImage"  :src="uniqueType ? uniqueType.image : detailData.storeInfo.image "></image>
+								<view class="margin-left-sm">
+									<view class="text-price text-red text-bold text-xl">{{uniqueType ? uniqueType.price : detailData.storeInfo.price }}</view>
+									<view class="text-sm" style="color: #828282;">库存{{uniqueType ? uniqueType.stock : detailData.storeInfo.stock }}件</view>
+									<view class="text-sm user-choose">选择{{isUserChoosed ? isUserChoosed : ''}}</view>
+								</view>
+							</view>
+							<view class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos" @click="chooseClose"></view>
+						</view>
+						<view class="padding-bottom-sm solid-bottom" v-for="(item,index) in detailData.productAttr">
+							<view class=" margin-top-lg margin-bottom">{{item.attr_name}}</view>
+							<view class="flex flex-wrap">
+								<block v-for="(vo,key) in item.attr_value" :key="key">
+									<view @tap="selectShopClick(vo,key,item)" :class="[vo.check?'popupbottom-shop-type-select':'']" class="popupbottom-shop-type-all">{{vo.attr}}</view>
+								</block>
+							</view>
+						</view>
+						<view class="flex align-center justify-between solid-bottom shopDetails-num">
+							<view>购物数量</view>
+							<view>
+								<tui-numberbox :value="value"  @change="change"></tui-numberbox>
+							</view>
+						</view>
+						<view class="popupbottom-all-top">
+							<!-- <view class="shopDetails-bottom-button popupbottom-all-button button-left">加入购物车</view> -->
+							<view @tap="nowBuyClick" class="liji-pay">立即购买</view>
+						</view>
+					</view>
+				</uni-popup>
+				
+			</view>
 		</view>
-		<!-- 商品介绍end -->
-		
-		<view style="height: 100upx;"></view>
-		
-		<!-- 底部操作条 -->
-		<view class="cu-bar bg-white tabbar border shop shopDetails-bottom-all">
-			<view class="flex align-center text-xs ">
-				<view @tap="shopClick(1)" class="margin-left flex flex-direction align-center justify-center">
-					<image class="shop-bottom-kefu" src="../../static/shop.png"></image>
-					<view>店铺</view>
-				</view>
-				<view @tap="serviceClick(1)" class="margin-left flex flex-direction align-center justify-center">
-					<image class="shop-bottom-kefu" src="../../static/kefu.png"></image>
-					<view>客服</view>
-				</view>
-				<view @tap="collectClick(1)" class="margin-left flex flex-direction align-center justify-center">
-					<image class="shop-bottom-kefu" src="../../static/collect.png" v-show="!detailData.storeInfo.userCollect"></image>
-					<!-- 已收藏 -->
-					<image src="../../static/collectClick.png" class="shop-bottom-kefu" v-show="detailData.storeInfo.userCollect"></image>
-					<view>{{detailData.storeInfo.userCollect ? '已收藏' : '收藏'}}</view>
-				</view>
-			</view>
-			<view class="flex align-center">
-				<view @tap="outloginShopClick" class="shopDetails-bottom-button button-left">快来买呀~</view>
-				<view @tap="outloginShopClick" class="shopDetails-bottom-button button-right">立即购买</view>
-			</view>
-		</view>
-		<!-- 底部操作条end -->
-		
-		<!-- 选择优惠券 -->
-		<!-- <uni-popup ref="popups" type="bottom">
-			<view class="shopDetails-bottom-popups">
-				<view @tap="closePopupsClick" class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos"></view>
-				<view class="text-lg text-center text-wuer">优惠</view>
-				<view class="text-jiujiujiu text-df">促销</view>
-				<view class="flex align-center margin-top margin-bottom-xl">
-					<view class="bg-red-my text-xs shopDetails-bottom-popups-jifen">积分</view>
-					<view class="text-sm-erliu">购买可得24积分</view>
-				</view>
-				<view class="text-jiujiujiu text-df margin-bottom">领券</view>
-				<view class="flex align-center justify-between shopDetails-bottom-popups-backone text-red-my" v-for="(item,index) in disCountList" :key="index">
-					<view>
-						<view class="flex align-center">
-							<view class="text-price text-xxxl text-red margin-right-xs">{{item.coupon_price}}</view>
-							<view class="text-df">商品优惠券</view>
-						</view>
-						<view class="text-sm">满39使用</view>
-						<view class="text-sm">有效期2019.10.18-2019.11.10</view>
-					</view>
-					<view class="text-three text-bold">立即领取</view>
-				</view>
-				<view class="flex align-center justify-between shopDetails-bottom-popups-backtwo text-red-my">
-					<view>
-						<view class="flex align-center">
-							<view class="text-price text-xxxl text-red margin-right-xs">80</view>
-							<view class="text-df">商品优惠券</view>
-						</view>
-						<view class="text-sm">满39使用</view>
-						<view class="text-sm">有效期2019.10.18-2019.11.10</view>
-					</view>
-					<view class="text-three text-bold">立即领取</view>
-				</view>
-			</view>
-		</uni-popup> -->
-		
-		<!-- 分享 -->
-		<uni-popup ref="popup" type="bottom" >
-			<view @tap="closePopupsSharClick" class="lg text-gray cuIcon-roundclose margin-top-sm margin-right shopDetails-bottom-popups-clos"></view>
-			<view class="share-popup-all">
-				<view @tap="shareShowClick(vo,key)" v-for="(vo,key,item) in shareList" :key="key" class="share-popup-sx">
-					<image :src="vo.img"></image>
-					<view style="font-size: 26upx;">{{vo.name}}</view>
-				</view>
-			</view>
-		</uni-popup>
-		
-		<!-- 选择商品属性 -->
-		<uni-popup ref="popupbottom" type="bottom" >
-			<view class="popupbottom-all">
-				<view class="flex justify-between solid-bottom">
-					<view class="flex align-end margin-bottom-lg ">
-						<image class="popupbottom-shop-img" v-if="detailData.storeInfo" @click="openImage"  :src="uniqueType ? uniqueType.image : detailData.storeInfo.image "></image>
-						<view class="margin-left-sm">
-							<view class="text-price text-red text-bold text-xl">{{uniqueType ? uniqueType.price : detailData.storeInfo.price }}</view>
-							<view class="text-sm" style="color: #828282;">库存{{uniqueType ? uniqueType.stock : detailData.storeInfo.stock }}件</view>
-							<view class="text-sm user-choose">选择{{isUserChoosed ? isUserChoosed : ''}}</view>
-						</view>
-					</view>
-					<view class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos" @click="chooseClose"></view>
-				</view>
-				<view class="padding-bottom-sm solid-bottom" v-for="(item,index) in detailData.productAttr">
-					<view class=" margin-top-lg margin-bottom">{{item.attr_name}}</view>
-					<view class="flex flex-wrap">
-						<block v-for="(vo,key) in item.attr_value" :key="key">
-							<view @tap="selectShopClick(vo,key,item)" :class="[vo.check?'popupbottom-shop-type-select':'']" class="popupbottom-shop-type-all">{{vo.attr}}</view>
-						</block>
-					</view>
-				</view>
-				<view class="flex align-center justify-between solid-bottom shopDetails-num">
-					<view>购物数量</view>
-					<view>
-						<tui-numberbox :value="value"  @change="change"></tui-numberbox>
-					</view>
-				</view>
-				<view class="flex align-center popupbottom-all-top">
-					<!-- <view class="shopDetails-bottom-button popupbottom-all-button button-left">加入购物车</view> -->
-					<view @tap="nowBuyClick" class="liji-pay">立即购买</view>
-				</view>
-			</view>
-		</uni-popup>
-		
-	</view>
 </template>
 
 <script>
@@ -318,6 +305,7 @@
 	import tuiNumberbox from "@/components/numberbox/numberbox"
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	import tuiCountdown from "@/components/countdown/countdown"
+	import tuiRate from "@/components/rate/rate"
 	
 	// 导入网络模块
 	import {getDetailSkill} from '@/network/skill'
@@ -334,7 +322,11 @@
 		components: {
 			uniPopup,
 			tuiNumberbox,
-			tuiCountdown
+			tuiCountdown,
+			tuiRate
+		},
+		onUnload() {
+			uni.$off('videoDetail')
 		},
 		onLoad() {
 			that = this
@@ -358,6 +350,8 @@
 			if(this.$store.state.skillId){
 				const id = this.$store.state.skillId,
 				token = this.$store.getters.isToken
+				
+				this.skillTime = this.$store.state.skillTime
 				// 发送数据请求
 				this.getDetailSkill(id,token)
 				
@@ -368,6 +362,9 @@
 				return 
 			}
 		},
+		onReady() {
+			this.$refs.loading.open()
+		},
 		data(){
 			return{
 				timeList: 0,//倒计时
@@ -376,7 +373,7 @@
 				videoUrl:'',
 				swiperList: [],//轮播数据
 				disCountList:[],//优惠券信息
-				
+				skillTime:0,
 				selectimg:[{
 					img:'../../static/demo10.png'
 				},{
@@ -429,6 +426,7 @@
 			getDetailSkill(id,token){
 				getDetailSkill(id,token)
 					.then(res => {
+						this.$refs.loading.close()
 						if(res.data.code == 200){
 							const data = res.data.data
 							
@@ -447,7 +445,7 @@
 							
 							// 保存视频
 							this.videoUrl = data.storeInfo.video
-							if(this.videoUrl) this.videoContext = uni.createVideoContext('myVideo',this)
+							
 							// 对轮播数据进行处理
 							this.dealSwiper(data)
 							
@@ -550,8 +548,9 @@
 			},
 			//点击kefu
 			serviceClick(shopname){
+				let shopInfo = JSON.stringify(this.detailData.shop_info)
 				uni.navigateTo({
-					url:'informtion/informtion?shopname=' + shopname
+					url:'informtion/informtion?shopInfo=' + shopInfo
 				})
 			},
 			// 进入评论详情
@@ -618,20 +617,17 @@
 			},
 			//点击收藏
 			collectClick(){
+				this.detailData.storeInfo.userCollect = !this.detailData.storeInfo.userCollect
 				const obj = {
 					id:this.detailData.id,
 					category:'seckill'
 				}
-				if(!this.detailData.storeInfo.userCollect){
+				if(this.detailData.storeInfo.userCollect){
 					this.$store.dispatch('collect',obj)
 						.then(res => {
 							console.log(res)
 							if(res.data.code == 200){
-								this.detailData.storeInfo.userCollect = true
-								uni.showToast({
-									title:'收藏成功',
-									icon:'none'
-								})
+								
 							}
 						})
 				}else{
@@ -639,11 +635,6 @@
 						.then(res => {
 							console.log(res)
 							if(res.data.code == 200){
-								this.detailData.storeInfo.userCollect = false
-								uni.showToast({
-									title:'收藏成功',
-									icon:'none'
-								})
 							}
 						})
 				}
@@ -673,66 +664,95 @@
 			},
 			//转发弹出
 			outloginSharClick(){
+				const that = this
+				let desc = that.detailData.storeInfo.title
 				let shareInfo={
-					href:"https://uniapp.dcloud.io",
+					href:`http://jn.51kdd.com/index.html#/?href=oldHome://abc`,
 					title:'老家商城',
-					desc:'快来老家，和我一起秒杀',
-					imgUrl:'/static/56524a9a3b6bdab0753eb8ed922d57d.png'
+					desc:'我正在老家商城购买'  + desc + ',快来和我一起选购吧',
+					imgUrl:that.detailData.storeInfo.image
 				};
-				this.shareObj=share(shareInfo,this.shareList,(index) => {
-						console.log("点击按钮的序号: " + index);
-						let shareObj={
-							href:shareInfo.href||"",
-							title:shareInfo.title||"",
-							summary:shareInfo.desc||"",
-							success:(res)=>{
-								console.log("success:" + JSON.stringify(res));
-							},
-							fail:(err)=>{
-								console.log("fail:" + JSON.stringify(err));
-							}
-						};
-						switch (index) {
-							case 0:
-								shareObj.provider="weixin";
-								shareObj.scene="WXSceneSession";
-								shareObj.type=0;
-								shareObj.imageUrl=shareInfo.imgUrl||"";
-								uni.share(shareObj);
-								break;
-							case 1:
-								shareObj.provider="weixin";
-								shareObj.scene="WXSenceTimeline";
-								shareObj.type=0;
-								shareObj.imageUrl=shareInfo.imgUrl||"";
-								uni.share(shareObj);
-								break;
-							case 2:
-								uni.setClipboardData({
-									data:shareInfo.href,
-									complete() {
-										uni.showToast({
-											title: "已复制到剪贴板"
-										})
-									}
-								})
-								break;
-							case 3:
-								plus.share.sendWithSystem({
-									type:"web",
-									title:shareInfo.title||"",
-									thumbs:[shareInfo.imgUrl||""],
-									href:shareInfo.href||"",
-									content: shareInfo.desc||"",
-								})
-								break;
-						};
-					});
-					
-					this.$nextTick(()=>{
-						this.shareObj.alphaBg.show();
-						this.shareObj.shareMenu.show();
-					})
+				let shareList=[
+					{
+						icon:"/static/sharemenu/wechatfriend.png",
+						text:"微信好友",
+					},
+					{
+						icon:"/static/sharemenu/wechatmoments.png",
+						text:"朋友圈"
+					},
+					{
+						icon:"/static/sharemenu/copyurl.png",
+						text:"复制"
+					},
+					{
+						icon:"/static/sharemenu/more.png",
+						text:"更多"
+					},
+				];
+				this.shareObj=share(shareInfo,shareList,function(index){
+					console.log("点击按钮的序号: " + index);
+					let shareObj={
+						href:shareInfo.href||"",
+						title:shareInfo.title||"",
+						summary:shareInfo.desc||"",
+						success:(res)=>{
+							console.log("success:" + JSON.stringify(res));
+							uni.hideLoading()
+						},
+						fail:(err)=>{
+							console.log("fail:" + JSON.stringify(err));
+							uni.hideLoading()
+						}
+					};
+					switch (index) {
+						case 0:
+							shareObj.provider="weixin";
+							shareObj.scene="WXSceneSession";
+							shareObj.type=0;
+							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.showLoading({
+								title:'加载中...',
+								mask:true
+							})
+							uni.share(shareObj);
+							break;
+						case 1:
+							shareObj.provider="weixin";
+							shareObj.scene="WXSenceTimeline";
+							shareObj.type=0;
+							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.showLoading({
+								title:'加载中...',
+								mask:true
+							})
+							uni.share(shareObj);
+							break;
+						case 2:
+							uni.setClipboardData({
+								data:shareInfo.href,
+								complete() {
+									uni.showToast({
+										title: "已复制到剪贴板"
+									})
+								}
+							})
+							break;
+						case 3:
+							plus.share.sendWithSystem({
+								type:"web",
+								title:shareInfo.title||"",
+								thumbs:[shareInfo.imgUrl||""],
+								href:shareInfo.href||"",
+								content: shareInfo.desc||"",
+							})
+							break;
+					};
+				});
+				this.$nextTick(()=>{
+					this.shareObj.alphaBg.show();
+					this.shareObj.shareMenu.show();
+				})
 			},
 			//转发关闭
 			closePopupsSharClick(){
@@ -772,8 +792,18 @@
 			// 播放暂停
 			BoFang(){
 				if(that.autoplay==false){
-					that.autoplay=true;
-					this.videoContext.play();
+					// 触发事件
+					// 在 subNVue/vue 页面触发事件  
+					// $emit(eventName, data)  
+					uni.$emit('videoDetail', {  
+					    video:this.videoUrl
+					})
+					// // 通过 id 获取 nvue 子窗体
+					const subNVue = uni.getSubNVueById('video_mask_skll')  
+					console.log(subNVue)
+					subNVue.show('fade-in', 300, function(){  
+						console.log('打开成功')
+					}) 
 				}
 			},
 			ZhanTing(){
@@ -1156,5 +1186,23 @@
 		justify-content: center;
 		align-items: center;
 		background-color: #fff;
+	}
+	.select-dianpu{
+		color: #FFFFFF;
+		background: #CD3233;
+		padding: 16upx 30upx;
+		border-radius: 46upx;
+	}
+	.pay-right{
+		width: 380upx;
+		background-color: #CD3233;
+		color: #ffffff;
+		font-size: 32upx;
+		font-weight: bold;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		position: relative;
+		height: 100upx;
 	}
 </style>

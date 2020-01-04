@@ -12,6 +12,7 @@
     ]
   },
   "usingComponents": {
+    "x-modal": "/components/x-modal/x-modal",
     "w-picker": "/components/w-picker/w-picker"
   }
 }

@@ -1,329 +1,328 @@
 <template>
-	<view v-if="Object.keys(detailData).length != 0">
-		<view class="shopDetails-title" >
-			<swiper class="screen-swiper" :hidden="!autoplay">
-				<swiper-item>
-					<video id="myVideo" v-if="videoUrl" :src="videoUrl"
-				 autoplay="false" loop muted show-play-btn controls objectFit="contain" @pause="ZhanTing" @ended="ZhanTing"></video>
-				</swiper-item>
-			</swiper>
-			<swiper :hidden="autoplay" class="screen-swiper" circular="true"
-			 :autoplay="!autoplay" interval="3500" duration="500" :current="swiperNum" @change="swiperChange">
-				<swiper-item @tap="BoFang" v-if="videoUrl" class="item1">
-					<image src="/static/play/larkcloud_play.png" mode="aspectFill"></image>
-				</swiper-item>
-				<swiper-item @tap="swiperDetail" v-for="(item,index) in swiperList">
-					<image :src="item.url" mode="widthFix"></image>
-				</swiper-item>
-			</swiper>
-			<view class="shopDetails-title-select">
-				<view class="shopDetails-title-left"></view>
-					<view class="flex align-center">
-						<view v-if="videoUrl" @tap="selectPlayClick" :class="[swiperNum == 0 ? 'select-title-type' : '']" class="shopDetails-title-play">
-							<view class="lg  cuIcon-playfill"></view>
-							<view>视频</view>
-						</view>
-						<view v-if="videoUrl" @tap="selectimageClick" :class="[ swiperNum == 0 ?'':'select-title-type']" class="shopDetails-title-play margin-left-sm ">图片</view>
-					</view>
-				<view class="shopDetails-title-num">{{swiperNum + 1}}/{{videoUrl ? swiperList.length + 1 : swiperList.length}}</view>
-			</view>
-		</view>
-		
-		
-		
-	<view class="bg-white padding-left">
-			<view class="flex align-center">
-				<view class="text-red-my text-xxxl text-bold">￥{{detailData.storeInfo ? detailData.storeInfo.price : ''}}</view>
-				<view class="bg-red text-xs shopDetails-title-package">拼团价更低</view>
-			</view>
-			<view>
-				<view class="flex align-center justify-between margin-right-sm">
-					<view class="flex align-center margin-top-xs margin-bottom-xs">
-						<view class="cu-tag bg-red-my shopDetails-title-height">购买得积分</view>
-					</view>
-				</view>
-				
-				<view class="flex align-center margin-top-sm margin-bottom-sm">
-					<view class="flex-four text-three shopDetails-title-name">{{detailData.storeInfo ?  detailData.storeInfo.info : ''}}</view>
-					<view @tap="outloginSharClick" class="flex-sub flex align-center justify-center shopDetails-title-shar">
-						<view class="lg cuIcon-forward margin-right-xs"></view>
-						<view>转发</view>
-					</view>
-				</view>
-				<view class="flex align-center justify-between padding-bottom-sm margin-right-sm text-jiujiujiu">
-					<view>快递:<text class="margin-left-sm" v-if="detailData.storeInfo">{{detailData.storeInfo.is_postage == 1 ? '免运费' : detailData.storeInfo.postage + '元'}}</text></view>
-					<view>销量{{detailData.storeInfo ? detailData.storeInfo.sales : ''}}</view>
-				</view>
-			</view>
-		</view> 
-		<!-- head end -->
-		
-		<!-- 参加拼团 -->
-		<view class="bg-white" v-if="detailData.pink">
-			<view @tap="outloginbookingClick" class="margin-top-xs flex align-center justify-between shopDetails-baozhanng solid-bottom">
-				<view>{{!!detailData.pindAll.length ? detailData.pindAll.length + '人在拼团，可直接参与' : '还没有人拼团，马上开团吧'}}</view>
-				<view class="flex text-sm-erliu align-center">
-					<view v-if="!!detailData.pindAll.length" class="margin-right-sm text-jiujiujiu">查看全部</view>
-					<view v-if="!detailData.pindAll.length" class="margin-right-sm text-jiujiujiu">立即开团</view>
-					<view style="margin-top: 4upx;" class="lg text-gray cuIcon-right"></view>
-				</view>
-			</view>
-			<view>
-				<view class="flex align-center justify-between margin-left solid-bottom text-black booking-all-height"
-						 v-if="index <= 1" v-for="(item,index) in detailData.pink" :key="index">
-								
-					<view class="flex align-center">
-						<image class="groubBoking-headimg" :src="item.avatar"></image>
-						<view class="text-three">{{item.nickname}}</view>
-					</view>
-					<view class="flex align-center margin-right">
-						<view class="flex flex-direction align-center justify-end margin-right-xl">
-							<view class="text-xs ">还差<text class="text-red-my">{{item.count}}人</text>拼成</view>
-							<view class="flex align-center">
-								<view class="text-jiujiujiu">剩余</view>
-								<tui-countdown :time="item.time" color="#999"  colonColor="#999"  bcolor="#FFF" ></tui-countdown>
+	<view>
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
+		<view v-if="Object.keys(detailData).length != 0">
+			<view class="shopDetails-title" >
+				<swiper :hidden="autoplay" class="screen-swiper" circular="true"
+				 :autoplay="!autoplay" interval="3500" duration="500" :current="swiperNum" @change="swiperChange">
+					<swiper-item @tap="BoFang" v-if="videoUrl" class="item1">
+						<image src="/static/play/larkcloud_play.png" mode="aspectFill"></image>
+					</swiper-item>
+					<swiper-item @tap="swiperDetail" v-for="(item,index) in swiperList">
+						<image :src="item.url" mode="widthFix"></image>
+					</swiper-item>
+				</swiper>
+				<view class="shopDetails-title-select">
+					<view class="shopDetails-title-left"></view>
+						<view class="flex align-center">
+							<view v-if="videoUrl" @tap="selectPlayClick" :class="[swiperNum == 0 ? 'select-title-type' : '']" class="shopDetails-title-play">
+								<view class="lg  cuIcon-playfill"></view>
+								<view>视频</view>
 							</view>
+							<view v-if="videoUrl" @tap="selectimageClick" :class="[ swiperNum == 0 ?'':'select-title-type']" class="shopDetails-title-play margin-left-sm ">图片</view>
 						</view>
-						<view @tap="openSingle(item)" class="booking-button">去拼团</view>
-					</view>
+					<view class="shopDetails-title-num">{{swiperNum + 1}}/{{videoUrl ? swiperList.length + 1 : swiperList.length}}</view>
 				</view>
-			</view>
-		</view>
-		<!-- 参加拼团end -->
-		
-		
-		<!-- 选择 -->
-		<view @tap="outloginShopClick" class="bg-white margin-top-xs padding-bottom-sm">
-			<view class=" flex align-center justify-between shopDetails-baozhanng">
-				<view class="flex text-sm-erliu">
-					<view class="text-jiujiujiu ">选择</view>
-					<view class="margin-left-sm">颜色  种类 </view>
-				</view>
-				<view class="lg text-jiujiujiu cuIcon-right"></view>
-			</view>
-			<view class="flex align-center shopDetails-select-image">
-				<view class="flex-yidw">
-					<image v-for="(vo,key) in detailData.productValue" :key="key" class="shopDetails-image" :src="vo.image"></image>
-				</view>
-				<view class="flex-sub shopDetails-image-select" v-if="detailData.productValue">共有{{Object.keys(detailData.productValue).length}}种类型可选</view>
-				<view class="flex-sub shopDetails-image-select" v-if="!detailData.productValue">暂无选择种类</view>
-			</view>
-		</view>
-		<!-- 选择 end -->
-		
-		<!-- 评价 -->
-		<view class="bg-white margin-top-xs">
-			<view class="flex align-center justify-between shopDetails-baozhanng">
-				<view >商品评价</view>
-				<view class="flex text-sm-erliu align-center">
-					<view class="text-red-my margin-right-sm"  v-if="Object.keys(commont).length != 0" @click="goMoreCommont">查看更多</view>
-					<view style="margin-top: 4upx;" class="lg text-jiujiujiu cuIcon-right"></view>
-				</view>
-			</view>
-			<view class="padding-left padding-right padding-bottom-lg" v-if="Object.keys(commont).length != 0">
-				<view class="flex align-center margin-top-xs">
-					<image class="comment-image-all" :src="commont.avatar"></image>
-					<view class="text-jiujiujiu text-sm margin-left-xs">{{commont.nickname}}</view>
-				</view>
-				<view style="margin-top: 10upx;">{{commont.comment ? commont.comment : '未作出评价，系统默认好评'}}</view>
-				<view class="common-pics">
-					<image v-for="(item,index) in commont.pics" @click="goDetail(item)" :src="item"></image>
-				</view>
-			</view>
-		</view>
-		<view class="no-comment padding-left padding-right padding-bottom-lg" v-if="Object.keys(commont).length == 0">
-			该商品暂无评论，快来抢沙发
-		</view>
-		<!-- 评价 end -->
-		
-		
-		<!-- 店铺介绍 -->
-		<view class="bg-white margin-top-xs shop-deleat-all" v-if="detailData.shop_info">
-			<view class="flex align-center justify-between margin-bottom-sm">
-				<view class="flex">
-					<image class="shop-introduce-img" src="../../static/demo9.png" ></image>
-					<view class="margin-left-sm flex flex-direction justify-between">
-						<view class="shop-detal-name">{{detailData.shop_info.shop_name}}</view>
-						<view class="flex align-center text-xs shop-experience">
-							<view>综合体验</view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-						</view>
-					</view>
-				</view>
-				<view @tap="shopClick(1)" class="select-store">进入店铺</view>
-			</view>
-			<view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
-				<view class="flex align-center flex-sub ">
-					<view>商品评分</view>
-					<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.product_score}}</view>
-					<view class="shop-pingfen" >平</view>
-				</view>
-				<view class="flex align-center flex-sub ">
-					<view>物流评分</view>
-					<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.expressage_score}}</view>
-					<view class="shop-pingfen" >平</view>
-				</view>
-				<view class="flex align-center flex-sub ">
-					<view>服务评分</view>
-					<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.service_score}}</view>
-					<view class="shop-pingfen" >平</view>
-				</view>
-			</view>
-		</view>
-		<!-- 店铺介绍 end -->
-		
-		
-		<!-- 推荐商品 -->
-		<view class="bg-white">
-			<view @tap="shopClick" class="margin-top-xs flex align-center justify-between shopDetails-baozhanng">
-				<view>推荐商品</view>
-				<view class="flex text-sm-erliu align-center">
-					<view class="text-red-my margin-right-sm">查看全部</view>
-					<view style="margin-top: 4upx;" class="lg text-jiujiujiu cuIcon-right"></view>
-				</view>
-			</view>
-			<view class="flex align-center padding-left padding-right">
-				<view class="flex-sub" v-for="(item,index) in detailData.recommend_goods" @click="recommendClick(item)">
-					<image class="tuijian-shop-three-image" :src="item.image"></image>
-					<view class="text-sm-erliu text-black">{{item.store_name}}</view>
-					<view class="text-red-my text-sm-erliu margin-top-sm margin-bottom-sm">￥{{item.price}}</view>
-				</view>
-				
-			</view>
-		</view>
-
-		<!-- 推荐商品 end-->
-		<view style="height: 74upx;color: #525253;" class="flex align-center justify-center">———— 商品详情 ————</view>
-		<!-- 文本分割线 -->
-		
-		<!-- 商品介绍 -->
-		<view v-if="detailData.storeInfo">
-			<image :src="detailData.storeInfo.image" mode="widthFix" style="width: 100%;"></image>
-		</view>
-		<!-- 商品介绍end -->
-		
-		<view style="height: 100upx;"></view>
-		
-		<!-- 底部操作条 -->
-		<view class="cu-bar bg-white tabbar border shop shopDetails-bottom-all" v-if="detailData.storeInfo">
-			<view class="flex align-center text-xs ">
-				<view @tap="shopClick(1)" class="margin-left flex flex-direction align-center justify-center">
-					<image class="shop-bottom-kefu" src="../../static/shop.png"></image>
-					<view>店铺</view>
-				</view>
-				<view @tap="serviceClick(1)" class="margin-left flex flex-direction align-center justify-center">
-					<image class="shop-bottom-kefu" src="../../static/kefu.png"></image>
-					<view>客服</view>
-				</view>
-				<view @tap="collectClick(1)" class="margin-left flex flex-direction align-center justify-center">
-					<image class="shop-bottom-kefu" src="../../static/collect.png" v-show="!detailData.storeInfo.userCollect"></image>
-					<image src="../../static/collectClick.png" class="shop-bottom-kefu" v-show="detailData.storeInfo.userCollect"></image>
-					<view>{{detailData.storeInfo.userCollect ? '已收藏' : '收藏'}}</view>
-				</view>
-			</view>
-			<view class="flex align-center">
-				<view @tap="tanchuPin" class="shopDetails-bottom-button button-left" :class="{'no-team': !detailData.pink.length}">{{detailData.pink.length ? '加入拼团' : '暂无团队'}}</view>
-				<view @tap="outloginShopClick" class="shopDetails-bottom-button button-right">立即开团</view>
-			</view>
-		</view>
-		<!-- 底部操作条end -->
-		
-		<!-- 分享 -->
-		<uni-popup ref="popup" type="bottom" >
-			<view @tap="closePopupsSharClick" class="lg text-gray cuIcon-roundclose margin-top-sm margin-right shopDetails-bottom-popups-clos"></view>
-			<view class="share-popup-all">
-				<view @tap="shareShowClick(key)" v-for="(vo,key) in shareList" :key="key" class="share-popup-sx">
-					<image :src="vo.img"></image>
-					<view style="font-size: 26upx;">{{vo.name}}</view>
-				</view>
-			</view>
-		</uni-popup>
-		
-		<!-- 选择商品属性 -->
-		<uni-popup ref="popupbottom" type="bottom" v-if="detailData.storeInfo">
-			<view class="popupbottom-all">
-				<view class="flex justify-between solid-bottom">
-					<view class="flex align-end margin-bottom-lg ">
-						<image class="popupbottom-shop-img" @click="openImage" :src="uniqueType ? uniqueType.image : detailData.storeInfo.image"></image>
-						<view class="margin-left-sm">
-							<view class="text-price text-red text-bold text-xl">{{uniqueType ? uniqueType.price : detailData.storeInfo.price }}</view>
-							<view class="text-sm" style="color: #828282;">库存{{uniqueType ? uniqueType.stock : detailData.storeInfo.stock }}件</view>
-							<view class="text-sm user-choose">{{popupChoose()}}</view>
-						</view>
-					</view>
-					<view class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos" @click="chooseClose"></view>
-				</view>
-				<view class="padding-bottom-sm solid-bottom" v-for="(item,index) in detailData.productAttr">
-					<view class=" margin-top-lg margin-bottom">{{item.attr_name}}</view>
-					<view class="flex flex-wrap">
-						<block v-for="(vo,key) in item.attr_value" :key="key">
-							<view @tap="selectShopClick(vo,key,item)" :class="[vo.check?'popupbottom-shop-type-select':'']" class="popupbottom-shop-type-all">{{vo.attr}}</view>
-						</block>
-					</view>
-				</view>
-				<view class="flex align-center justify-between solid-bottom shopDetails-num">
-					<view>购物数量</view>
-					<view>
-						<tui-numberbox :value="value"  @change="change"></tui-numberbox>
-					</view>
-				</view>
-				<view class="flex align-center popupbottom-all-top">
-					<view @tap="goPink" class="shopDetails-bottom-button popupbottom-all-button button-left" :class="{'no-team': !detailData.pink.length}">{{detailData.pink.length ? '加入拼团' : '暂无团队'}}</view>
-					<view @tap="goKaituan" class="shopDetails-bottom-button popupbottom-all-button button-right">我要开团</view>
-							</view>
-						</view>
-			</uni-popup>
-		
-		<!-- 全部拼团中部弹出 -->
-		<uni-popup ref="booking" type="center" >
-			<view class="margin booking-all-center-width">
-				<view class="padding-bottom-lg solid-bottom text-wuer text-three text-center text-bold">正在拼团</view>
-				<view class="booking-all-center-height flex align-center justify-between" v-for="(item,index) in detailData.pink" :key="index">
-					<view class="flex align-center">
-						<image class="groubBoking-headimg" :src="item.avatar"></image>
-						<view class="flex flex-direction justify-end margin-right-xl">
-							<view class="text-xs "><text class="margin-right-xs username">{{item.nickname}}</text> 还差{{item.count}}人拼成</view>
-							<view class="flex align-center">
-								<view class="text-jiujiujiu margin-right">剩余</view>
-								<tui-countdown :time="item.time" color="#999" :colonSize="22" colonColor="#999"  bcolor="#FFF" ></tui-countdown>
-							</view>
-						</view>
-					</view>
-					<view class="booking-button" @tap="openSingle(item)">去拼团</view>
-				</view>
-			</view>
-		</uni-popup>
-		
-		<!-- 全部拼团中部弹出 end -->
-		
-		<!-- 单个弹出 -->
-		<uni-popup ref="bookingsingle" type="center" >
-			<view class="margin booking-all-center-width">
-				<view v-if="pinkInfo">
-					<view class="bookingMessage-text-one" >参加{{pinkInfo.nickname}}的拼团</view>
-					<view class="bookingMessage-text-two">仅剩{{pinkInfo.count}}个名额，
-						<tui-countdown :time="pinkInfo.time" color="#999" :colonSize="22" colonColor="#999"  bcolor="#FFF" ></tui-countdown>
-					后结束</view>
-					<view class="bookingMessage-title-headimg" 	v-if="Object.keys(detailData).length != 0">
-						<view class="bookingMessage-title-left">
-							<view class="bookingMessage-head-text">团长</view>
-							<image class="bookingMessage-title-headimgone" :src="pinkInfo.avatar"></image>
-						</view>
-						<image  @click="sharkPink(pinkInfo)" class="bookingMessage-title-headimgtwo" src="../../static/denfairen.png"
-								v-for="(item,index) in detailData.storeInfo.people * 1 - 1" :key="index"
-						/>
-					</view>
-					<button @tap="joinPintuan" class="booking-title-button">参与拼团</button>
-				</view>
-				
 			</view>
 			
-		</uni-popup>
-		<!-- 单个弹出end -->
+			
+			
+		<view class="bg-white padding-left">
+				<view class="flex align-center">
+					<view class="text-red-my text-xxxl text-bold">￥{{detailData.storeInfo ? detailData.storeInfo.price : ''}}</view>
+					<view class="bg-red text-xs shopDetails-title-package">拼团价更低</view>
+				</view>
+				<view>
+					<view class="flex align-center justify-between margin-right-sm">
+						<view class="flex align-center margin-top-xs margin-bottom-xs">
+							<view class="cu-tag bg-red-my shopDetails-title-height">购买得积分</view>
+						</view>
+					</view>
+					
+					<view class="flex align-center margin-top-sm margin-bottom-sm">
+						<view class="flex-four text-three shopDetails-title-name">{{detailData.storeInfo ?  detailData.storeInfo.info : ''}}</view>
+						<view @tap="outloginSharClick" class="flex-sub flex align-center justify-center shopDetails-title-shar">
+							<view class="lg cuIcon-forward margin-right-xs"></view>
+							<view>转发</view>
+						</view>
+					</view>
+					<view class="flex align-center justify-between padding-bottom-sm margin-right-sm text-jiujiujiu">
+						<view>快递:<text class="margin-left-sm" v-if="detailData.storeInfo">{{detailData.storeInfo.is_postage == 1 ? '免运费' : detailData.storeInfo.postage + '元'}}</text></view>
+						<view>销量{{detailData.storeInfo ? detailData.storeInfo.sales : ''}}</view>
+					</view>
+				</view>
+			</view> 
+			<!-- head end -->
+			
+			<!-- 参加拼团 -->
+			<view class="bg-white" v-if="detailData.pink">
+				<view @tap="outloginbookingClick" class="margin-top-xs flex align-center justify-between shopDetails-baozhanng solid-bottom">
+					<view>{{!!detailData.pindAll.length ? detailData.pindAll.length + '人在拼团，可直接参与' : '还没有人拼团，马上开团吧'}}</view>
+					<view class="flex text-sm-erliu align-center">
+						<view v-if="!!detailData.pindAll.length" class="margin-right-sm text-jiujiujiu">查看全部</view>
+						<view v-if="!detailData.pindAll.length" class="margin-right-sm text-jiujiujiu">立即开团</view>
+						<view style="margin-top: 4upx;" class="lg text-gray cuIcon-right"></view>
+					</view>
+				</view>
+				<view>
+					<view class="flex align-center justify-between margin-left solid-bottom text-black booking-all-height"
+							 v-if="index <= 1" v-for="(item,index) in detailData.pink" :key="index">
+									
+						<view class="flex align-center">
+							<image class="groubBoking-headimg" :src="item.avatar"></image>
+							<view class="text-three">{{item.nickname}}</view>
+						</view>
+						<view class="flex align-center margin-right">
+							<view class="flex flex-direction align-center justify-end margin-right-xl">
+								<view class="text-xs ">还差<text class="text-red-my">{{item.count}}人</text>拼成</view>
+								<view class="flex align-center">
+									<view class="text-jiujiujiu">剩余</view>
+									<tui-countdown :time="item.time" color="#999"  colonColor="#999"  bcolor="#FFF" ></tui-countdown>
+								</view>
+							</view>
+							<view @tap="openSingle(item)" class="booking-button">去拼团</view>
+						</view>
+					</view>
+					<swiper vertical autoplay circular interval="3000" class="sell-message">
+						<swiper-item class="sell-item text-gray text-sm" v-for="(item,index) in msg" :key="index">
+							{{item}}!!!
+						</swiper-item>
+					</swiper>
+				</view>
+			</view>
+			<!-- 参加拼团end -->
+			
+			
+			<!-- 选择 -->
+			<view @tap="outloginShopClick" class="bg-white margin-top-xs padding-bottom-sm">
+				<view class=" flex align-center justify-between shopDetails-baozhanng">
+					<view class="flex text-sm-erliu">
+						<view class="text-jiujiujiu ">选择</view>
+						<view class="margin-left-sm">颜色  种类 </view>
+					</view>
+					<view class="lg text-jiujiujiu cuIcon-right"></view>
+				</view>
+				<view class="flex align-center shopDetails-select-image">
+					<view class="flex-yidw">
+						<image v-for="(vo,key) in detailData.productValue" :key="key" class="shopDetails-image" :src="vo.image"></image>
+					</view>
+					<view class="flex-sub shopDetails-image-select" v-if="detailData.productValue">共有{{Object.keys(detailData.productValue).length}}种类型可选</view>
+					<view class="flex-sub shopDetails-image-select" v-if="!detailData.productValue">暂无选择种类</view>
+				</view>
+			</view>
+			<!-- 选择 end -->
+			
+			<!-- 评价 -->
+			<view class="bg-white margin-top-xs">
+				<view class="flex align-center justify-between shopDetails-baozhanng">
+					<view >商品评价</view>
+					<view class="flex text-sm-erliu align-center">
+						<view class="text-red-my margin-right-sm"  v-if="Object.keys(commont).length != 0" @click="goMoreCommont">查看更多</view>
+						<view style="margin-top: 4upx;" class="lg text-jiujiujiu cuIcon-right"></view>
+					</view>
+				</view>
+				<view class="padding-left padding-right padding-bottom-lg" v-if="Object.keys(commont).length != 0">
+					<view class="flex align-center margin-top-xs">
+						<image class="comment-image-all" :src="commont.avatar"></image>
+						<view class="text-jiujiujiu text-sm margin-left-xs">{{commont.nickname}}</view>
+					</view>
+					<view style="margin-top: 10upx;">{{commont.comment ? commont.comment : '未作出评价，系统默认好评'}}</view>
+					<view class="common-pics">
+						<image v-for="(item,index) in commont.pics" @click="goDetail(item)" :src="item"></image>
+					</view>
+				</view>
+			</view>
+			<view class="no-comment padding-left padding-right padding-bottom-lg" v-if="Object.keys(commont).length == 0">
+				该商品暂无评论，快来抢沙发
+			</view>
+			<!-- 评价 end -->
+			
+			
+			<!-- 店铺介绍 -->
+			<view class="bg-white margin-top-xs shop-deleat-all" v-if="detailData.shop_info">
+				<view class="flex align-center justify-between margin-bottom-sm">
+					<view class="flex">
+						<image class="shop-introduce-img" src="../../static/demo9.png" ></image>
+						<view class="margin-left-sm flex flex-direction justify-between">
+							<view class="shop-detal-name">{{detailData.shop_info.shop_name}}</view>
+							<view class="flex align-center text-xs shop-experience">
+								<view>综合体验</view>
+								<tui-rate :current="detailData.shop_info.zong*1" normal="#ccc" active="#FF5400" :size="10"></tui-rate>
+							</view>
+						</view>
+					</view>
+					<view @tap="shopClick(1)" class="select-store">进入店铺</view>
+				</view>
+				<view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
+					<view class="flex align-center flex-sub ">
+						<view>商品评分</view>
+						<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.product_score}}</view>
+						<view class="shop-pingfen" >平</view>
+					</view>
+					<view class="flex align-center flex-sub ">
+						<view>物流评分</view>
+						<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.expressage_score}}</view>
+						<view class="shop-pingfen" >平</view>
+					</view>
+					<view class="flex align-center flex-sub ">
+						<view>服务评分</view>
+						<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.service_score}}</view>
+						<view class="shop-pingfen" >平</view>
+					</view>
+				</view>
+			</view>
+			<!-- 店铺介绍 end -->
+			
+			
+			<!-- 推荐商品 -->
+			<view class="bg-white">
+				<view @tap="shopClick" class="margin-top-xs flex align-center justify-between shopDetails-baozhanng">
+					<view>推荐商品</view>
+					<view class="flex text-sm-erliu align-center">
+						<view class="text-red-my margin-right-sm">查看全部</view>
+						<view style="margin-top: 4upx;" class="lg text-jiujiujiu cuIcon-right"></view>
+					</view>
+				</view>
+				<view class="flex align-center padding-left padding-right">
+					<view class="flex-sub" style="margin-right: 20upx;" v-for="(item,index) in detailData.recommend_goods" :key="index" @click="recommClick(item,index)">
+						<image class="tuijian-shop-three-image" :src="item.image"></image>
+						<view class="text-sm-erliu text-black text-cut" style="width: 200upx;">{{item.store_name}}</view>
+						<view class="text-red-my text-sm-erliu margin-top-sm margin-bottom-sm">￥{{item.price}}</view>
+					</view>
+					
+				</view>
+			</view>
 		
+			<!-- 推荐商品 end-->
+			<view style="height: 74upx;color: #525253;" class="flex align-center justify-center">———— 商品详情 ————</view>
+			<!-- 文本分割线 -->
+			
+			<!-- 商品介绍 -->
+			<view v-if="detailData.storeInfo">
+				<image :src="detailData.storeInfo.image" mode="widthFix" style="width: 100%;"></image>
+			</view>
+			<!-- 商品介绍end -->
+			
+			<view style="height: 100upx;"></view>
+			
+			<!-- 底部操作条 -->
+			<view class="cu-bar bg-white tabbar border shop shopDetails-bottom-all" v-if="detailData.storeInfo">
+				<view class="flex align-center text-xs tab-bar-bottom">
+					<view @tap="shopClick(1)" class="flex flex-direction align-center justify-center tab-bar-item">
+						<image class="shop-bottom-kefu" src="../../static/shop.png"></image>
+						<view>店铺</view>
+					</view>
+					<view @tap="serviceClick(1)" class="flex flex-direction align-center justify-center tab-bar-item">
+						<image class="shop-bottom-kefu" src="../../static/kefu.png"></image>
+						<view>客服</view>
+					</view>
+					<view @tap="collectClick(1)" class="flex flex-direction align-center justify-center tab-bar-item">
+						<image class="shop-bottom-kefu" src="../../static/collect.png" v-show="!detailData.storeInfo.userCollect"></image>
+						<image src="../../static/collectClick.png" class="shop-bottom-kefu" v-show="detailData.storeInfo.userCollect"></image>
+						<view>{{detailData.storeInfo.userCollect ? '已收藏' : '收藏'}}</view>
+					</view>
+				</view>
+				<view class="flex align-center">
+					<view @tap="tanchuPin" class="shopDetails-bottom-button button-left" :class="{'no-team': !detailData.pink.length}">{{detailData.pink.length ? '加入拼团' : '暂无团队'}}</view>
+					<view @tap="outloginShopClick" class="shopDetails-bottom-button button-right">立即开团</view>
+				</view>
+			</view>
+			<!-- 底部操作条end -->
+			
+			<!-- 分享 -->
+			<!-- <uni-popup ref="popup" type="bottom" >
+				<view @tap="closePopupsSharClick" class="lg text-gray cuIcon-roundclose margin-top-sm margin-right shopDetails-bottom-popups-clos"></view>
+				<view class="share-popup-all">
+					<view @tap="shareShowClick(key)" v-for="(vo,key) in shareList" :key="key" class="share-popup-sx">
+						<image :src="vo.img"></image>
+						<view style="font-size: 26upx;">{{vo.name}}</view>
+					</view>
+				</view>
+			</uni-popup> -->
+			
+			<!-- 选择商品属性 -->
+			<uni-popup ref="popupbottom" type="bottom" v-if="detailData.storeInfo">
+				<view class="popupbottom-all">
+					<view class="flex justify-between solid-bottom">
+						<view class="flex align-end margin-bottom-lg ">
+							<image class="popupbottom-shop-img" @click="openImage" :src="uniqueType ? uniqueType.image : detailData.storeInfo.image"></image>
+							<view class="margin-left-sm">
+								<view class="text-price text-red text-bold text-xl">{{uniqueType ? uniqueType.price : detailData.storeInfo.price }}</view>
+								<view class="text-sm" style="color: #828282;">库存{{uniqueType ? uniqueType.stock : detailData.storeInfo.stock }}件</view>
+								<view class="text-sm user-choose">{{popupChoose()}}</view>
+							</view>
+						</view>
+						<view class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos" @click="chooseClose"></view>
+					</view>
+					<view class="padding-bottom-sm solid-bottom" v-for="(item,index) in detailData.productAttr">
+						<view class=" margin-top-lg margin-bottom">{{item.attr_name}}</view>
+						<view class="flex flex-wrap">
+							<block v-for="(vo,key) in item.attr_value" :key="key">
+								<view @tap="selectShopClick(vo,key,item)" :class="[vo.check?'popupbottom-shop-type-select':'']" class="popupbottom-shop-type-all">{{vo.attr}}</view>
+							</block>
+						</view>
+					</view>
+					<view class="flex align-center justify-between solid-bottom shopDetails-num">
+						<view>购物数量</view>
+						<view>
+							<tui-numberbox :value="value"  @change="change"></tui-numberbox>
+						</view>
+					</view>
+					<view class="flex align-center popupbottom-all-top">
+						<view @tap="goPink" class="shopDetails-bottom-button popupbottom-all-button button-left" :class="{'no-team': !detailData.pink.length}">{{detailData.pink.length ? '加入拼团' : '暂无团队'}}</view>
+						<view @tap="goKaituan" class="shopDetails-bottom-button popupbottom-all-button button-right">我要开团</view>
+								</view>
+							</view>
+				</uni-popup>
+			
+			<!-- 全部拼团中部弹出 -->
+			<uni-popup ref="booking" type="center" >
+				<view class="margin booking-all-center-width">
+					<view class="padding-bottom-lg solid-bottom text-wuer text-three text-center text-bold">正在拼团</view>
+					<view class="booking-all-center-height flex align-center justify-between" v-for="(item,index) in detailData.pink" :key="index">
+						<view class="flex align-center">
+							<image class="groubBoking-headimg" :src="item.avatar"></image>
+							<view class="flex flex-direction justify-end margin-right-xl">
+								<view class="text-xs "><text class="margin-right-xs username">{{item.nickname}}</text> 还差{{item.count}}人拼成</view>
+								<view class="flex align-center">
+									<view class="text-jiujiujiu margin-right">剩余</view>
+									<tui-countdown :time="item.time" color="#999" :colonSize="22" colonColor="#999"  bcolor="#FFF" ></tui-countdown>
+								</view>
+							</view>
+						</view>
+						<view class="booking-button" @tap="openSingle(item)">去拼团</view>
+					</view>
+				</view>
+			</uni-popup>
+			
+			<!-- 全部拼团中部弹出 end -->
+			
+			<!-- 单个弹出 -->
+			<uni-popup ref="bookingsingle" type="center" >
+				<view class="margin booking-all-center-width">
+					<view v-if="pinkInfo">
+						<view class="bookingMessage-text-one" >参加{{pinkInfo.nickname}}的拼团</view>
+						<view class="bookingMessage-text-two">仅剩{{pinkInfo.count}}个名额，
+							<tui-countdown :time="pinkInfo.time" color="#999" :colonSize="22" colonColor="#999"  bcolor="#FFF" ></tui-countdown>
+						后结束</view>
+						<view class="bookingMessage-title-headimg" 	v-if="Object.keys(detailData).length != 0">
+							<view class="bookingMessage-title-left">
+								<view class="bookingMessage-head-text">团长</view>
+								<image class="bookingMessage-title-headimgone" :src="pinkInfo.avatar"></image>
+							</view>
+							<image  @click="sharkPink(pinkInfo)" class="bookingMessage-title-headimgtwo" src="../../static/denfairen.png"
+									v-for="(item,index) in detailData.storeInfo.people * 1 - 1" :key="index"
+							/>
+						</view>
+						<button @tap="joinPintuan" class="booking-title-button">参与拼团</button>
+					</view>
+					
+				</view>
+				
+			</uni-popup>
+			<!-- 单个弹出end -->
+			
+		</view>
 	</view>
 </template>
 
@@ -332,6 +331,8 @@
 	import tuiNumberbox from "@/components/numberbox/numberbox"
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	import tuiCountdown from "@/components/countdown/countdown"
+	import tuiRate from "@/components/rate/rate"
+	
 	
 	// 导入网络模块
 	import {getPinkDetail} from '@/network/pink'
@@ -352,7 +353,8 @@
 		components: {
 			uniPopup,
 			tuiNumberbox,
-			tuiCountdown
+			tuiCountdown,
+			tuiRate
 		},
 		onLoad() {
 			that = this
@@ -397,53 +399,26 @@
 				swiperNum:0,//当前所在滑块
 				videoUrl:'',
 				swiperList: [],
-				selectimg:[{
-					img:'../../static/demo10.png'
-				},{
-					img:'../../static/demo11.png'
-				},{
-					img:'../../static/demo12.png'
-				},{
-					img:'../../static/demo13.png'
-				}],
-				shareList:[{
-					img:'../../static/weixn.png',
-					name:'微信好友'
-				},{
-					img:'../../static/pengyouq.png',
-					name:'朋友圈'
-				}],
-				list:[{
-					id:'0',
-					title:'成人款A750g*1盒',
-					type:false,
-				},{
-					id:'0',
-					title:'儿童款B750g*1盒',
-					type:false,
-				},{
-					id:'0',
-					title:'混合款（15A+15B）750g*1盒',
-					type:false,
-				}],
+				selectimg:[],
+				list:[],
 				value:1,//步进器
 				detailData:{},
 				autoplay:false,
 				pinkInfo:{},
 				uniqueType:'',
 				isPink:false,
-				commont:{}
+				commont:{},
+				msg:[]
 			}
 		},
 		onBackPress() {
-			// #ifdef APP-PLUS
-			//监听back键，关闭弹出菜单
-			if (nvImageMenu.isVisible()) {
-				nvImageMenu.hide()
-				nvMask.hide()
-				return true
-			}
-			// #endif
+
+		},
+		onUnload() {
+			uni.$off('videoDetail')
+		},
+		onReady() {
+			this.$refs.loading.open()
 		},
 		methods:{
 			// 立即参团
@@ -453,6 +428,7 @@
 			getPinkDetail(id,token){
 				getPinkDetail(id,token)
 					.then(res => {
+						this.$refs.loading.close()
 						if(res.data.code == 200){
 							const data = res.data.data
 							
@@ -470,7 +446,6 @@
 							data.storeInfo.video = replaceImage(data.storeInfo.video)
 							// 保存视频
 							this.videoUrl = data.storeInfo.video
-							if(this.videoUrl) this.videoContext = uni.createVideoContext('myVideo',this)
 							
 							
 							// 对轮播数据进行处理
@@ -479,9 +454,7 @@
 							// 判断是否有productValue
 							if(data.productValue){
 								this.dealProductValue(data)
-							}
-							// 赋值
-							this.detailData = {...data}							
+							}				
 							
 							// 对拼团数据进行处理
 							if(data.pink.length){
@@ -490,6 +463,10 @@
 							// 处理评价信息
 							const commont = data.reply
 							this.dealCommont(commont)
+							
+							this.msg = data.pink_ok_list
+							// 赋值
+							this.detailData = {...data}			
 						}
 					})
 			},
@@ -502,14 +479,6 @@
 						type:'image'
 					}
 				})
-				if(data.storeInfo.video){
-					const obj = {
-						url:data.storeInfo.video,
-						id:0,
-						type:'video'
-					}
-					this.swiperList.unshift(obj)
-				}
 			},
 			// 处理拼团数据
 			detalPink(list){
@@ -528,8 +497,6 @@
 					obj.avatar = replaceImage(obj.avatar)
 					this.commont = obj
 				}
-				console.log(obj)
-				console.log(this.commont)
 			},
 			// 处理dealProductValue
 			dealProductValue(data){
@@ -604,8 +571,9 @@
 			},
 			//点击kefu
 			serviceClick(shopname){
+				let shopInfo = JSON.stringify(this.detailData.shop_info)
 				uni.navigateTo({
-					url:'informtion/informtion?shopname=' + shopname
+					url:'informtion/informtion?shopInfo=' + shopInfo
 				})
 			},
 			//步进起数值修改
@@ -680,20 +648,16 @@
 			},
 			//点击收藏
 			collectClick(){
+				this.detailData.storeInfo.userCollect = !this.detailData.storeInfo.userCollect
 				const obj = {
 					id:this.detailData.storeInfo.id,
 					category:'pink_product'
 				}
-				if(!this.detailData.storeInfo.userCollect){
+				if(this.detailData.storeInfo.userCollect){
 					this.$store.dispatch('collect',obj)
 						.then(res => {
-							console.log(res)
 							if(res.data.code == 200){
-								this.detailData.storeInfo.userCollect = true
-								uni.showToast({
-									title:'收藏成功',
-									icon:'none'
-								})
+
 							}
 						})
 				}else{
@@ -701,11 +665,6 @@
 						.then(res => {
 							console.log(res)
 							if(res.data.code == 200){
-								this.detailData.storeInfo.userCollect = false
-								uni.showToast({
-									title:'收藏成功',
-									icon:'none'
-								})
 							}
 						})
 				}
@@ -726,66 +685,85 @@
 			},
 			//转发弹出
 			outloginSharClick(){
+				const that = this
+				let desc = that.detailData.storeInfo.title
 				let shareInfo={
-					href:"https://uniapp.dcloud.io",
+					href:`http://jn.51kdd.com/index.html#/?href=oldHome://abc`,
 					title:'老家商城',
-					desc:'我正在老家商城发起拼团，敢来和我一起拼么',
-					imgUrl:'/static/56524a9a3b6bdab0753eb8ed922d57d.png'
-				};
-				this.shareObj=share(shareInfo,this.shareList,(index) => {
-						console.log("点击按钮的序号: " + index);
-						let shareObj={
-							href:shareInfo.href||"",
-							title:shareInfo.title||"",
-							summary:shareInfo.desc||"",
-							success:(res)=>{
-								console.log("success:" + JSON.stringify(res));
-							},
-							fail:(err)=>{
-								console.log("fail:" + JSON.stringify(err));
-							}
-						};
-						switch (index) {
-							case 0:
-								shareObj.provider="weixin";
-								shareObj.scene="WXSceneSession";
-								shareObj.type=0;
-								shareObj.imageUrl=shareInfo.imgUrl||"";
-								uni.share(shareObj);
-								break;
-							case 1:
-								shareObj.provider="weixin";
-								shareObj.scene="WXSenceTimeline";
-								shareObj.type=0;
-								shareObj.imageUrl=shareInfo.imgUrl||"";
-								uni.share(shareObj);
-								break;
-							case 2:
-								uni.setClipboardData({
-									data:shareInfo.href,
-									complete() {
-										uni.showToast({
-											title: "已复制到剪贴板"
-										})
-									}
-								})
-								break;
-							case 3:
-								plus.share.sendWithSystem({
-									type:"web",
-									title:shareInfo.title||"",
-									thumbs:[shareInfo.imgUrl||""],
-									href:shareInfo.href||"",
-									content: shareInfo.desc||"",
-								})
-								break;
-						};
-					});
-					
-					this.$nextTick(()=>{
-						this.shareObj.alphaBg.show();
-						this.shareObj.shareMenu.show();
-					})
+					desc:'我正在老家商城购买'  + desc + ',快来和我一起选购吧',
+					imgUrl:that.detailData.storeInfo.image,
+				}
+				let shareList=[
+					{
+						icon:"/static/sharemenu/wechatfriend.png",
+						text:"微信好友",
+					},
+					{
+						icon:"/static/sharemenu/wechatmoments.png",
+						text:"朋友圈"
+					},
+					{
+						icon:"/static/sharemenu/copyurl.png",
+						text:"复制"
+					},
+					{
+						icon:"/static/sharemenu/more.png",
+						text:"更多"
+					},
+				];
+				this.shareObj=share(shareInfo,shareList,function(index){
+					console.log("点击按钮的序号: " + index);
+					let shareObj={
+						href:shareInfo.href||"",
+						title:shareInfo.title||"",
+						summary:shareInfo.desc||"",
+						success:(res)=>{
+							console.log("success:" + JSON.stringify(res));
+						},
+						fail:(err)=>{
+							console.log("fail:" + JSON.stringify(err));
+						}
+					};
+					switch (index) {
+						case 0:
+							shareObj.provider="weixin";
+							shareObj.scene="WXSceneSession";
+							shareObj.type=0;
+							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.share(shareObj);
+							break;
+						case 1:
+							shareObj.provider="weixin";
+							shareObj.scene="WXSenceTimeline";
+							shareObj.type=0;
+							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.share(shareObj);
+							break;
+						case 2:
+							uni.setClipboardData({
+								data:shareInfo.href,
+								complete() {
+									uni.showToast({
+										title: "已复制到剪贴板"
+									})
+								}
+							})
+							break;
+						case 3:
+							plus.share.sendWithSystem({
+								type:"web",
+								title:shareInfo.title||"",
+								thumbs:[shareInfo.imgUrl||""],
+								href:shareInfo.href||"",
+								content: shareInfo.desc||"",
+							})
+							break;
+					};
+				});
+				this.$nextTick(()=>{
+					this.shareObj.alphaBg.show();
+					this.shareObj.shareMenu.show();
+				})
 			},
 			//转发关闭
 			closePopupsSharClick(){
@@ -827,8 +805,18 @@
 			// 播放暂停
 			BoFang(){
 				if(that.autoplay==false){
-					that.autoplay=true;
-					this.videoContext.play();
+					// 触发事件
+					// 在 subNVue/vue 页面触发事件  
+					// $emit(eventName, data)  
+					uni.$emit('videoDetail', {  
+					    video:this.videoUrl
+					})
+					// // 通过 id 获取 nvue 子窗体
+					const subNVue = uni.getSubNVueById('video_mask_booking')  
+					console.log(subNVue)
+					subNVue.show('fade-in', 300, function(){  
+						console.log('打开成功')
+					}) 
 				}
 			},
 			ZhanTing(){
@@ -1404,6 +1392,17 @@
 		justify-content: center;
 		align-items: center;
 		background-color: #fff;
+	}
+	.sell-message{
+		height: 50upx;
+		background-color: #fff;
+		padding-left: 15upx;
+		display: flex;
+		align-items: center;
+		.sell-item{
+			height: 50upx;
+			line-height: 50upx;
+		}
 	}
 </style>
 

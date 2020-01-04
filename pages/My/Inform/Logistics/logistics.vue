@@ -1,7 +1,7 @@
 <template>
-	<view>
+	<view class="bg-white">
 		
-		<view v-if="!Nodata"> 
+		<view v-if="Nodata"> 
 			<view v-for="(vo,key) in ListData" :key="key" class="flex align-center logistics-all bg-white ">
 				<view class="logistics-left-all">
 					<image :src="vo.image"></image>
@@ -14,10 +14,8 @@
 			</view>
 		</view>
 		
-		<view v-else class="bg-white" :style="{ height: windowHeight + 'px'}">
-			<view class="nodata">
-				<image src="../../../../static/nodataa.png"></image>
-			</view>
+		<view v-else class="empty-img" :style="{height:style.height + 'px',transform:'translateY(-10%)'}">
+			<image src="/static/nodatamessage.png" mode="widthFix"></image>
 		</view>
 	</view>
 	
@@ -41,17 +39,16 @@
 					image:'../../../../static/demo23.png',
 					title:'您的订单已发货',
 					content:'棉拖鞋女厚底冬季可爱家用居家情侣室内保暖棉拖...订单已签收',
-				}]
+				}],
+				style:{
+					height:''
+				},
 			}
 		},
 		onLoad() {
 			var that = this
-			uni.getSystemInfo({
-			    success: function (res) {
-					that.windowHeight = res.windowHeight
-			        console.log('屏幕高度为'+res.windowHeight);
-			    }
-			});
+			const view = uni.getSystemInfoSync()
+			this.style.height = view.windowHeight;
 		},
 		methods:{
 			

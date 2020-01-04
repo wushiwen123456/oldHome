@@ -18,8 +18,9 @@
 							</view>
 							<view class="text-wuer text-lg">商户名称</view>
 						</view>
-						<view class="flex-treble enter-all-right ">
-							<input class="text-jiujiujiu text-sm-erliu" v-model="shopName" placeholder="商户名称	" confirm-type="done"/>
+						<view class="flex-treble check-box-input enter-all-right ">
+							<input @click="tipsClick('shopName')" class="text-jiujiujiu text-sm-erliu" :class="{'tips':shopName == '商户名称不能为空'}" v-model="shopName" placeholder="商户名称" confirm-type="done"/>
+							<text v-if="shopName == '商户名称不能为空'" class="lg input-icon text-red cuIcon-warn"></text>
 						</view>
 					</view>
 					<view class="flex align-center justify-between enter-all-heigth enter-border-bootom  margin-left">
@@ -29,8 +30,9 @@
 							</view>
 							<view class="text-wuer text-lg">主营分类</view>
 						</view>
-						<view class="flex-treble enter-all-right ">
-							<input class="text-jiujiujiu text-sm-erliu" v-model="shoptype" placeholder="例如鞋帽，化妆品等	" confirm-type="done"/>
+						<view class="flex-treble check-box-input enter-all-right ">
+							<input @click="tipsClick('shoptype')" class="text-jiujiujiu text-sm-erliu" :class="{'tips':shoptype == '主营分类不能为空'}" v-model="shoptype" placeholder="例如鞋帽，化妆品等" confirm-type="done"/>
+							<text v-if="shoptype == '主营分类不能为空'" class="lg input-icon text-red cuIcon-warn"></text>
 						</view>
 					</view>
 				</view>
@@ -43,8 +45,9 @@
 							</view>
 							<view class="text-wuer text-lg">管理人姓名</view>
 						</view>
-						<view class="flex-treble enter-all-right ">
-							<input class="text-jiujiujiu text-sm-erliu" v-model="adminName" placeholder="您的称呼	" confirm-type="done"/>
+						<view class="flex-treble check-box-input enter-all-right ">
+							<input @click="tipsClick('adminName')" class="text-jiujiujiu text-sm-erliu" :class="{'tips':adminName == '管理员姓名不能为空'}" v-model="adminName" placeholder="您的称呼	" confirm-type="done"/>
+							<text v-if="adminName == '管理员姓名不能为空'" class="lg input-icon text-red cuIcon-warn"></text>
 						</view>
 					</view>
 					<view class="flex align-center justify-between enter-all-heigth enter-border-bootom   margin-left">
@@ -54,8 +57,10 @@
 							</view>
 							<view class="text-wuer text-lg">手机号码</view>
 						</view>
-						<view class="flex-treble enter-all-right ">
-							<input type="number" class="text-jiujiujiu text-sm-erliu" v-model="phone" placeholder="输入手机号码" confirm-type="done"/>
+						<view class="flex-treble check-box-input enter-all-right ">
+							<input  @click="tipsClick('phone')" type="number" class="text-jiujiujiu text-sm-erliu" :class="{'tips':phone == '手机号码不能为空'}" v-model="phone" placeholder="输入手机号码" confirm-type="done"/>
+							<text v-if="phone == '手机号码不能为空'" class="lg input-icon text-red cuIcon-warn"></text>
+							
 						</view>
 					</view>
 					<view class="flex align-center justify-between enter-all-heigth enter-border-bootom  margin-left">
@@ -135,11 +140,13 @@
 			</view>
 			
 			<button class="enter-button" @tap="submit">提交申请</button>
-			<Modal v-model="Modalshow" title='提示' text='退出后将不保留填写的信息,确定要退出吗？' @confirm="delAddressClcik" />
+			<x-modal v-model="Modalshow" title='提示' text='退出后将不保留填写的信息,确定要退出吗？' @confirm="delAddressClcik" />
 		</view>
-		<view v-else class="is-submit">
-			<text>您的提交已经再受理中，请耐心等待审核~~~~</text>
+		<view v-else class="userNodes">
+			<text>{{isSubText}}</text>
 		</view>
+		<x-modal  v-model="show1" title='提示' :text="msg" @cancel="reset" @confirm="reset" />
+		 <x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -161,6 +168,7 @@
 		},
 		data(){
 			return{
+				show1:false,
 				Modalshow: false,//弹窗打开隐藏
 				windowHeight:0,//屏幕高度
 				shade:true,//遮罩
@@ -181,9 +189,15 @@
 				brand:'', //商标名称
 				adminCard:'',//商标注册号
 				token:'',
-				isSubmit:'',
-				Obj:{}
-				
+				isSubmit:false,
+				Obj:{},
+				isSubText:'',
+				msg:'',
+				isImgLoad:0,
+				idCardOneType:0,
+				idBeiType:0,
+				businessLicenseType:0,
+				trademarkType:0
 			}
 		},
 		onLoad() {
@@ -212,6 +226,9 @@
 			}
 			
 		},
+		onReady() {
+			this.$refs.loading.open()
+		},
 		onBackPress(){
 			if(!this.shade){
 				if(!this.Modalshow){
@@ -225,12 +242,21 @@
 			// 判断当前用户身份
 			isStatus(token){
 				isStatus(token).then(res => {
+					this.$refs.loading.close()
 					const status  = res.data.data.status
 					if(status == '未申请'){
 						this.isSubmit = false
 					}else{
-						this.isSubmit = true
+						if(status == '申请中'){
+							this.isSubmit = true
+							this.isSubText = '您的提交已经再受理中，请耐心等待审核~~~~'
+						}else if(status == '已通过'){
+							this.isSubmit = true
+							this.isSubText = '恭喜您，已经通过审核,请在我的钱包中查看明细~~~'
+						}
+						
 					}
+					
 				})
 			},
 			// 获取验证码倒计时
@@ -244,6 +270,9 @@
 					// 发送验证码
 					sendCode(that.phone).then(res => {
 						if(res.data.code == 200){
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast('验证码已发送至您的手机',{duration:'long'})
+							// #endif
 							var interval = setInterval(function() {
 								that.codeTip = (currentTime - 1) + 's'
 								currentTime--;
@@ -267,54 +296,63 @@
 			submit(){
 				if(this.readtype){
 					if(!this.shopName){
-						uni.showToast({
-							title:'请输入您的商户名称',
-							
-						})
+						this.shopName = '商户名称不能为空'
+						return false
+					}
+					if(!this.shoptype){
+						this.shoptype = '主营分类不能为空'
 						return false
 					}
 					if(!this.adminName){
-						uni.showToast({
-							title:'请输入您的姓名',
-							
-						})
+						this.adminName = '管理员姓名不能为空'
 						return false
 					}
 					if(!this.phone){
-						uni.showToast({
-							title:'电话',
-							
-						})
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('手机号码不能为空',{duration:'long'})
+						// #endif
 						return false
 					}
 					if(!this.code){
-						uni.showToast({
-							title:'请输入您的验证码',
-							
-						})
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('请填写验证码',{duration:'long'})
+						// #endif
 						return false
 					}
 					if(!this.businessLicense){
-						uni.showToast({
-							title:'请上传您的营业执照',
-							
-						})
-						return false
+						// // #ifdef APP-PLUS
+						// plus.nativeUI.toast('请上传您的营业执照',{duration:'long'})
+						// // #endif
+						// return false
 					}
 					if(!this.idCardOne){
-						uni.showToast({
-							title:'请上传您的身份证人像面',
-							
-						})
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('请上传您的身份证人像面',{duration:'long'})
+						// #endif
 						return false
 					}
 					if(!this.idBei){
-						uni.showToast({
-							title:'请上传您的身份证国徽面',
-							
-						})
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('请上传您的身份证国徽面',{duration:'long'})
+						// #endif
 						return false
 					}
+					// idCardOneType:0,
+					// idBeiType:0,
+					// businessLicenseType:0,
+					// trademarkType:0
+					if(this.idCardOneType == 1  || this.idBeiType == 1 || this.businessLicenseType == 1 || this.trademarkType == 1){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('请等待图片上传完成',{duration:'long'})
+						// #endif
+						return false
+					}
+				}else{
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('请认真阅读协议',{duration:'long'})
+					return 
+					// #endif
+				}
 					// 发送请求
 					const obj = {
 						shop_name:this.shopName,
@@ -330,23 +368,24 @@
 						shop_cate:this.shoptype,
 						code:this.code
 					}
+					
 					// 发送提交审核请求
 					enterShop(obj,this.token).then(res => {
 						if(res.data.code == 200){
-							uni.showToast({
-								title:'提交成功'
-							})
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast('提交成功',{duration:'long'})
+							// #endif
 							this.$store.commit('setUserIsSubmit',true)
+							this.isSubmit = true
+							this.isSubText = '您的提交已经再受理中，请耐心等待审核~~~~'
+						}else{
+							this.msg = res.data.msg
+							this.show1 = true 
 						}
-						this.isSubmit = true
+						
+						
 					})
-					
-				}else{
-					uni.showToast({
-						title:'请认真阅读协议哦',
-						icon:'none'
-					})
-				}
+				
 			},
 			//选择商家入驻类型
 			enterTypeClick(num){
@@ -369,11 +408,17 @@
 					count:1,
 					success:(res) => {
 						this[item] = res.tempFilePaths[0]
+						console.log(item)
+						this[item+'Type'] = 1
 						upload(res.tempFilePaths[0]).then(res => {
 							this.Obj[item] = res.url
+						this[item+'Type'] = 2
 						})
 					}
 				})
+			},
+			tipsClick(item){
+				this[item] = ''
 			},
 			//确认退出
 			delAddressClcik(){
@@ -382,6 +427,19 @@
 			//阅读协议
 			readClick(){
 				this.readtype = !this.readtype
+			},
+			reset(){
+				this.shopName = ''
+				this.shoptype = ''
+				this.adminName = ''
+				this.phone = ''
+				this.code = ''
+				this.idCardOne = ''
+				this.idBei = ''
+				this.businessLicense = ''
+				this.trademark = ''
+				this.brand = ''
+				this.adminCard = ''
 			},
 		}
 	}
@@ -438,5 +496,18 @@
 		align-items: center;
 		color: $uni-text-color;
 		font-size:$uni-font-size-lg ;
+	}
+	.tips{
+		color: #e54d42 !important;
+		
+	}
+	.check-box-input{
+		position: relative;
+	}
+	.input-icon{
+		position: absolute;
+		right: 15upx;
+		top: 50%;
+		transform: translateY(-50%);
 	}
 </style>

@@ -1,19 +1,19 @@
 
-view.data-v-3703d75c,
-scroll-view.data-v-3703d75c {
+view.data-v-06cc944a,
+scroll-view.data-v-06cc944a {
 	box-sizing: border-box;
 }
-.QS-tabs.data-v-3703d75c {
+.QS-tabs.data-v-06cc944a {
 	width: 100%;
 	-webkit-transition-property: background-color, color;
 	transition-property: background-color, color;
 }
-.QS-tabs-scroll.data-v-3703d75c {
+.QS-tabs-scroll.data-v-06cc944a {
 	width: 100%;
 	white-space: nowrap;
 	position: relative;
 }
-.QS-tabs-scroll-box.data-v-3703d75c{
+.QS-tabs-scroll-box.data-v-06cc944a{
 	position: relative;
 	display: -webkit-box;
 	display: -webkit-flex;
@@ -21,7 +21,7 @@ scroll-view.data-v-3703d75c {
 	white-space: nowrap !important;
 	display: block !important;
 }
-.QS-tabs-scroll-item.data-v-3703d75c {
+.QS-tabs-scroll-item.data-v-06cc944a {
 	position: relative;
 	display: inline-block;
 	text-align: center;
@@ -29,18 +29,18 @@ scroll-view.data-v-3703d75c {
 	transition-property: background-color, color;
 	padding: 0 20rpx;
 }
-.content.data-v-3703d75c {
+.content.data-v-06cc944a {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
-.boxStyle.data-v-3703d75c {
+.boxStyle.data-v-06cc944a {
 	pointer-events: none;
 	position: absolute;
 	-webkit-transition-property: all;
 	transition-property: all;
 }
-.boxStyle2.data-v-3703d75c {
+.boxStyle2.data-v-06cc944a {
 	pointer-events: none;
 	position: absolute;
 	bottom: 0;
@@ -48,7 +48,7 @@ scroll-view.data-v-3703d75c {
 	-webkit-transition-property: all;
 	transition-property: all;
 }
-.itemBackgroundBox.data-v-3703d75c {
+.itemBackgroundBox.data-v-06cc944a {
 	pointer-events: none;
 	position: absolute;
 	top: 0;
@@ -71,7 +71,7 @@ scroll-view.data-v-3703d75c {
 	-webkit-align-items: center;
 	        align-items: center;
 }
-.itemBackground.data-v-3703d75c {
+.itemBackground.data-v-06cc944a {
 	height: 100%;
 	width: 100%;
 	-webkit-transition-property: all;

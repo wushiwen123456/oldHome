@@ -4,6 +4,7 @@
   "titleNView": false,
   "bounce": "none",
   "usingComponents": {
+    "x-loading": "/components/loding/w-loading",
     "q-s-tabs": "/components/QS-tabs/QS-tabs",
     "uni-load-more": "/components/uni-load-more/uni-load-more",
     "uni-popup": "/components/uni-popup/uni-popup",

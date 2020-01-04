@@ -1,38 +1,40 @@
 <template>
 	<view>
 		<view v-if="mytrue" class="my-title-background">
+			
 			<view  class="bg-white  margin-left margin-right my-one-all">
 				<view class="flex align-end justify-between margin-left-lg">
 					<view class="flex align-center" @click="mySet">
-						<image class="my-head-image" :src="avatar"></image>
-						<view class="text-xl text-bold margin-left-sm">{{username}}</view>
+						<image class="my-head-image" :src="userInfo.avatar"></image>
+						<view class="text-xl text-bold margin-left-sm">{{userInfo.nickname}}</view>
 					</view>
-					<view class="my-one-jifen flex align-center justify-center">
+					<view @click="goQiandao" class="my-one-jifen flex align-center justify-center">
 						<image src="../../static/jifenw.png"></image>
-						<view class="margin-left-xs">红包{{now_money}}</view>
+						<view class="margin-left-xs">红包{{userInfo.red_packet}}</view>
 					</view>
 				</view>
 				<view class="flex align-center justify-around margin-top">
 					<view @tap="collectClick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">{{!product_collect ? '0' : shop_collect}}</view>
+						<view class="margin-bottom-xs text-lg">{{userInfo.product_collect}}</view>
 						<view class="text-sm">商品收藏</view>
 					</view>
 					<view @tap="attrntionClick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">{{!shop_collect ? '0' : shop_collect}}</view>
+						<view class="margin-bottom-xs text-lg">{{userInfo.shop_collect}}</view>
 						<view class="text-sm">店铺收藏</view>
 					</view>
 					<view @tap="integralShopCick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">{{integral}}</view>
+						<view class="margin-bottom-xs text-lg">{{userInfo.integral}}</view>
 						<view class="text-sm">积分</view>
 					</view>
-					<view@tap="footprintClick" class="flex flex-direction align-center justify-center" @click="my_zuji">
-						<view class="margin-bottom-xs text-lg">{{visit}}</view>
+					<view @tap="footprintClick" class="flex flex-direction align-center justify-center" @click="my_zuji">
+						<view class="margin-bottom-xs text-lg">{{userInfo.visit}}</view>
 						<view class="text-sm">我的足迹</view>
 					</view>
 				</view>
 			</view>
 		</view>
-		<view v-else class="Nologin">
+		
+		<view v-else class="Nologin" >
 			<view @tap="loginClick" class="Nologin-button">登录/注册</view>
 		</view>
 		
@@ -104,18 +106,25 @@
 						<image src="../../static/mythreef.png"></image>
 						<view>领券中心</view>
 					</view>
-				</view>
-				<view>
-					
+					<view @tap="goQianbao()" class="my-three-all my-three-all2">
+						<image src="/static/tixian/02.png"></image>
+						<view>我的钱包</view>
+					</view>
+					<view @tap="erWeiShare()" class="my-three-all my-three-all2">
+						<image src="../../static/fenxiang.png"></image>
+						<view>推广好友</view>
+					</view>
 				</view>
 			</view>
 		</view>
+		<x-modal  v-model="show1" title='前往登录' text='需要登录才能查看哦' @confirm="goLogin" />
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
 <script>
 	// 获取个人信息
-	import { getProfileData } from '@/network/getProfileData'
+	import { getProfileData,saveFiles } from '@/network/getProfileData'
 	
 	// 导入vuex
 	import { mapGetters } from 'vuex'
@@ -124,6 +133,10 @@
 	
 	// 导入公共类
 	import { HOST } from '@/common/const'
+	
+	
+	// 导入分享方法
+	import share from "@/common/share.js";
 	export default{
 		data(){
 			return{
@@ -135,57 +148,52 @@
 				sex:"",
 				product_collect:"",
 				shop_collect:"",
-				visit:""
+				visit:"",
+				uid:'',
+				red_packet:'',
+				show1:false,
+				isLoading:false,
+				userInfo:{},
 			}
 		},
 		onShow() {
-			console.log(this.isToken)
-			if(this.isToken){
-				getProfileData(this.isToken).then(res => {
-					const data = res.data
-					if(data.code == 400){
-						uni.showToast({
-							title:'登录失败',
-							icon:'none'
-						})
-					}else if(data.code == 401){
-						uni.showToast({
-							title:'登录超时',
-							icon:'none'
-						})
-					}else if(data.code == 200){
-						console.log(res)
-						this.mytrue = true
-						this.avatar = replaceImage(data.data.avatar)
-						this.username = data.data.nickname
-						this.integral = data.data.integral
-						this.now_money = data.data.now_money
-						this.sex = data.data.sex
-						this.product_collect = data.data.product_collect
-						this.shop_collect = data.data.shop_collect
-						this.visit = data.data.visit
-						
-
-						this.$store.commit('setIntegral',this.integral)
-						data.data.avatar = replaceImage(data.data.avatar)	
-							uni.setStorage({
-								key: 'Message_key',
-								data: data.data,
-								success: function () {
-									console.log('个人信息写入缓存成功');
-								}
-							});
-					}
-					
-				})
-			}else{
+			if(!this.isToken){
 				this.mytrue = false
+			}else{
+				this.mytrue = true
+				const userData =  uni.getStorageSync('Message_key')
+				console.log(userData)
+				if(Object.keys(userData).length){
+					this.userInfo = userData
+					this.isLoading = false
+				}else{
+					this.isLoading = true
+				}
+				if(this.isLoading){
+					if(this.$refs.loading){
+						this.$refs.loading.open()
+					}
+				}
+				this.getProfileData(userData)
 			}
 		},
+		// #ifndef MP
 		onNavigationBarButtonTap(e){
-			console.log("监听到原生标题栏按钮点击事件");
-			console.log(e);
-			if(e.index == 0){
+			if(!this.mytrue){
+				this.show1 = true
+				return 
+			}
+			const index = e.index
+			if(index == 0){
+				// 去掉小红点
+				// #ifdef APP-PLUS
+				const pages = getCurrentPages()
+				const page = pages[pages.length - 1]
+				const currentWebView = page.$getAppWebview()
+				currentWebView.hideTitleNViewButtonRedDot({
+					index
+				})
+				// #endif
 				//消息
 				uni.navigateTo({
 					url:'Inform/inform'
@@ -197,7 +205,71 @@
 				})
 			}
 		},
+		// #endif
 		methods:{
+			// 登录网络方法
+			getProfileData(userData){
+				const token = this.isToken
+				getProfileData(token).then(res => {
+					if(res.data.code == 200){
+						const obj = res.data.data
+						obj.avatar = replaceImage(obj.avatar)
+						let status = true
+						if(Object.keys(userData).length != 0){
+							const keys = Object.keys(userData)
+							keys.forEach((x,index) => {
+								if(userData[keys[index]] != obj[keys[index]]){
+									status = false
+								}
+							})
+						}else{
+							status = false
+						}
+						if(!status){
+							this.userInfo = obj
+							if(this.isLoading){
+								if(this.$refs.loading){
+									this.$refs.loading.close()
+								}
+							}
+							// 存储缓存
+							uni.setStorage({
+								key: 'Message_key',
+								data: obj,
+								success: function () {
+									console.log('个人信息写入缓存成功');
+								}
+							})
+							
+							// #ifdef APP-PLUS
+							// 把头像储存到本地
+							const avatar = obj.avatar
+									saveFiles(avatar).then(res => {
+										if(res.statusCode == 200){
+											const path = res.tempFilePath
+											uni.saveFile({
+												tempFilePath:path,
+												success(res2) {
+													var savedFilePath = res2.savedFilePath
+													// 保存到缓存
+													uni.setStorage({
+														key:'integrlUrl',
+														data:savedFilePath
+													})
+												},
+												fail:(err2)=> {
+													plus.nativeUI.toast(err2,{duration:'long'})
+												}
+											})
+										}
+									}).catch(err => {
+										plus.nativeUI.toast(err,{duration:'long'})
+									})
+							// #endif
+						}
+					}
+				})
+			},
 			//点击登录
 			loginClick(){
 				uni.navigateTo({
@@ -206,87 +278,261 @@
 			},
 			//商品收藏
 			collectClick(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'MyshopMessage/collect'
 				})
 			},
 			//店铺收藏
 			attrntionClick(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'MyshopMessage/attention'
 				})
 			},
 			//积分商城
 			integralShopCick(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'../Home/Integral/integralShop'
 				})
 			},
 			//优惠券
 			discountsClick(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'Discounts/mydiscounts'
 				})
 			},
 			//足迹
 						footprintClick(){
+							if(!this.mytrue){
+								this.show1 = true
+								return 
+							}
 							uni.navigateTo({
 								url:'Footprint/footprint'
 							})
 						},
 			//我的订单
 			myOrderClick(num){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'MyOrder/myorder?index=' + num
 				})
 			},
 			//退款
 			refundClick(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'MyBooking/refund/refund'
 				})
 			},
 			//我的拼团
 			MybookingClick(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'MyBooking/mybooking'
 				})
 			},
 			//商家入驻
 			enterClick(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'Enter/enter'
 				})
 			},
 			//我的地址
 			addressClick(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'address/AllAddress'
 				})
 			},
 			//积分明细
 			intrgralDetailClick(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'../Home/Integral/intrgralDetail'
 				})
 			},
 			//领券中心
 			discountscententClick(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'Discounts/DiscpuntsCentent'
 				})
 			},
 			// 我的足迹
 			my_zuji(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:''
 				})
 			},
 			// 跳转用户设置
 			mySet(){
-				
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
 				uni.navigateTo({
 					url:'Mydata/mydata'
+				})
+			},
+			// 分享好友
+			shareObj(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
+				const that = this
+				const spread_uid = that.uid
+				let shareInfo={
+					href:`http://jn.51kdd.com/index.html#/?spread_uid=${spread_uid}`,
+					title:'老家商城',
+					desc:'快来玩呀',
+					imgUrl:'/static/logo/logo.png'
+				};
+				let shareList=[
+					{
+						icon:"/static/sharemenu/wechatfriend.png",
+						text:"微信好友",
+					},
+					{
+						icon:"/static/sharemenu/wechatmoments.png",
+						text:"朋友圈"
+					},
+					{
+						icon:"/static/sharemenu/copyurl.png",
+						text:"复制"
+					},
+					{
+						icon:"/static/sharemenu/more.png",
+						text:"更多"
+					},
+				];
+				this.shareObj=share(shareInfo,shareList,function(index){
+					console.log("点击按钮的序号: " + index);
+					let shareObj={
+						href:shareInfo.href||"",
+						title:shareInfo.title||"",
+						summary:shareInfo.desc||"",
+						success:(res)=>{
+							console.log("success:" + JSON.stringify(res));
+						},
+						fail:(err)=>{
+							console.log("fail:" + JSON.stringify(err));
+						}
+					};
+					switch (index) {
+						case 0:
+							shareObj.provider="weixin";
+							shareObj.scene="WXSceneSession";
+							shareObj.type=0;
+							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.share(shareObj);
+							break;
+						case 1:
+							shareObj.provider="weixin";
+							shareObj.scene="WXSenceTimeline";
+							shareObj.type=0;
+							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.share(shareObj);
+							break;
+						case 2:
+							uni.setClipboardData({
+								data:shareInfo.href,
+								complete() {
+									uni.showToast({
+										title: "已复制到剪贴板"
+									})
+								}
+							})
+							break;
+						case 3:
+							plus.share.sendWithSystem({
+								type:"web",
+								title:shareInfo.title||"",
+								thumbs:[shareInfo.imgUrl||""],
+								href:shareInfo.href||"",
+								content: shareInfo.desc||"",
+							})
+							break;
+					};
+				});
+				this.$nextTick(()=>{
+					this.shareObj.alphaBg.show();
+					this.shareObj.shareMenu.show();
+				})
+			},
+			erWeiShare(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
+				uni.navigateTo({
+					url:'erweimaShare/erweimaShare'
+				})
+			},
+			// 进入我的钱包
+			goQianbao(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
+				uni.navigateTo({
+					url:'MyBalance/MyBalance'
+				})
+			},
+			goQiandao(){
+				if(!this.mytrue){
+					this.show1 = true
+					return 
+				}
+				uni.navigateTo({
+					url:'../Home/qiandao'
+				})
+			},
+			goLogin(){
+				uni.navigateTo({
+					url:'../login/login'
 				})
 			}
 		},
@@ -298,10 +544,9 @@
 	}
 </script>
 
-<style>
+<style lang="scss">
 	.my-title-background{
 		margin-bottom: 20upx;
-		height:280upx;
 		background: url(../../static/nologin.png) no-repeat;
 		background-size: 100% 50%;
 		width: 100%;
@@ -345,10 +590,14 @@
 	}
 	.my-three-all{
 		height: 120upx;
-	}
-	.my-three-all image{
-		width: 60upx;
-		height: 60upx;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		image{
+			width: 60upx;
+			height: 60upx;
+		}
 	}
 	.my-two-bootom{
 		padding-bottom: 76upx;
@@ -372,5 +621,9 @@
 		color: #CD3233;
 		font-size: 32upx;
 		font-weight: bold;
+	}
+	.tixian{
+		width: 60upx;
+		height: 60upx;
 	}
 </style>

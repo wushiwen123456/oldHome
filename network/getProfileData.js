@@ -14,7 +14,24 @@ export function getProfileData(token){
 	})
 }
 
-
+// 保存用户头像
+export function saveFiles(url){
+	
+	return new Promise((resolve,reject) => {
+		uni.downloadFile({
+			url:url,
+			header:{
+				'content-type': 'application/x-www-form-urlencoded'
+			},
+			success:(res) => {
+				resolve(res)
+			},
+			fail:(err) => {
+				reject(err)
+			}
+		})
+	})
+}
 // 获取用户所有地址
 export function getProfileAllAddress(token){
 	return http({
@@ -75,7 +92,8 @@ export function getAddress(token){
 		header:{
 			token:token
 		},
-		method:"GET"
+		method:"GET",
+		hideModel:true
 	})
 }
 
@@ -148,11 +166,13 @@ export function getCollectStore(page,token){
 }
 
 // 个人订单
-export function userOrder(type,token){
+export function userOrder(type,page,limit,token){
 	return http({
 		url:replaceImage('http://www.test.com/ebapi/user_api/get_user_order_list'),
 		data:{
-			type:type
+			type:type,
+			page,
+			limit,
 		},
 		header:{
 			token
@@ -218,5 +238,68 @@ export function enterShop(data,token){
 			token
 		},
 		method:"POST"
+	})
+}
+
+// 聊天列表
+export function chatList(token){
+	return http({
+		url:replaceImage('http://jn.51kdd.com/ebapi/user_api/get_liao_list'),
+		header:{
+			token
+		}
+	})
+}
+
+// 聊天数据
+export function chatData(token,group_id){
+	return http({
+		url:replaceImage('http://jn.51kdd.com/ebapi/user_api/get_service_message'),
+		data:{
+			group_id
+		},
+		header:{
+			token
+		}
+	})
+}
+
+// 用户提现接口
+export function userTiXian(data,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/user_api/user_extract'),
+		data:{
+			...data
+		},
+		header:{
+			token
+		},
+		method:"POST"
+	})
+}
+
+// 余额明细
+export function userBalance(page,limit,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/user_api/user_money_list'),
+		data:{
+			page,
+			limit
+		},
+		header:{
+			token
+		}
+	})
+}
+
+export function userRefund(page,limit,token){
+	return http({
+		url:replaceImage('http://jn.51kdd.com/ebapi/user_api/order_after_list'),
+		data:{
+			page,limit
+		},
+		header:{
+			token
+		}
 	})
 }

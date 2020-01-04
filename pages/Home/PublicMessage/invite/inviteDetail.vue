@@ -32,13 +32,17 @@
 						</uni-popup>
 					</cover-view>
 				</map> -->
-				 <map style="width: 100%; height: 300px;" :latitude="latitude" :longitude="longitude" :markers="covers">
+				
+				
+				<!-- 招聘详情 -->
+				<!-- 地图暂未实现 -->
+				 <map style="width: 100%; height: 300px;" :latitude="latitude" :longitude="longitude" :markers="covers" @tap="goMap">
 				</map>
 				<view class="zp-contain">
 					<scroll-view scroll-y  class="zp-info">
 						<view class="zp-1 m-t">
 							<view><text class="zp-tishi">职位名称: </text>{{info.job}}</view>
-							<view><text class="zp-tishi">工作地点：</text>{{info.xxaddress}}</view>
+							<view><text class="zp-tishi">工作地点：</text>{{info.address}}</view>
 							<view><text class="zp-tishi">联系人： </text>{{info.name}}</view>
 						</view>
 						<view class="zp-1 m-t">
@@ -96,15 +100,10 @@
 				title: 'map',
 				latitude: 39.909,
 				longitude: 116.39742,
-				covers: [{
-					latitude: 39.909,
-					longitude: 116.39742,
-					iconPath: '/static/logo/logo.png'
-				}, {
-					latitude: 39.90,
-					longitude: 116.39,
-					iconPath: '/static/logo/logo.png'
-				}]
+				covers: [],
+				m_latitude:'',
+				m_longitude:'',
+				polyline:[]
 			}
 		},
 		onLoad(option) {
@@ -112,13 +111,6 @@
 			this.type = option.type
 			this.token = this.$store.getters.isToken
 			this.inviteDetail(id,this.token)
-			const weidu = this.$store.state.userInfo.address.latitude,
-			jingdu = this.$store.state.userInfo.address.longitude
-			if(weidu && jingdu){
-				this.weidu = weidu 
-				this.jingdu = jingdu
-			}
-			console.log(this.weidu,this.jingdu)
 		},
 		onReady() {
 			uni.setNavigationBarTitle({
@@ -128,8 +120,25 @@
 		methods:{
 			inviteDetail(id,token){
 				inviteDetail(id,token).then(res => {
-					console.log(res)
 					this.info = res.data.data
+					this.latitude = res.data.data.lat
+					this.longitude = res.data.data.lng
+					const obj = {
+					latitude: this.latitude,
+					longitude: this.longitude,
+					iconPath: '/static/iconfont/location.svg',	
+					width:40,
+					height:40,
+					callout:{
+						content	:this.info.company,
+						fontSize:16,
+						borderRadius:10,
+						color:'#333333',
+						padding:10,
+						display:'ALWAYS'
+						}
+					}
+					this.covers.push(obj)
 				})
 			},
 			goMessage(){
@@ -140,6 +149,15 @@
 			popClick(){
 				console.log('-----')
 				this.$refs.poptop.open()
+			},
+			// 地图详情
+			goMap(){
+				uni.openLocation({
+				latitude: this.latitude*1,
+				longitude: this.longitude*1,
+				success: (res) => {
+				},
+				})
 			}
 		}
 	}

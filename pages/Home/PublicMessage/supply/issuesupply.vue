@@ -63,7 +63,6 @@
 						<textarea class="flex-treble text-three" maxlength="-1" v-model="content" placeholder="请输入详细内容"></textarea>
 					</view>
 				</view>
-				
 			</view>
 		</view>
 		<button class="issueinvite-button" @click="publicPush">发布</button>
@@ -79,6 +78,8 @@
 			themeColor="#f00"
 		></w-picker>
 		
+		
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -156,16 +157,24 @@
 					phone:this.phone,
 					name:this.name,
 					title:this.title,
-					address:this.address
+					address:this.address,
+					content:this.content
 				}
-				console.log(obj)
-				// pushPublish(obj,this.$store.getters.isToken).then(res => {
-				// 	if(res.data.code == 200){
-				// 		uni.redirectTo({
-				// 			url:"../invite/success"
-				// 		})
-				// 	}
-				// })
+				this.$refs.loading.open()
+				pushPublish(obj,this.$store.getters.isToken).then(res => {
+					this.$refs.loading.close()
+					if(res.data.code == 200){
+						uni.redirectTo({
+							url:"supply"
+						})
+					}else{
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast(res.data.msg,{duration:'long'})
+						// #endif
+					}
+				}).catch(err => {
+					this.$refs.loading.close()
+				})
 			}
 		}
 	}

@@ -1,14 +1,14 @@
 <template>
 	<view>
 		<view class="flex align-center bg-white justify-center mydata-title">
-			<image @tap="clk(1)" src="../../../static/bottomh.png" :src="urls[1]"></image>
+			<image @tap="clk(1)" :src="urls[1]" :lazy-load="urls[0]"></image>
 		</view>
 		<view class="margin-top bg-white">
 			<view class="flex align-center justify-between margin-lr mydata-title-all">
 				<view class="flex-twice text-wuer text-lg">昵称</view>
 				<view class="flex align-center justify-between flex-six">
-					<input class="text-jiujiujiu text-df" placeholder="输入昵称" v-model="nickname"  confirm-type="done"/>
-					<view class="lg text-gray cuIcon-right"></view>
+					<input class="text-jiujiujiu text-df text-width" placeholder="输入昵称" v-model="nickname"  confirm-type="done"/>
+				
 				</view>
 			</view>
 			<view class="flex align-center justify-between margin-lr mydata-title-all">
@@ -30,7 +30,7 @@
 			<view class="flex align-center justify-between margin-lr mydata-title-all">
 				<view class="flex-twice text-wuer text-lg">手机号</view>
 				<view class="flex align-center justify-between flex-six">
-					<input class="text-jiujiujiu text-df" :disabled="true" placeholder="输入手机号" type="number" v-model="phone"  confirm-type="done"/>
+					<input class="text-jiujiujiu text-df text-width" :disabled="true" placeholder="输入手机号" type="number" v-model="phone"  confirm-type="done"/>
 					<view></view>
 				</view>
 			</view>
@@ -53,7 +53,7 @@
 				themeColor="#f00"
 			></w-picker>
 		</view>
-		<avatar @upload="doUpload" @avtinit="doBefore" quality="0.8" ref="avatar"></avatar>
+		<avatar @upload="doUpload" @closeImg='closeImg' @avtinit="doBefore" quality="0.8" ref="avatar" inner="true"></avatar>
 	</view>
 </template>
 
@@ -75,17 +75,33 @@
 				adddress:'',//收货地址
 				urls:["../../../static/bottomh.png","../../../static/bottomh.png"],//头像显示的临时路径,
 				avatar:'',//传给后台图片路径
+				status:0 ,//判断图片传输状态 0:未发送 1：正在上传 2：上传完成
+				isModel:true,
+				messageInfo:{}
 			}
 		},
 		onLoad(){
-			var messageInfo = uni.getStorageSync('Message_key');
-			this.nickname = messageInfo.nickname
-			this.sextype = messageInfo.sex
-			this.urls[1] = messageInfo.avatar
-			this.phone = messageInfo.account
-			this.birth = messageInfo.birthday
+			this.messageInfo = uni.getStorageSync('Message_key');
+			const obj = this.messageInfo
+			this.nickname = obj.nickname
+			this.sextype = obj.sex
+			this.urls[1] = obj.avatar
+			this.phone = obj.account
+			this.birth = obj.birthday || ''
 		},
 		onNavigationBarButtonTap(){
+			if(this.status == 1){
+				// #ifdef APP-PLUS
+				plus.nativeUI.toast('请等待图片上传完成...',{duration:'long'})
+				// #endif
+				return 
+			}
+			if(!this.isModel){
+				// #ifdef APP-PLUS
+				plus.nativeUI.toast('您当前正在选择/预览图片中,请点击上传/关闭后重试',{duration:'long'})
+				// #endif
+				return 
+			}
 			let data = {}
 			if(this.avatar){
 				data = {
@@ -101,22 +117,37 @@
 					birthday:this.birth
 				}
 			}
+			uni.showLoading({
+				title:'保存中...'
+			})
 			edit_user(data).then(res =>{
-				uni.showToast({
-					title:'修改成功',
-					icon:'none'
-				})
-				setTimeout(function(){
-					uni.switchTab({
-						url:'../my'
-					})
-				},1500)
+					// this.nickname = this.messageInfo.nickname
+					// this.sextype = this.messageInfo.sex
+					// this.urls[1] = this.messageInfo.avatar
+					// this.phone = this.messageInfo.account
+					// this.birth = this.messageInfo.birthday || ''
+					const obj = this.messageInfo
+					obj.nickname = this.nickname
+					obj.sex = this.sextype
+					obj.avatar = this.urls[1]
+					obj.account = this.phone
+					obj.birthday = this.birth ||''
+					// 把信息储存到缓存里
+					uni.setStorageSync('Message_key',obj)
+					uni.hideLoading()
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('保存成功',{duration:'long'})
+					// #endif
+					uni.navigateBack()
 			})
 		},
 		methods:{
 			//男
 			sexnanClick(){
 				this.sextype = 1
+			},
+			imgLoag(){
+				console.log('图片加载完成')
 			},
 			//女
 			sexnvClick(){
@@ -132,27 +163,29 @@
 				this.birth = val.result
 			},
 			doBefore() {
-				console.log('doBefore');
+				this.isModel = false
 			},
 			clk(index) {
 				this.$refs.avatar.fChooseImg(index,{
 					selWidth: '350upx', selHeight: '350upx', 
 					expWidth: '260upx', expHeight: '260upx',
-					inner: index ? 'true' : 'false'
+					inner: "true"
 				});
+			},
+			closeImg(){
+				this.isModel = true
 			},
 			doUpload(rsp) {
 				console.log(rsp);
 				this.$set(this.urls, rsp.index, rsp.path);
-				uni.showLoading({title:'上传中'})
-				console.log('+++++++++++++++++')
-				console.log(rsp.path)
-				console.log('+++++++++++++++++')
+				this.status = 1
+				uni.showLoading({title:'上传中...'})
 				let data = rsp.path
 				upload(data).then(res =>{
 					this.avatar = res.url
-					console.log(this.urls[1])
+					this.isModel = true
 					uni.hideLoading()
+					this.status = 2
 				})
 			},
 		}

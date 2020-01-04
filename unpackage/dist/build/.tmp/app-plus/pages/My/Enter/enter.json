@@ -3,6 +3,8 @@
   "navigationBarTitleText": "商家入驻",
   "scrollIndicator": "none",
   "usingComponents": {
+    "x-modal": "/components/x-modal/x-modal",
+    "x-loading": "/components/loding/w-loading",
     "modal": "/components/x-modal/x-modal"
   }
 }

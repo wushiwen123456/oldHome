@@ -198,7 +198,7 @@
 .shop-experience {
   background: rgba(0, 0, 0, 0.1);
   border-radius: 14rpx;
-  width: 220rpx;
+  width: 242rpx;
   display: -webkit-box;
   display: -webkit-flex;
   display: flex;

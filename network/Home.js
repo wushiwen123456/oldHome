@@ -11,12 +11,13 @@ export function getHomeData(){
 
 // 主页商品列表数据：	
 export function getDetailData(obj){
+	const flag = obj.showModel
 	return http({
 		url:replaceImage('http://www.test.com/ebapi/store_api/get_product_list'),
 		data:{
 			...obj
 		},
-		hideModel: !!obj.hideModel
+		showModel:flag || ''
 	})
 }
 
@@ -43,13 +44,13 @@ export function getSecKillData(){
 
 
 // 获取拼团数据
-export function getCombinationListData(pages){
+export function getCombinationListData(pageNum,pageSize){
 	return http({
 		url:replaceImage('http://www.test.com/ebapi/pink_api/get_combination_list'),
 		method:"POST",
 		data:{
-			limit:5,
-			offset:(pages-1)*5+1
+			limit:pageSize,
+			offset:(pageNum-1)*pageSize+1
 		}
 	})
 }

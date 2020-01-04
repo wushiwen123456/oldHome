@@ -4,7 +4,11 @@
   "navigationBarTextStyle": "white",
   "titleNView": {
     "type": "transparent",
-    "backgroundColor": "#E8211F"
+    "backgroundColor": "#E8211F",
+    "scrollIndicator": "none",
+    "bounce": "none"
   },
-  "usingComponents": {}
+  "usingComponents": {
+    "x-loading": "/components/loding/w-loading"
+  }
 }

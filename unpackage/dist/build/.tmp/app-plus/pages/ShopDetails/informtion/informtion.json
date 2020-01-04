@@ -2,5 +2,6 @@
   "navigationBarBackgroundColor": "#FFFFFF",
   "navigationBarTitleText": "客服",
   "scrollIndicator": "none",
+  "bounce": "none",
   "usingComponents": {}
 }

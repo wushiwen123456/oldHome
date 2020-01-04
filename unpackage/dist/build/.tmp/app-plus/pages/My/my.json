@@ -1,6 +1,7 @@
 {
   "navigationBarBackgroundColor": "#CD3233",
   "scrollIndicator": "none",
+  "bounce": "none",
   "titleNView": {
     "buttons": [
       {
@@ -20,5 +21,8 @@
       }
     ]
   },
-  "usingComponents": {}
+  "usingComponents": {
+    "x-modal": "/components/x-modal/x-modal",
+    "x-loading": "/components/loding/w-loading"
+  }
 }

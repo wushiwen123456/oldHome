@@ -4,7 +4,7 @@ const http = (options) => {
 		options.mask = true
 	}
 	return new Promise((resolve,reject) => {
-		if(!options.hideModel){
+		if(options.showModel){
 			uni.showLoading({
 				title:'加载中...',
 				// 是否显示透明蒙层，防止触摸穿透，默认：false
@@ -21,6 +21,9 @@ const http = (options) => {
 				if(res){
 					resolve(res)
 				}else{
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('连接服务器失败',{duration:'long'})
+					// #endif
 					reject(res)
 				}
 				
@@ -29,7 +32,7 @@ const http = (options) => {
 				reject(err)
 			},
 			complete:() => {
-				if(!options.hideModel){
+				if(options.showModel){
 					uni.hideLoading()
 				}
 			}

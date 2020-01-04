@@ -80,9 +80,9 @@ export default {
 		},
 		blur() {
 			this.isFocus = false;
-			if (!this.inputVal) {
-				this.active = false;
-			}
+			// if (!this.inputVal) {
+			// 	this.active = false;
+			// }
 		},
 		clear() {
 			//HM修改 收起键盘
@@ -130,7 +130,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .serach {
 	display: flex;
 	width: 100%;
@@ -184,7 +184,7 @@ export default {
 			flex-shrink: 0;
 			padding: 0 30upx;
 			//HM修改 按钮背景色
-			background:linear-gradient(to right,#ff9801,#ff570a);
+			background:#CD3233;
 			//background: $uni-color-success;
 			line-height: 60upx;
 			color: #fff;

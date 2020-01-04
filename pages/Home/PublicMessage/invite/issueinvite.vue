@@ -54,20 +54,20 @@
 						<view class="flex-sub text-bold text-three">招聘岗位</view>
 						<input class="flex-treble" placeholder="列:程序员/前段工程师/ui设计" v-model="c_job" 	confirm-type="done" />
 					</view>
-					<view class="flex align-center issue-all-heigth">
+					<!-- <view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">地址信息</view>
 						<input @click="open_address" @focus="open_address" class="flex-treble" placeholder="公司地址" v-model="address" 	confirm-type="done" />
-					</view>
+					</view> -->
 					<view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">办公地点</view>
-						<input class="flex-treble" placeholder="具体工作地址" v-model="xAddress" 	confirm-type="done" />
+						<input class="flex-treble" placeholder="具体工作地址" @click="chooseMap" :disabled="true" v-model="xAddress" 	confirm-type="done" />
 					</view>
 					<view class="flex align-center issue-all-heigth">
 						<view class="flex-sub text-bold text-three">标题</view>
-						<input class="flex-treble" placeholder="输入招聘者电话" v-model="title" 	confirm-type="done" />
+						<input class="flex-treble" placeholder="输入招聘标题" v-model="title" 	confirm-type="done" />
 					</view>
 					<view class="flex align-start solid-top padding-top-sm">
-						<view class="flex-sub text-bold text-three">内容</view>
+						<view class="flex-sub text-bold text-three">工作内容</view>
 						<textarea class="flex-treble text-three" maxlength="-1" v-model="content" placeholder="请输入详细内容"></textarea>
 					</view>
 					
@@ -133,7 +133,7 @@
 		<w-picker 
 		    mode="region"
 		    :defaultVal="['浙江省','杭州市','滨江区']"
-		    :areaCode="['33','3301','330108']"
+		    :areaCode="['33','3301','330108']"	
 		    @confirm="onConfirm2" 
 		    ref="region" 
 		    themeColor="#f00">
@@ -170,7 +170,15 @@
 				name:'' ,//联系人姓名
 				xAddress:'',//详细地址
 				profile:'',
+				longitude:'',
+				latitude:'',
 			}
+		},
+		onLoad() {
+
+		},
+		onReady() {
+
 		},
 		methods:{
 			//生日选择开关
@@ -190,6 +198,23 @@
 			//点击企业招聘
 			leftClick(){
 				this.type = 0
+			},
+			// 打开地图选择位置
+			chooseMap(){
+				uni.chooseLocation({
+					success:(res) => {
+						console.log(res)
+						this.longitude = res.longitude
+						this.latitude = res.latitude
+						this.xAddress = res.name
+					},
+					fail:(err) => {
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('信息获取失败',{duration:'long'})
+						// #endif
+						this.xAddress = '信息获取失败请重试'
+					}
+				})		
 			},
 			//求职
 			rightClick(){
@@ -253,18 +278,51 @@
 						}
 					})
 				}else{
+					// 招聘发布
+					if(this.phone == ''){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('请填写您的电话',{duration:'long'})
+						// #endif
+						return 
+					}
+					if(this.xAddress == '信息获取失败请重试'){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('请选择办公地点',{duration:'long'})
+						// #endif
+						return 
+					}
+					if(this.content == ''){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('请填写工作内容',{duration:'long'})
+						// #endif
+						return 
+					}
+					if(this.name == ''){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('请填写姓名',{duration:'long'})
+						// #endif
+						return 
+					}
+					if(this.c_name == ''){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('请填写公司名称',{duration:'long'})
+						// #endif
+						return 
+					}
 					const obj = {
 						see:this.distype ? 0 : 1,
 						min:this.minMoney,
 						max:this.maxMoney,
 						phone:this.phone,
-						address:this.address,
+						address:'',
 						company:this.c_name,
 						content:this.content,
 						name:this.name,
 						title:this.title,
 						job:this.c_job,
-						xxaddress:this.xAddress,
+						address:this.xAddress,
+						lat:this.latitude,
+						lng:this.longitude
 					}
 					zp_push(obj,this.$store.getters.isToken).then(res => {
 						if(res.data.code == 200){

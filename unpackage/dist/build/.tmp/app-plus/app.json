@@ -57,14 +57,23 @@
     "pages/Home/PublicMessage/invite/inviteDetail",
     "pages/Home/qiandao",
     "pages/My/footmark/footmark",
-    "pages/ShopDetails/aaa",
     "pages/ShopDetails/affirm/success_pay",
     "pages/My/Enter/showInfo",
     "pages/Home/PublicMessage/invite/success",
     "pages/ShopDetails/affirm/Integral_success",
     "pages/My/Mydata/mydata",
     "pages/My/Footprint/footprint",
-    "pages/My/logistics/logistics"
+    "pages/My/logistics/logistics",
+    "pages/Home/PublicMessage/supply/suppleDetail",
+    "pages/Home/PublicMessage/invite/mapdetail",
+    "pages/My/erweimaShare/erweimaShare",
+    "pages/My/MyBalance/MyBalance",
+    "pages/My/MyBalance/tiXian",
+    "pages/Home/Barter/BaterClsaaify",
+    "pages/Home/Barter/BarterInfo",
+    "pages/Home/Barter/issue",
+    "pages/Home/texts/index/index",
+    "pages/Home/texts/preview/preview"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -113,5 +122,9 @@
   },
   "appname": "老家商城",
   "compilerVersion": "2.4.6",
-  "usingComponents": {}
+  "usingComponents": {
+    "cu-custom": "/colorui/components/cu-custom",
+    "x-modal": "/components/x-modal/x-modal",
+    "x-loading": "/components/loding/w-loading"
+  }
 }

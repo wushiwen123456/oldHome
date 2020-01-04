@@ -1,19 +1,19 @@
 
-view.data-v-27c4c32f,
-scroll-view.data-v-27c4c32f {
+view.data-v-3ffe89b8,
+scroll-view.data-v-3ffe89b8 {
 	box-sizing: border-box;
 }
-.QS-tabs.data-v-27c4c32f {
+.QS-tabs.data-v-3ffe89b8 {
 	width: 100%;
 	-webkit-transition-property: background-color, color;
 	transition-property: background-color, color;
 }
-.QS-tabs-scroll.data-v-27c4c32f {
+.QS-tabs-scroll.data-v-3ffe89b8 {
 	width: 100%;
 	white-space: nowrap;
 	position: relative;
 }
-.QS-tabs-scroll-box.data-v-27c4c32f{
+.QS-tabs-scroll-box.data-v-3ffe89b8{
 	position: relative;
 	display: -webkit-box;
 	display: -webkit-flex;
@@ -21,7 +21,7 @@ scroll-view.data-v-27c4c32f {
 	white-space: nowrap !important;
 	display: block !important;
 }
-.QS-tabs-scroll-item.data-v-27c4c32f {
+.QS-tabs-scroll-item.data-v-3ffe89b8 {
 	position: relative;
 	display: inline-block;
 	text-align: center;
@@ -29,18 +29,18 @@ scroll-view.data-v-27c4c32f {
 	transition-property: background-color, color;
 	padding: 0 20rpx;
 }
-.content.data-v-27c4c32f {
+.content.data-v-3ffe89b8 {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
-.boxStyle.data-v-27c4c32f {
+.boxStyle.data-v-3ffe89b8 {
 	pointer-events: none;
 	position: absolute;
 	-webkit-transition-property: all;
 	transition-property: all;
 }
-.boxStyle2.data-v-27c4c32f {
+.boxStyle2.data-v-3ffe89b8 {
 	pointer-events: none;
 	position: absolute;
 	bottom: 0;
@@ -48,7 +48,7 @@ scroll-view.data-v-27c4c32f {
 	-webkit-transition-property: all;
 	transition-property: all;
 }
-.itemBackgroundBox.data-v-27c4c32f {
+.itemBackgroundBox.data-v-3ffe89b8 {
 	pointer-events: none;
 	position: absolute;
 	top: 0;
@@ -71,7 +71,7 @@ scroll-view.data-v-27c4c32f {
 	-webkit-align-items: center;
 	        align-items: center;
 }
-.itemBackground.data-v-27c4c32f {
+.itemBackground.data-v-3ffe89b8 {
 	height: 100%;
 	width: 100%;
 	-webkit-transition-property: all;

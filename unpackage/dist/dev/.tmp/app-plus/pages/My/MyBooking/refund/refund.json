@@ -2,5 +2,9 @@
   "navigationBarBackgroundColor": "#FFFFFF",
   "navigationBarTitleText": "退款/售后",
   "scrollIndicator": "none",
-  "usingComponents": {}
+  "bounce": "none",
+  "usingComponents": {
+    "x-loading": "/components/loding/w-loading",
+    "mescroll-uni": "/components/mescroll-uni/mescroll-uni"
+  }
 }

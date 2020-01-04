@@ -1,11 +1,14 @@
 
+page,.container{
+	height: 100vh;
+	overflow: hidden;
+}
 page {
 	background: #f7f7f7;
 }
 .container {
 	padding-bottom: env(safe-area-inset-bottom);
 }
-
 /* 隐藏scroll-view滚动条*/
 ::-webkit-scrollbar {
 	width: 0;
@@ -53,8 +56,6 @@ page {
 }
 
 
-
-
 .tui-search-text {
 	padding-left: 16rpx;
 }
@@ -82,7 +83,6 @@ page {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-
 /*screen*/
 .tui-header-screen {
 	width: 100%;
@@ -226,9 +226,7 @@ page {
 .tui-middle {
 	vertical-align: middle;
 }
-
 /*screen*/
-
 /*顶部下拉选择 属性*/
 .tui-scroll-box {
 	width: 100%;
@@ -284,9 +282,7 @@ page {
 	background: #e5e5e5;
 	color: #2e2e2e;
 }
-
 /*顶部下拉选择 属性*/
-
 /*顶部下拉选择 综合*/
 .tui-dropdownlist {
 	width: 100%;
@@ -341,7 +337,6 @@ page {
 	-webkit-justify-content: space-between;
 	        justify-content: space-between;
 }
-
 /*顶部下拉选择 综合*/
 .tui-drawer-box {
 	width: 686rpx;
@@ -518,7 +513,6 @@ page {
 	background: #e41f19;
 	color: #fff;
 }
-
 /* 商品列表*/
 .tui-product-list {
 	display: -webkit-box;
@@ -615,6 +609,12 @@ page {
 	font-size: 24rpx;
 	color: #656565;
 }
-
+.native-txt-red{
+	width:86rpx;
+	height:40rpx;
+	background:rgba(205,50,51,1);
+	border-radius:16rpx;
+	font-size: 20rpx;
+}
 /* 商品列表*/
 

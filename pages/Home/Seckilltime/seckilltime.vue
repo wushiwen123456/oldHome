@@ -43,6 +43,7 @@
 				</scroll-view>
 			</swiper-item>
 		</swiper>
+		 <x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -101,6 +102,9 @@
 			});
 			
 		},
+		onReady() {
+			this.$refs.loading.open()
+		},
 		onShow() {		
 			this.currentTab = 0
 			// 获取秒杀时间列表和商品列表
@@ -110,6 +114,7 @@
 			// 加载秒杀数据
 			secKillData(id,pages){
 				secKillData(id,pages).then(res => {
+					this.$refs.loading.close()
 					if(res.data.code == 200){
 						const num =  res.data.data.backtime.i*60 + res.data.data.backtime.h*3600 + res.data.data.backtime.s *1
 						if(num){
@@ -151,7 +156,10 @@
 			timeSeckillClick(item){
 				const curTab = this.tabbar[this.currentTab]
 				if(curTab.state == '抢购中'){
-					this.$store.commit('setSkillId',item.id)
+					this.$store.commit('setSkillId',{
+						id:item.id,
+						time:this.skllTime
+					})
 					uni.navigateTo({
 						url:'../../ShopDetails/seckillTime'
 					})

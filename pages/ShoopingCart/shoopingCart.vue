@@ -1,55 +1,61 @@
 <template>
-	<mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption">
-	<view>
-		<view v-for="(vo,key) in shopList" :key="key" v-if="Object.keys(shopList).length" class="bg-white shoopingCart-all con">
-			<view class="c-contain" v-if="vo.length">
-				<view class="store-info">
-					<view class="lg shoppingCart-title-yuan" @tap="ShopClick(vo,key)" :class="[isSellectAll(vo,key) ? 'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']"></view>
-					<view class="storename flex align-center">
-						<view class="lg cuIcon-shop shoppingCart-title-shop"></view>
-						<view class="text-wuer text-lg text-bold">{{vo[0].shop_info ? vo[0].shop_info.shop_name : '无名小店'}}</view>
-					</view>
-				</view>
-				<view v-for="(item,index) in vo" class="flex align-center margin-top margin-bottom c-item">
-					<view class="flex align-center">
-						<view @tap="shoponeClick(item)" :class="[item.isClick?'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']" class="lg shoppingCart-title-yuan"></view>
-						<image class="shoppingCart-image-all" @click="goDetail(item)" :src="item.productInfo.attrInfo ? item.productInfo.attrInfo.image : item.productInfo.image"></image>
-					</view>
-					<view class="margin-left-sm shoopingCart-right">
-						<view class="shoopingCart-right-title"><text class="text-xs shopping-teichang" v-if="false">土特产，没有字段暂时注释</text>{{item.productInfo.store_name}}</view>
-						<view class="shoopingCart-right-guige"><text>{{item.productInfo.attrInfo ? '类型: ' +  item.productInfo.attrInfo.suk : '默认类型'}}</text></view>
-						<view class=" flex align-center justify-between">
-							<view class="text-price text-red text-lg text-bold">{{item.productInfo.attrInfo ? item.productInfo.attrInfo.price : item.productInfo.price}}</view>
+		<view>
+			<view v-if="hasNext">
+				<view v-for="(vo,key) in shopList" :key="key" v-if="Object.keys(shopList).length != 0"  class="bg-white shoopingCart-all con">
+					<view class="c-contain">
+						<view class="store-info">
+							<view class="lg shoppingCart-title-yuan" @tap="ShopClick(vo,key)" :class="[isSellectAll(vo,key) ? 'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']"></view>
+							<view class="storename flex align-center">
+								<view class="lg cuIcon-shop shoppingCart-title-shop"></view>
+								<view class="text-wuer text-lg text-bold">{{vo[0].shop_info ? vo[0].shop_info.shop_name : '无名小店'}}</view>
+							</view>
+						</view>
+						<view v-for="(item,index) in vo" class="flex align-center margin-top margin-bottom c-item">
 							<view class="flex align-center">
-								<view  @tap="moveShopClick(key,index,item)" class="lg cuIcon-move shoopingCart-input-add"></view>
-								<input :disabled="true"  type="number" v-model="item.cart_num" class="shoopingCart-input"/>
-								<view @tap="addShopClick(key,index,item)" class="lg cuIcon-add shoopingCart-input-add"></view>
+								<view @tap="shoponeClick(item)" :class="[item.isClick?'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']" class="lg shoppingCart-title-yuan"></view>
+								<image class="shoppingCart-image-all" @click="goDetail(item)" :src="item.productInfo.attrInfo ? item.productInfo.attrInfo.image : item.productInfo.image"></image>
+							</view>
+							<view class="margin-left-sm shoopingCart-right">
+								<view class="shoopingCart-right-title"><text class="text-xs shopping-teichang" v-if="false">土特产，没有字段暂时注释</text>{{item.productInfo.store_name}}</view>
+								<view class="shoopingCart-right-guige text-cut"><text>{{item.productInfo.attrInfo ? '类型: ' +  item.productInfo.attrInfo.suk : '默认类型'}}</text></view>
+								<view class=" flex align-center justify-between">
+									<view class="text-price text-red text-lg text-bold">{{item.productInfo.attrInfo ? item.productInfo.attrInfo.price : item.productInfo.price}}</view>
+									<view class="flex align-center">
+										<view  @tap="moveShopClick(key,index,item)" class="lg cuIcon-move shoopingCart-input-add"></view>
+										<input :disabled="true"  type="number" v-model="item.cart_num" class="shoopingCart-input"/>
+										<view @tap="addShopClick(key,index,item)" class="lg cuIcon-add shoopingCart-input-add"></view>
+									</view>
+								</view>
 							</view>
 						</view>
 					</view>
 				</view>
+				<view class="no-token" v-else>
+					暂无数据
+				</view>
+				<view style="height: 200upx;"></view>
+				<view class="shoopingCart-bottom flex justify-between align-center" v-if="Object.keys(shopList).length">
+					<view @tap="shopAllselectClick" class="flex align-center margin-left">
+						<view :class="[allselect?'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']"  class="lg shoppingCart-title-yuan margin-right-xs"></view>
+						<view class="bg-white text-df">{{allselectTxt}}</view>
+					</view>
+					<view class="flex align-center margin-right" v-if="isManage">
+						<view class="text-price text-red text-lg text-bold">{{sumMoney}}</view>
+						<view class="shoopingCart-bottom-button shoopingCart-bottom-button-one" @click="goPay">结算</view>
+					</view>
+					<view class="flex align-center margin-right" v-if="!isManage">
+						<view class="shoopingCart-bottom-button remove-btn shoopingCart-bottom-button-one" @click="upModel">删除</view>
+					</view>
+				</view>
+				<Modal v-model="show1" title='是否删除' text='' @confirm="removeProduct" />			
 			</view>
+			<view v-else class="empty-cart" :style="{height:style.height + 'px'}">
+				<image src="/static/gouwuche.png" mode="widthFix"></image>
+				<view @click="goHome" class="goto-home base-bgc">去逛逛</view>
+			</view>
+			<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 		</view>
-		<view class="no-token" v-else>
-			您还未登录哦~
-		</view>
-		<view style="height: 200upx;"></view>
-		<view class="shoopingCart-bottom flex justify-between align-center">
-			<view @tap="shopAllselectClick" class="flex align-center margin-left">
-				<view :class="[allselect?'text-red cuIcon-roundcheckfill':'text-gray cuIcon-round']"  class="lg shoppingCart-title-yuan margin-right-xs"></view>
-				<view class="bg-white text-df">{{allselectTxt}}</view>
-			</view>
-			<view class="flex align-center margin-right" v-if="isManage">
-				<view class="text-price text-red text-lg text-bold">{{sumMoney}}</view>
-				<view class="shoopingCart-bottom-button shoopingCart-bottom-button-one" @click="goPay">结算</view>
-			</view>
-			<view class="flex align-center margin-right" v-if="!isManage">
-				<view class="shoopingCart-bottom-button remove-btn shoopingCart-bottom-button-one" @click="upModel">删除</view>
-			</view>
-		</view>
-		<Modal v-model="show1" title='是否删除' text='' @confirm="removeProduct" />
-	</view>
-	</mescroll-uni>
+		
 </template>
 
 <script>
@@ -63,101 +69,77 @@
 	import { replaceImage } from '@/utils/dealUrl'
 	// 导入模态框
 	import Modal from '@/components/x-modal/x-modal'
-	//导入下拉加载
-	import MescrollUni from "@/components/mescroll-uni/mescroll-uni.vue";
+	import wButton from '@/components/watch-login/watch-button.vue' 
 	export default{
 		components: {
 			Modal,
-			MescrollUni
+			wButton
 		},
 		onNavigationBarButtonTap:function(btn){
-			if(btn.index == 0){
-			let pages = getCurrentPages();
-			let page = pages[pages.length - 1];
-			// #ifdef APP-PLUS
-			let currentWebview = page.$getAppWebview();
-			let titleObj = currentWebview.getStyle().titleNView;
-			if (!titleObj.buttons) {
-			return;
-			}
-			if(titleObj.buttons[0].text == '管理'){
-			titleObj.buttons[0].text = "完成";
-			}else{
-			titleObj.buttons[0].text = "管理";
-			}
-			const keys = this.keys
-			keys.forEach((item,index) => {
-				this.shopList[keys[index]].forEach(x => {
-					this.$set(x,'isClick',false)
+			if(this.hasNext){
+				if(btn.index == 0){
+				let pages = getCurrentPages();
+				let page = pages[pages.length - 1];
+				// #ifdef APP-PLUS
+				let currentWebview = page.$getAppWebview();
+				let titleObj = currentWebview.getStyle().titleNView;
+				if (!titleObj.buttons) {
+				return;
+				}
+				if(titleObj.buttons[0].text == '管理'){
+				titleObj.buttons[0].text = "完成";
+				}else{
+				titleObj.buttons[0].text = "管理";
+				}
+				const keys = this.keys
+				keys.forEach((item,index) => {
+					this.shopList[keys[index]].forEach(x => {
+						this.$set(x,'isClick',false)
+					})
 				})
-			})
-			currentWebview.setStyle({
-			titleNView: titleObj
-			});
-			// #endif
+				currentWebview.setStyle({
+				titleNView: titleObj
+				});
+				// #endif
+				}
+				this.isManage = !this.isManage
 			}
-			this.isManage = !this.isManage
 		},
 		onLoad() {
-			if(!this.isToken){
-				uni.showModal({
-					title:'您还未登录，是否前去登录？',
-					content:'',
-					cancelText:'等会再说',
-					cancelColor:'#333333',
-					confirmText:'去登陆',
-					confirmColor:'#333333',
-					success:(res) => {
-						if(res.confirm){
-							uni.navigateTo({
-								url:'../login/login'
-							})
-						}
-					}
-				})
-			}
+			const view = uni.getSystemInfoSync()
+			this.style.height = view.windowHeight;
+		},
+		onReady() {
+			this.$refs.loading.open()
 		},
 		onShow() {
-			this.getCartData()
-			this.isManage = true
-			let pages = getCurrentPages();
-			let page = pages[pages.length - 1];
-			// #ifdef APP-PLUS
-			let currentWebview = page.$getAppWebview();
-			let titleObj = currentWebview.getStyle().titleNView;
-			if (!titleObj.buttons) {
-			return;
+			if(this.$refs.loading){
+				this.$refs.loading.open()
 			}
-			titleObj.buttons[0].text = "管理";
-			currentWebview.setStyle({
-			titleNView: titleObj
-			});
-			// #endif
+				this.getCartData()
+				this.isManage = true
+				let pages = getCurrentPages();
+				let page = pages[pages.length - 1];
+				// #ifdef APP-PLUS
+				let currentWebview = page.$getAppWebview();
+				let titleObj = currentWebview.getStyle().titleNView;
+				if (!titleObj.buttons) {
+				return;
+				}
+				titleObj.buttons[0].text = "管理";
+				currentWebview.setStyle({
+				titleNView: titleObj
+				});
+				// #endif
 		},
 		data(){
 			return{
-				shopList:[],
+				shopList:{},
 				isManage:true,
 				keys:[],
 				show1:false,
-				// 下拉刷新的常用配置
-				downOption: { 
-					use: true, // 是否启用下拉刷新; 默认true
-					auto: true, // 是否在初始化完毕之后自动执行下拉刷新的回调; 默认true
-				},
-				// 上拉加载的常用配置
-				upOption: {
-					use: true, // 是否启用上拉加载; 默认true
-					auto: true, // 是否在初始化完毕之后自动执行上拉加载的回调; 默认true
-					page: {
-						num: 0, // 当前页码,默认0,回调之前会加1,即callback(page)会从1开始
-						size: 10 // 每页数据的数量,默认10
-					},
-					noMoreSize: 5, // 配置列表的总数量要大于等于5条才显示'-- END --'的提示
-					textNoMore:'-- 没有更多了 --',
-					empty: {
-						tip: '暂无相关数据'
-					}
+				style:{
+					height:''
 				},
 			}
 		},
@@ -216,36 +198,42 @@
 			allselectTxt(){
 				return this.allselect ? '全不选' : '全选'
 			},
-
+			hasNext(){
+				return Object.keys(this.shopList).length
+			}
 		},
 		methods:{
 			// 访问网络数据
-			getCartData(mescroll){
+			getCartData(){
 				getShopCartData(this.isToken).then(res => {
 					if(res.data.code == 200){
+						this.$refs.loading.close()
 						const obj =	res.data.data.group
-						const result = []
-						const keys= Object.keys(obj)
-						keys.forEach((x,index) => {
-							obj[keys[index]].forEach(x => {
-								x.isClick = false
-								const product = x.productInfo
-								if(product.attrInfo){
-									product.attrInfo.image = replaceImage(product.attrInfo.image)
-								}
-								product.image = replaceImage(product.image)
-								if(product.shop_info){
-									product.shop_info.shop_logo = replaceImage(product.shop_info.shop_logo)
-								}
+						const arr = []
+						if(obj != undefined){
+							const result = []
+							const keys= Object.keys(obj)
+							keys.forEach((x,index) => {
+								obj[keys[index]].forEach(x => {
+									x.isClick = false
+									const product = x.productInfo
+									if(product.attrInfo){
+										product.attrInfo.image = replaceImage(product.attrInfo.image)
+									}
+									product.image = replaceImage(product.image)
+									if(product.shop_info){
+										product.shop_info.shop_logo = replaceImage(product.shop_info.shop_logo)
+									}
+								})
 							})
-						})
 							this.shopList = obj
 							this.keys = keys
+						}else{					
+							this.shopList = []
+						}
+						
 							
-						}
-						if(mescroll){
-							mescroll.endErr()
-						}
+					}
 				})
 			},
 			// 商品是否全选
@@ -316,9 +304,9 @@
 			//点击店铺
 			ShopClick(vo,key){
 				const status = this.isSellectAll(vo)
-					vo.forEach(x => {
-						x.isClick = !status
-					})
+				vo.forEach(x => {
+					x.isClick = !status
+				})
 			},
 			
 			//点击店铺内商品
@@ -384,6 +372,12 @@
 					}
 				}
 			},
+			// 进入主页
+			goHome(){
+				uni.switchTab({
+					url:'../Home/home'
+				})
+			},
 			// 进入详情
 			goDetail(item){
 				if(item){
@@ -392,16 +386,7 @@
 						url:`../ShopDetails/shopDetails?id=${id}`
 					})
 				}
-			},
-			// 下拉刷新方法
-			downCallback(mescroll) { 
-				this.getCartData(mescroll)
-				
-			},
-			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
-			upCallback(mescroll) {
-				mescroll.endErr()
-			},
+			}
 		}
 	}
 </script>
@@ -550,4 +535,33 @@
 	.remove-btn{
 		background-color: #e67e22;
 	}
+	.empty-cart{
+		width: 100%;
+		background-color: #fff;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		position: relative;
+		image{
+			width: 350upx;
+			height: 350upx;
+			position: absolute;
+			bottom: 46%;
+		}
+		.goto-home{
+			position: absolute;
+			bottom: 34%;
+			left:50%;
+			transform: translateX(-50%);
+			color: #fff;
+			width: 280upx;
+			height: 80upx;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 30upx;
+			border-radius: 40upx;
+		}
+	}
+
 </style>

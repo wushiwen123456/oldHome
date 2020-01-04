@@ -34,7 +34,7 @@
 			<!-- 登录 防抖 -->
 			<wButton text="重 置" :rotate="isRotate"  @click.native="startLogin()" ></wButton>
 		</canvas>
-		
+		<x-modal v-model="show1" title="提示" :text="msg" @cancel="reset" @confirm="reset"/>
 	</view>
 </template>
 
@@ -58,6 +58,8 @@
 				codeTip:"获取验证码",
 				currentTime: '60', //倒数计时
 				getCodebutton:false,//防止重复提交
+				show1:false,
+				msg:''
 			}
 		},
 		onLoad() {
@@ -82,6 +84,9 @@
 					// 发送验证码
 					sendCode(that.phone).then(res => {
 						if(res.data.code == 200){
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast('验证码已发送至您的手机',{duration:'long'})
+							// #endif
 							var interval = setInterval(function() {
 								that.codeTip = (currentTime - 1) + 's'
 								currentTime--;
@@ -113,7 +118,6 @@
 					})
 					return
 				}
-				console.log(that.password.length)
 				if(that.password.length < 6){
 					uni.showToast({
 						title:'密码最少为6位',
@@ -121,7 +125,6 @@
 					})
 					return
 				}
-				console.log(that.code.length)
 				if(!that.code.length){
 					uni.showToast({
 						title:'请输入验证码',
@@ -130,7 +133,6 @@
 					return
 				}
 				that.isRotate = true
-				setTimeout(function() {that.isRotate = false}, 5000);
 				let data = {
 					phone:that.phone,
 					pwd:that.password,
@@ -139,16 +141,15 @@
 				
 				resetPwd(data).then(res => {
 						if(res.data.code == 200){
-							uni.showToast({
-								title:res.data.msg,
-								icon:'none',
-								success() {
-									uni.navigateTo({
-										url:'login'
-									})
-								}
-								
-							})
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast('重置密码成功',{duration:'long'})
+							// #endif
+							that.isRotate = false
+							uni.navigateBack()
+						}else{
+							this.msg = res.data.msg
+							this.show1 = true
+							that.isRotate = false
 						}
 				}).catch(res => {
 					uni.showToast({
@@ -157,6 +158,9 @@
 					})
 				})
 			},
+			reset(){
+				this.password = ''
+			}
 		}
 	}
 </script>

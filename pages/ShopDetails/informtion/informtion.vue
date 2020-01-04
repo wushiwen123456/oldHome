@@ -1,6 +1,6 @@
 <template>
 	<view>
-		<view id="openHeight" class="cu-chat">
+		<scroll-view scroll-y id="openHeight" class="cu-chat" :style="{height:style.contentViewHeight + 'px'}" :scroll-top="scrollTop">
 			<view v-for="(vo,key) in messageList" :key="key" class="m-item">
 				<view v-if="vo.cate == 0" class="cu-item self">
 					<view class="main">
@@ -19,13 +19,14 @@
 					<view class="date ">{{photoList(vo.add_time)}}</view>
 				</view>
 			</view>
-		</view>
-		<view :style="[{height:InputBottom+'px'}]"></view>
+			<view :style="[{height:InputBottom+'px'}]" class="m-item"></view>
+		</scroll-view>
+		
 		<view class="cu-bar foot input" :style="[{bottom:InputBottom+'px'}]">
 			<view @tap="shopClick" class="action">
 				<text style="color: #636362;" class="lg text-gray cuIcon-shop"></text>
 			</view>
-			<input class="solid-bottom-input" v-model="send" :adjust-position="false" :focus="false" maxlength="300" cursor-spacing="10"
+			<input class="solid-bottom-input" v-model="send" :adjust-position="false" :focus="false" maxlength="300" :cursor-spacing="10"
 			 @focus="InputFocus" @blur="InputBlur" @confirm="sendClick"></input>
 			<image @tap="sendClick" class="fasong-button" src="../../../static/dasong.png"></image>
 		</view>
@@ -54,7 +55,9 @@
 					footViewHeight: 90,
 					mitemHeight: 0
 				},
-				scrollTop: 0,
+				scrollTop:0,
+				scrollHeight:600,
+				isShowScroll:true
 			};
 		},
 		
@@ -82,8 +85,10 @@
 			uni.closeSocket()
 		},
 		onLoad(e){
+			this.getScrollHeight()
 			var that = this
-			const res = uni.getSystemInfoSync();   //获取手机可使用窗口高度
+			console.log(e)
+			
 			that.shopInfo = JSON.parse(e.shopInfo),//店铺信息
 			console.log(that.shopInfo)
 			that.message = uni.getStorageSync('Message_key');//个人信息
@@ -159,12 +164,22 @@
 				    key: 'messageall_key',
 				    data: that.messageall,
 				});
+				
 			});
-			// that.style.pageHeight = res.windowHeight;
-			// that.pageHeightone = res.windowHeight;
-			that.scrollToBottom()
+			const res = uni.getSystemInfoSync();   //获取手机可使用窗口高度
+			that.style.pageHeight = res.windowHeight;
+			that.style.contentViewHeight = res.windowHeight - uni.getSystemInfoSync().screenWidth/750* (100) - 50;	
+		},
+		onReady() {
+			this.scrollToBottom()
 		},
 		methods: {
+			// 计算scroll的高度
+			getScrollHeight(){
+				const res = uni.getSystemInfoSync();
+				this.scrollHeight = `calc( ${res.windowHeight}px - ${this.InputBottom}px )`
+				console.log(this.scrollHeight)
+			},
 			// 时间转换
 			padLeftZero (str) {
 			  return ('00' + str).substr(str.toString().length);
@@ -172,9 +187,11 @@
 			//发送消息
 			sendClick(){
 				var that = this
-				if(!that.send) return
+				const send = this.send
+				if(!send) return
+				this.send = ''
 				let data = {
-					message:that.send,
+					message:send,
 					uid:that.message.uid,
 					shop_id:that.shopInfo.storeId,
 				}
@@ -182,9 +199,10 @@
 				let dataList = {
 					cate:0,
 					add_time:timestamp,
-					content:that.send
+					content:send
 				}
 				that.messageList.push(dataList)
+				
 				// that.scrollToBottom()
 				if(that.type == 0){
 					console.log('存在店铺')
@@ -207,22 +225,26 @@
 				    data: that.messageall,
 				});
 				send_message(data).then(res =>{
-					that.send = ''
+					
 				})
+				that.scrollToBottom()
 			},
 			
-			scrollToBottom(){
+			scrollToBottom(e){
 				let that = this;
-				setTimeout(function(){
-					let query = uni.createSelectorQuery()
-					query.select('#openHeight').boundingClientRect(data => {
-					  console.log("节点高度为" + data.height);
-					  that.scrollTop = data.height
-					  uni.pageScrollTo({
-						  scrollTop:data.height
-					  })
-					}).exec();
-				},500)
+				let query = uni.createSelectorQuery()
+				query.selectAll('.m-item').boundingClientRect()
+				query.select('#openHeight').boundingClientRect()
+				query.exec( (res) => {
+					that.style.mitemHeight = 0
+					res[0].forEach(rect => {
+						that.style.mitemHeight = that.style.mitemHeight + rect.height + 40
+					})
+					setTimeout(() => {
+						if(that.style.mitemHeight > (that.style.contentViewHeight - 100))
+						that.scrollTop = that.style.mitemHeight - that.style.contentViewHeight
+					},100)
+				})
 			},
 			//点击店铺
 			shopClick(){
@@ -232,13 +254,11 @@
 			},
 			InputFocus(e) {
 				this.InputBottom = e.detail.height
-				let scrollTop = this.scrollTop + e.detail.height
-				uni.pageScrollTo({
-					scrollTop:scrollTop
-				})
+				this.scrollToBottom()
 			},
 			InputBlur(e) {
 				this.InputBottom = 0
+				this.scrollToBottom()
 			},
 		}
 	}

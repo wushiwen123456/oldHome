@@ -1,9 +1,6 @@
 <template>
 	<view class="AllAddress-all">
-		<view v-if="nodata" :style="{ height: windowHeight + 'px'}" class="NoData" >
-			<image src="../../../static/morendizhi.png"></image>
-		</view>
-		<view v-else >
+		<view v-if="nodata">
 			<view class="shippingaddress-main" v-for="(item,index) in addressList" :key="index">
 				<view class="flex shippingaddress-main-nickname">
 					<view>{{item.real_name}}</view>
@@ -29,8 +26,12 @@
 				</view>
 			</view>
 		</view>
-		<Modal v-model="show" title='提示' text='确定要删除这个地址吗' @confirm="delAddressClcik" />
 		
+		<view v-else class="empty-img" :style="{height:style.height + 'px',transform:'translateY(-10%)'}">
+			<image src="/static/morendizhi.png" mode="widthFix"></image>
+		</view>
+		<Modal v-model="show" title='提示' text='确定要删除这个地址吗' @confirm="delAddressClcik" />
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 		<Modal v-model="show1" title='提示' text='是否设置为默认地址' @confirm="setDClick" />
 	</view>
 </template>
@@ -49,26 +50,25 @@
 		data(){
 			return{
 				show: false,//弹窗打开隐藏
-				nodata:false,//暂无数据
 				windowHeight:652,//屏幕高度
 				addressList:[],
 				removeIndex:'',
 				show1:false,
 				currentIndex:0,
 				key:-1,//设为默认地址的数据下标
+				style:{
+					height:''
+				},
 			}
 		},
 		onNavigationBarButtonTap() {
+			this.$store.commit('emptyAddress')
 			this.addAddressClick()//新增加地址
 		},
 		onLoad() {
+			const view = uni.getSystemInfoSync()
+			this.style.height = view.windowHeight;
 			var that = this
-			uni.getSystemInfo({
-			    success: function (res) {
-					that.windowHeight = res.windowHeight
-			        console.log('屏幕高度为'+res.windowHeight);
-			    }
-			});
 		},
 		onShow() {
 			if(this.isToken){
@@ -81,21 +81,26 @@
 				})
 			}
 		},
+		onReady() {
+			this.$refs.loading.open()
+		},
 		computed:{
-			...mapGetters(['isToken'])
+			...mapGetters(['isToken']),
+			nodata(){
+				return this.addressList.length
+			}
 		},
 		methods:{
 			//获取用户所有地址
 			userAddressList(token){
 				getProfileAllAddress(token)
 					.then(res => {
-						
+						this.$refs.loading.close()
 						if(res.data.code == 200){
-							this.addressList = res.data.data
+							this.addressList = res.data.data			
 							this.currentIndex = this.addressList.every(x => {
 								return parseInt(x.is_default)
 							})
-							if(res.data.data == 0) this.nodata = true
 						}
 					})
 			},

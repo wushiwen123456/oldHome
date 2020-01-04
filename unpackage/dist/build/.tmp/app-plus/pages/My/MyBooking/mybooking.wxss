@@ -97,10 +97,12 @@
     display: -webkit-box;
     display: -webkit-flex;
     display: flex;
-    width: 376rpx;
     -webkit-box-pack: justify;
     -webkit-justify-content: space-between;
             justify-content: space-between;
+}
+.button-buttom .b-button .mybooking-button {
+      margin-left: 15rpx;
 }
 .button-buttom .status {
     color: #CD3233;

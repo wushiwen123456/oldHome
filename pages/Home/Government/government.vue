@@ -1,38 +1,30 @@
 <template>
-	<view>
-		<!-- <block v-for="(vo,key) in todayList" :key="key" v-if="todayList.length">
-			<view class="bg-white margin-top-sm goverment-all">
-				<view class="margin-lr">
-					<image class="goverment-all-image" src="../../../static/newc.png"></image>
-					<view @tap="articleClick(vo)" class="padding-bottom-sm padding-top-xxl text-wuer text-sm-erliu">美国政府希望向华为的竞争对手提供信贷...</view>
-					<view @tap="articleClick(vo)" class="flex align-center justify-between">
-						<image class="goverment-image" src="../../../static/56524a9a3b6bdab0753eb8ed922d57d.png" mode="aspectFill"></image>
-						<image class="goverment-image" src="../../../static/56524a9a3b6bdab0753eb8ed922d57d.png" mode="aspectFill"></image>
-						<image class="goverment-image" src="../../../static/56524a9a3b6bdab0753eb8ed922d57d.png" mode="aspectFill"></image>
-					</view>
-					<view class="flex align-center justify-between padding-tb-sm">
-						<view class="text-jiujiujiu text-sm ">2019-10-19</view>
-						<view class="lg text-gray cuIcon-share goverment-all-button" @tap="share">分享</view>
-					</view>
-				</view>
-			</view>
-		</block> -->
-		<block v-for="(vo,key) in govermentList" :key="key" v-if="govermentList.length">
-			<view class="bg-white margin-top-sm goverment-all">
-				<view class="margin-lr">
-					<view @tap="articleClick(vo)" class="padding-bottom-sm padding-top-xxl text-wuer text-sm-erliu">{{vo.title}}</view>
-					<view @tap="articleClick(vo)" class="flex align-center">
-						<image class="goverment-image" v-for="(item,index) in vo.image" :key="index" :src="item" mode="aspectFill"></image>
-					</view>
-					<view class="flex align-center justify-between padding-tb-sm">
-						<view class="text-jiujiujiu text-sm ">{{vo.add_time}}</view>
-						<view class="lg text-gray cuIcon-share goverment-all-button" @tap="shareInfo(vo)">分享</view>
+	<mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption">
+		<view>
+			<block v-for="(vo,key) in govermentList" :key="key" v-if="govermentList.length">
+				<view class="bg-white margin-top-sm goverment-all">
+					<view class="margin-lr">
+						<view @tap="articleClick(vo)" class="padding-bottom-sm padding-top-xxl text-wuer text-sm-erliu">{{vo.title}}</view>
+						<view @tap="articleClick(vo)" class="flex align-center" v-if="!vo.video">
+							<image class="goverment-image" v-for="(item,index) in vo.image" :key="index" :src="item" mode="aspectFill"></image>
+						</view>
+						<view v-else @tap="articleClick(vo)" class="bg-white margin-top-sm video-part">
+							<text class="lg video-btn text-white cuIcon-videofill"></text>
+							<image class="vid-image" :src="vo.image[0]" />	
+						</view>
+						<view class="flex align-center justify-between padding-tb-sm">
+							<view class="text-jiujiujiu text-sm ">{{vo.add_time}}</view>
+							<view class="lg text-gray cuIcon-share goverment-all-button" @tap="shareInfo(vo)">分享</view>
+						</view>
 					</view>
 				</view>
-			</view>
-		</block>
-		<uni-load-more v-if="loadingimg" :loadingType="loadingType" ></uni-load-more>
-	</view>
+				
+			</block>
+			
+			<!-- <uni-load-more v-if="loadingimg" :loadingType="loadingType" ></uni-load-more> -->
+		</view>
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
+	</mescroll-uni>
 </template>
 
 <script>
@@ -40,6 +32,7 @@
 	
 	import {getNewsList} from '@/network/news'
 	
+	import mescrollUni from '@/components/mescroll-uni/mescroll-uni.vue'
 	
 	// #ifdef APP-PLUS
 	// 导入分享方法
@@ -50,7 +43,8 @@
 	import { replaceImage } from '@/utils/dealUrl'
 	export default{
 		components:{
-			uniLoadMore
+			uniLoadMore,
+			mescrollUni
 		},
 		data(){
 			return{
@@ -60,17 +54,54 @@
 				page:1,
 				limit:10,
 				seach:'',
-				todayList:[]
+				todayList:[],
+				// 下拉刷新的常用配置
+				downOption: { 
+					use: true, // 是否启用下拉刷新; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行下拉刷新的回调; 默认true
+				},
+				// 上拉加载的常用配置
+				upOption: {
+					use: true, // 是否启用上拉加载; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行上拉加载的回调; 默认true
+					page: {
+						num: 0, // 当前页码,默认0,回调之前会加1,即callback(page)会从1开始
+						size: 10 // 每页数据的数量,默认10
+					},
+					noMoreSize: 5, // 配置列表的总数量要大于等于5条才显示'-- END --'的提示
+					textNoMore:'-- 没有更多了 --',
+					empty: {
+						tip: '暂无相关数据'
+					}
+				},
+				token:'',
+				text:'',
+				hasNext:true
 			}
 		},
 		onLoad() {
 			if(this.$store.getters.isToken){
-				this.getNewsList(this.page,this.limit,this.seach,this.$store.getters.isToken)
+				this.token = this.$store.getters.isToken
 			}else{
-				uni.navigateTo({
+				uni.uni.redirectTo({
 					url:'../../login/login'
 				})
 			}
+		},
+		onReady() {
+			this.$refs.loading.open()
+		},
+		// 监听搜索框确认
+		onNavigationBarSearchInputConfirmed(e){
+			this.text = e.text
+			this.govermentList = ''
+			const mescroll = this.$refs.mescroll.mescroll
+			mescroll.resetUpScroll()
+			// #ifdef APP-PLUS
+			const pages = getCurrentPages()
+			const currentPage = pages[pages.length - 1].$getAppWebview()
+			currentPage.setTitleNViewSearchInputText('');
+			// #endif
 		},
 		methods:{
 			//文章详情页
@@ -79,19 +110,38 @@
 					url:'articless?id=' + vo.id
 				})
 			},
-			
+			// 下拉刷新方法
+			downCallback(mescroll) { 
+				mescroll.resetUpScroll()
+			},
+			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
+			upCallback(mescroll) {
+				// 此时mescroll会携带page的参数:
+				let pageNum = mescroll.num; // 页码, 默认从1开始
+				let pageSize = mescroll.size; // 页长, 默认每页10条
+				this.getNewsList(pageNum,pageSize,mescroll)
+			},
 			// 获取数据
-			getNewsList(page,limit,seach,token){
-				getNewsList(page,limit,seach,token).then(res => {
+			getNewsList(pageNum,pageSize,mescroll){
+				const token = this.token,seach = this.text
+				this.text = ''
+				getNewsList(pageNum,pageSize,seach,token).then(res => {
+					this.$refs.loading.close()
 					if(res.data.code == 200){
 						const obj = res.data.data
-						obj.newsList.forEach(x => {
-							x.image = x.image.map(x => {
-								return replaceImage(x)
+						if(obj.newsList.length){
+							obj.newsList.forEach(x => {
+								x.image = x.image.map(x => {
+									return replaceImage(x)
+								})
 							})
-						})
+						}
+						this.hasNext = obj.newsList.length >= pageSize 
+						console.log(this.hasNext)
+						if(pageNum == 1) this.govermentList = []
+						this.govermentList = this.govermentList.concat(obj.newsList)
+						mescroll.endSuccess(obj.newsList.length, this.hasNext);
 						
-						this.govermentList = res.data.data.newsList
 						this.todayList = res.data.data.today
 					}
 				})
@@ -99,8 +149,8 @@
 			//分享
 			shareInfo(vo){
 				let shareInfo={
-					href:"https://uniapp.dcloud.io",
-					title:vo.title,
+					href:"http://jn.51kdd.com/index.html#/",
+					title:'老家商城',
 					desc:vo.title,
 					imgUrl:vo.image[0]
 				};
@@ -124,15 +174,18 @@
 				];
 				this.shareObj=share(shareInfo,shareList,function(index){
 					console.log("点击按钮的序号: " + index);
+
 					let shareObj={
 						href:shareInfo.href||"",
 						title:shareInfo.title||"",
 						summary:shareInfo.desc||"",
 						success:(res)=>{
 							console.log("success:" + JSON.stringify(res));
+							uni.hideLoading()
 						},
 						fail:(err)=>{
 							console.log("fail:" + JSON.stringify(err));
+							uni.hideLoading()
 						}
 					};
 					switch (index) {
@@ -141,6 +194,10 @@
 							shareObj.scene="WXSceneSession";
 							shareObj.type=0;
 							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.showLoading({
+								title:'加载中...',
+								mask:true
+							})
 							uni.share(shareObj);
 							break;
 						case 1:
@@ -148,6 +205,10 @@
 							shareObj.scene="WXSenceTimeline";
 							shareObj.type=0;
 							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.showLoading({
+								title:'加载中...',
+								mask:true
+							})
 							uni.share(shareObj);
 							break;
 						case 2:
@@ -174,31 +235,28 @@
 				this.$nextTick(()=>{
 					this.shareObj.alphaBg.show();
 					this.shareObj.shareMenu.show();
+					// uni.showLoading({
+					// 	title:'加载中...',
+					// 	mask:true
+					// })
 				})
 			}
 			
 		},
 		onBackPress() {
-			// #ifdef APP-PLUS
-			//监听back键，关闭弹出菜单
-			if (nvImageMenu.isVisible()) {
-				nvImageMenu.hide()
-				nvMask.hide()
-				return true
-			}
-			// #endif
+
 		}
 }
 </script>
 
-<style>
+<style lang="scss">
 	.goverment-image{
 		width:220upx;
 		height:196upx;
 		border-radius:10upx;
 		margin-right: 10upx;
 	}
-	..goverment-image:nth-child(3){
+	.goverment-image:nth-child(3){
 		margin-right: 0;
 	}
 	.goverment-all{
@@ -220,5 +278,30 @@
 		border-radius:24upx;
 		color: #FFFFFF;
 		font-size: 30upx;
+	}
+	.video-part{
+		height: 380upx;
+		display: flex;
+		justify-content: center;
+		width: 100%;
+		overflow: hidden;
+		position: relative;
+		.vid-image{
+			height: 100%;
+			max-width: 100%;		
+			border-radius: 10upx;
+			position: relative;
+			z-index: 8;
+		}
+		.video-btn{
+			position: absolute;
+			font-size: 120upx;
+			color: #FFFFFF;
+			left: 50%;
+			top:50%;
+			transform: translateX(-50%) translateY(-50%);
+			z-index: 9;
+		}
+
 	}
 </style>

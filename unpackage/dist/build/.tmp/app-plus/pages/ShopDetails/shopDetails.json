@@ -5,8 +5,11 @@
   "titleNView": {
     "type": "transparent"
   },
+  "bounce": "none",
   "usingComponents": {
+    "x-loading": "/components/loding/w-loading",
     "uni-popup": "/components/uni-popup/uni-popup",
-    "tui-numberbox": "/components/numberbox/numberbox"
+    "tui-numberbox": "/components/numberbox/numberbox",
+    "tui-rate": "/components/rate/rate"
   }
 }

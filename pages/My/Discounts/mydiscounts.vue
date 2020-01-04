@@ -1,6 +1,6 @@
 <template>
 	<view>
-		<view v-if="!dataType">
+		<view>
 			<tui-tabs 
 				:tabs="tabs" 
 				selectedColor="#CD3233" 
@@ -10,7 +10,7 @@
 				itemWidth="33.3333%">
 			</tui-tabs>
 			
-			<view class="margin-left margin-right">
+			<view class="margin-left margin-right" v-if="dataType">
 				<!-- 领券中心 -->
 				<view @tap="lqcententClcik" class="flex align-center justify-between mydiscounts-title-all margin-top-xs" >
 					<view class="flex align-center">
@@ -20,32 +20,32 @@
 					<view class="lg text-gray cuIcon-right margin-right-sm"></view>
 				</view>
 				
-				<!-- 未使用优惠券 -->
-				<view>
-					<view v-for="(item,index) in countType" :key='index'>
-						<view class="flex align-center bg-white margin-top-sm padding-left-sm">
-							<view class=" flex align-center">
-								<view class="lg cuIcon-shop shoppingCart-title-shop"></view>
-								<view class="text-wuer text-lg text-bold">{{item.shop_info.shop_name}}</view>
-							</view>
-						</view>
-						<view class="mydiscounts-main-bg margin-bottom-sm" v-for="(vo,key) in item.couponList" :class="bgImage">
-							<view class="flex flex-direction margin-bottom-sm">
-								<view class="flex align-center">
-									<view class="text-price text-red text-xxxxl">{{vo.coupon_price}}</view>
-									<view class=" margin-left-xl text-wuer text-three  text-hide">{{vo.coupon_title}}</view>
-								</view>
-								<view class="flex align-center">
-									<view class="text-sm text-red">满{{vo.use_min_price}}可用</view>
-									<view class="margin-left-xl text-jiujiujiu text-sm">{{dealData(vo._add_time,vo._end_time)}}</view>
+					<!-- 未使用优惠券 -->
+					<view>
+						<view v-for="(item,index) in countType" :key='index'>
+							<view class="flex align-center bg-white margin-top-sm padding-left-sm">
+								<view class=" flex align-center">
+									<view class="lg cuIcon-shop shoppingCart-title-shop"></view>
+									<view class="text-wuer text-lg text-bold">{{item.shop_info.shop_name}}</view>
 								</view>
 							</view>
-							<view class="mydiscounts-main-bottom" @tap="goUse(item)">立即使用</view>
+							<view class="mydiscounts-main-bg margin-bottom-sm" v-for="(vo,key) in item.couponList" :class="bgImage">
+								<view class="flex flex-direction margin-bottom-sm">
+									<view class="flex align-center">
+										<view class="text-price text-red text-xxxxl">{{vo.coupon_price}}</view>
+										<view class=" margin-left-xl text-wuer text-three  text-hide">{{vo.coupon_title}}</view>
+									</view>
+									<view class="flex align-center">
+										<view class="text-sm text-red">满{{vo.use_min_price}}可用</view>
+										<view class="margin-left-xl text-jiujiujiu text-sm">{{dealData(vo._add_time,vo._end_time)}}</view>
+									</view>
+								</view>
+								<view class="mydiscounts-main-bottom" @tap="goUse(item)">立即使用</view>
+							</view>
 						</view>
 					</view>
-				</view>
-				
-				
+					
+						
 				<!-- <view v-if="currentTab == 1">
 					<view class=" margin-top-xs mydiscounts-main-bg bg-two ">
 						<view class="flex flex-direction margin-bottom-sm">
@@ -81,12 +81,12 @@
 				
 				
 			</view>
+			<view v-else class="nodata" :style="{height:style.height + 'px'}">
+				<image src="/static/youhuiquan.png"></image>
+				<button @tap="lqcententClcik">去领券中心</button>
+			</view>
 		</view>
-		
-		<view v-if="dataType" :style="{ 'min-height': windowHeight + 'px'}" class="nodata">
-			<image src="../../../static/youhuiquan.png"></image>
-			<button>去领券中心</button>
-		</view>
+
 	</view>
 </template>
 
@@ -110,19 +110,16 @@
 				}],
 				windowHeight:0,//屏幕高度
 				dataType:false,//是否存在数据
-				countType:[]
+				countType:[],
+				style:{
+					height:''
+				}
 			}
 		},
 		onLoad() {
 			var that = this
-			uni.getSystemInfo({
-			    success: function (res) {
-					that.windowHeight = res.windowHeight
-			        console.log('屏幕高度为'+res.windowHeight); 
-			    },
-			});
-		},
-		onShow() {
+			const view = uni.getSystemInfoSync()
+			this.style.height = view.windowHeight;
 			if(this.$store.getters.isToken){
 				this.getUserDiscounts(this.currentTab+1,this.$store.getters.isToken)
 			}else{
@@ -150,15 +147,18 @@
 						if(res.data.code == 200){
 							const obj = res.data.data
 							const keys = Object.keys(obj)
+							console.log(keys)
+							if(keys.length){
+								this.dataType =  true
+							}else{
+								this.dataType = false
+							}
 							const arr = []
 							keys.forEach(x => {
 								arr.push(obj[x])
 							})
 							this.countType = arr
-							console.log(this.countType)
-							if(!res.data.data.length){
-								console.log('暂无优惠券信息')
-							}
+							console.log(this.dataType)
 						}
 					})
 			},

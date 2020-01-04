@@ -1,24 +1,29 @@
 <template>
 	<view>
-		<view v-for="(vo,key) in recordList" :key="key" class="flex align-center bg-white margin-top-xs recordList-all">
-			<image @tap="footprintClick(vo.product_id,vo.product_type)" class="recordList-image" :src="vo.info.image"></image>
-			<view @tap="footprintClick(vo.product_id,vo.product_type)" class="margin-left-sm recordList-main-all">
-				<view v-if="vo.product_type == 'product' " class="text-wuer text-lg text-bold">{{vo.info.store_name}}</view>
-				<view v-else class="text-wuer text-lg text-bold">{{vo.info.title}}</view>
-				<view v-if="vo.product_type == 'product' " class="recordList-main">{{vo.info.store_name}}</view>
-				<view v-else class="recordList-main">{{vo.info.info}}</view>
-				<view class="flex align-center justify-between">
-					<view class="text-sm text-jiujiujiu">{{vo.add_time}}</view>
-					<view @tap="onLongPress(key)" style="font-size: 40upx;" class="lg cuIcon-more"></view>
+		<view v-if="hasData">
+			<view v-for="(vo,key) in recordList" :key="key" class="flex align-center bg-white margin-top-xs recordList-all">
+				<image @tap="footprintClick(vo.product_id,vo.product_type)" class="recordList-image" :src="vo.info.image"></image>
+				<view @tap="footprintClick(vo.product_id,vo.product_type)" class="margin-left-sm recordList-main-all">
+					<view v-if="vo.product_type == 'product' " class="text-wuer text-lg text-bold">{{vo.info.store_name}}</view>
+					<view v-else class="text-wuer text-lg text-bold">{{vo.info.title}}</view>
+					<view v-if="vo.product_type == 'product' " class="recordList-main">{{vo.info.store_name}}</view>
+					<view v-else class="recordList-main">{{vo.info.info}}</view>
+					<view class="flex align-center justify-between">
+						<view class="text-sm text-jiujiujiu">{{vo.add_time}}</view>
+						<view @tap.stop="onLongPress(key)" style="font-size: 40upx;" class="lg cuIcon-more"></view>
+					</view>
+				</view>
+				<view v-show="vo.popu" @tap="delListClick(vo.id,key)" class="recordList-all-popu">
+					<view>删除记录</view>
 				</view>
 			</view>
-			<view v-show="vo.popu" @tap="delListClick(vo.id,key)" class="recordList-all-popu">
-				<view>删除记录</view>
-			</view>
+			<view v-show="winSize" @tap="winSizeClick" class="winSize-zehzaho" :style="{ height: windowHeight + 'px'}"></view>
+			
 		</view>
-		<view v-show="winSize" @tap="winSizeClick" class="winSize-zehzaho" :style="{ height: windowHeight + 'px'}"></view>
-		<uni-load-more :loadingType="loadingType" ></uni-load-more>
-	</view>
+		<view class="userNodes" v-else>
+			空空如也~
+		</view>
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -37,6 +42,7 @@
 				loadingType:1,
 				page:1,
 				limit:10,
+				hasData:false
 			}
 		},
 		onLoad() {
@@ -46,6 +52,10 @@
 				limit:this.limit,
 			}
 			user_visit(data).then(res =>{
+				this.$refs.loading.close()
+				if(res.length){
+					this.hasData = true
+				}
 				if(res.length < this.limit){
 					this.loadingType = 2
 				}else{
@@ -53,6 +63,9 @@
 				}
 				this.recordList = res
 			})
+		},
+		onReady() {
+			this.$refs.loading.open()
 		},
 		onReachBottom(){
 			if(this.loadingType == 2) return
@@ -62,6 +75,9 @@
 				limit:this.limit,
 			}
 			user_visit(data).then(res =>{
+				if(res.length){
+					this.hasData = true
+				}
 				if(res.length < this.limit){
 					this.loadingType = 2
 				}else{

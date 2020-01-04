@@ -1,14 +1,14 @@
 <template>
- <mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption">
+ <mescroll-uni ref='mescroll' class="content" @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption">
 	<view class="bookingMessage" v-if="pinkInfo.length">
 		<view class="bookingMessage-title">
-			<view class="bookingMessage-title-title" v-if="pinkInfo.length < pinkInfo[0].people">
+			<view class="bookingMessage-title-title" v-if="pinkInfo.length < pinkInfo[0].people && dealTime != 0">
 				<view style="font-size: 40upx;" class="lg text-orange cuIcon-timefill"></view>
 				<view class="margin-left-xs margin-right-xs">剩余</view>
-				<tui-countdown :time="dealTime()"  :colonSize="40" color="#fff" :width="44" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
+				<tui-countdown :time="dealTime"  :colonSize="40" color="#fff" :width="44" :height="36" :size="30" bcolor="#000000" bgcolor="#000000" colonColor="#000000"></tui-countdown>
 				<view  class="margin-left-xs margin-right-xs">结束</view>
 			</view>
-			<view class="bookingMessage-success"><view class="tui-icon tui-icon-circle-fill bookingMessage-title-success" >{{detltopText()}}</view></view> 
+			<view class="bookingMessage-success"><view class="tui-icon tui-icon-circle-fill bookingMessage-title-success" :class="{'text-fail':dealTime == 0}" >{{detltopText()}}</view></view> 
 			<view class="booking-contain">
 				<view v-for="(item,index) in pinkInfo[0].people" :key='index' class="booking-item">
 					<view class="bookingMessage-title-left" v-if="index < pinkInfo.length">
@@ -20,14 +20,22 @@
 					</view>
 				</view>
 			</view>
-			<view v-if="pinkInfo.length < pinkInfo[0].people">
+			<view v-if="pinkInfo.length < pinkInfo[0].people && dealTime != 0">
 				<view   class="bookingMessage-title-onetxt">还差<text style="color: #fe4d3d;">{{pinkInfo[0].people - pinkInfo.length}}</text>人，赶快邀请好友来拼团吧</view>
 				<button @tap="popup" class="bookingMessage-title-button">{{'邀请好友拼团'}}</button>
 			</view>
-			<view v-if="pinkInfo.length == pinkInfo[0].people" class="seccess-pink">拼团成功</view>
-			<view style="height: 80upx;"></view>
+			<view v-if="pinkInfo.length != pinkInfo[0].people && dealTime == 0">
+				<button @tap="restart" class="bookingMessage-title-button">从新拼团</button>
+			</view>
+			<view v-if="pinkInfo.length == pinkInfo[0].people">
+				<button @tap="homeClick" class="bookingMessage-title-button">回到首页</button>
+			</view>
+			<view v-if="pinkInfo.length == pinkInfo[0].people" class="seccess-pink">拼团成功，请在“我的订单”中查看您的商品信息</view>
+			<view v-if="pinkInfo.length != pinkInfo[0].people && dealTime == 0" class="seccess-pink text-fail">拼团失败，请在“退款/售后”中查看您的商品信息</view>
 			<view class="bookingMessage-title-twotxt">拼团规则：好友拼团，人满发货，人不满退款</view>
-			<view @tap="homeClick"  class="bookingMessage-title-twotxt">回到首页</view>
+			<view class="bookingMessage-title-twotxt padding-bottom">拼团失败后将由卖家退款给您</view>
+			<view @tap="homeClick" v-if="dealTime != 0"  class="bookingMessage-title-twotxt padding-bottom">回到首页</view>
+			
 		</view>
 		
 		<view class="bookingMessage-bottom">
@@ -70,23 +78,9 @@
 				type:1,// 0参团 , 1开团
 				popupShow: false,
 				poster: {},
+				dealTime:0,
 				qrShow: false,
 				canvasId: 'default_PosterCanvasId',
-				shareList:[{
-						icon:"/static/sharemenu/wechatfriend.png",
-						text:"微信好友",
-					},
-					{
-						icon:"/static/sharemenu/wechatmoments.png",
-						text:"朋友圈"
-					},{
-					icon:"/static/sharemenu/copyurl.png",
-					text:"复制"
-				},
-				{
-					icon:"/static/sharemenu/more.png",
-					text:"更多"
-				}],
 				token:'',
 				order:'',
 				pinkInfo:[],
@@ -118,90 +112,98 @@
 		onLoad(e) {
 			this.token = this.$store.getters.isToken
 			this.order = this.$store.state.orderKey
-			console.log(this.token)
-			console.log(this.order)
-		},
-		onReady() {
-			const mescroll = this.$refs.mescroll.mescroll
-			this.getPinkInfo(mescroll)
-		},
-		onShow(){
-			
 		},
 		methods: {
 			popup() {
-				
-				// 邀请好友拼团
-				if(this.pinkInfo.length < this.pinkInfo[0].people){
-					
+				if(this.dealTime == 0) return 
+				// 邀请好友拼团					
 					let shareInfo={
-						href:"https://uniapp.dcloud.io",
+						href:"http://jn.51kdd.com/index.html#/",
 						title:'老家商城',
-						desc:'我正在老家商城发起拼团，敢来和我一起拼么',
-						imgUrl:'/static/56524a9a3b6bdab0753eb8ed922d57d.png'
+						desc:'我正在来家商城发起拼团，敢和我一起来拼么',
+						imgUrl:'/static/logo/logo.png'
 					};
-					this.shareObj=share(shareInfo,this.shareList,(index) => {
-							console.log("点击按钮的序号: " + index);
-							let shareObj={
-								href:shareInfo.href||"",
-								title:shareInfo.title||"",
-								summary:shareInfo.desc||"",
-								success:(res)=>{
-									console.log("success:" + JSON.stringify(res));
-								},
-								fail:(err)=>{
-									console.log("fail:" + JSON.stringify(err));
-								}
-							};
-							switch (index) {
-								case 0:
-									shareObj.provider="weixin";
-									shareObj.scene="WXSceneSession";
-									shareObj.type=0;
-									shareObj.imageUrl=shareInfo.imgUrl||"";
-									uni.share(shareObj);
-									break;
-								case 1:
-									shareObj.provider="weixin";
-									shareObj.scene="WXSenceTimeline";
-									shareObj.type=0;
-									shareObj.imageUrl=shareInfo.imgUrl||"";
-									uni.share(shareObj);
-									break;
-								case 2:
-									uni.setClipboardData({
-										data:shareInfo.href,
-										complete() {
-											uni.showToast({
-												title: "已复制到剪贴板"
-											})
-										}
-									})
-									break;
-								case 3:
-									plus.share.sendWithSystem({
-										type:"web",
-										title:shareInfo.title||"",
-										thumbs:[shareInfo.imgUrl||""],
-										href:shareInfo.href||"",
-										content: shareInfo.desc||"",
-									})
-									break;
-							};
-						});
-						
-						this.$nextTick(()=>{
-							this.shareObj.alphaBg.show();
-							this.shareObj.shareMenu.show();
-						})
-				}else{
-					uni.navigateTo({
-						url:''
+					let shareList=[
+						{
+							icon:"/static/sharemenu/wechatfriend.png",
+							text:"微信好友",
+						},
+						{
+							icon:"/static/sharemenu/wechatmoments.png",
+							text:"朋友圈"
+						},
+						{
+							icon:"/static/sharemenu/copyurl.png",
+							text:"复制"
+						},
+						{
+							icon:"/static/sharemenu/more.png",
+							text:"更多"
+						},
+					];
+					this.shareObj=share(shareInfo,shareList,function(index){
+						console.log("点击按钮的序号: " + index);
+						let shareObj={
+							href:shareInfo.href||"",
+							title:shareInfo.title||"",
+							summary:shareInfo.desc||"",
+							success:(res)=>{
+								console.log("success:" + JSON.stringify(res));
+								uni.hideLoading()
+							},
+							fail:(err)=>{
+								console.log("fail:" + JSON.stringify(err));
+								uni.hideLoading()
+							}
+						};
+						switch (index) {
+							case 0:
+								shareObj.provider="weixin";
+								shareObj.scene="WXSceneSession";
+								shareObj.type=0;
+								shareObj.imageUrl=shareInfo.imgUrl||"";
+								uni.showLoading({
+									title:'加载中...',
+									mask:true
+								})
+								uni.share(shareObj);
+								break;
+							case 1:
+								shareObj.provider="weixin";
+								shareObj.scene="WXSenceTimeline";
+								shareObj.type=0;
+								shareObj.imageUrl=shareInfo.imgUrl||"";
+								uni.showLoading({
+									title:'加载中...',
+									mask:true
+								})
+								uni.share(shareObj);
+								break;
+							case 2:
+								uni.setClipboardData({
+									data:shareInfo.href,
+									complete() {
+										uni.showToast({
+											title: "已复制到剪贴板"
+										})
+									}
+								})
+								break;
+							case 3:
+								plus.share.sendWithSystem({
+									type:"web",
+									title:shareInfo.title||"",
+									thumbs:[shareInfo.imgUrl||""],
+									href:shareInfo.href||"",
+									content: shareInfo.desc||"",
+								})
+								break;
+						};
+					});
+					this.$nextTick(()=>{
+						this.shareObj.alphaBg.show();
+						this.shareObj.shareMenu.show();
 					})
-				}
-				
-				
-				
 			},
 			// 获取拼团信息
 			getPinkInfo(mescroll){
@@ -220,6 +222,9 @@
 						})
 						// 判断谁是团长
 						this.dealTuan(arr)
+						// 处理时间
+						const time = this.dealTime2(arr[0].stop_time)
+						this.dealTime = time
 						this.pinkInfo = arr
 						this.dealTitle()
 						recommendGoods.forEach(x => {
@@ -249,18 +254,18 @@
 				
 			},
 			// 处理时间方法(功能暂未实现)
-			dealTime(){
-				if(this.pinkInfo){
-					const time = Math.round(new Date().getTime()/1000)
-					// console.log(this.pinkInfo[0].stop_time - time) 
-					console.log(new Date(1575873765*1000))
-					return 123
+			dealTime2(s_time){
+				const time = Math.round(new Date().getTime()/1000)
+				if(s_time > time){
+					return s_time - time
+				}else{
+					return 0
 				}
-				// return 21212
 			},
 			dealTitle(){
+				console.log(this.dealTime)
 				uni.setNavigationBarTitle({
-					title:this.type == 1 ? '开团成功' : '拼团成功'
+					title:this.dealTime ? '拼团成功' : (this.pinkInfo.length == this.pinkInfo[0].people ? '拼团成功' : '拼团失败')
 				})
 			},
 			goMyPicking(){
@@ -270,7 +275,7 @@
 			},
 			// 下拉刷新方法
 			downCallback(mescroll) { 
-				this.getPinkInfo(this.order,this.token,mescroll)
+				this.getPinkInfo(mescroll)
 			},
 			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
 			upCallback(mescroll) {
@@ -281,13 +286,19 @@
 					if(this.pinkInfo.length == this.pinkInfo[0].people){
 						return '拼团成功'
 					}else{
-						if(this.type == 1){
-							return '正在开团中...'
+						if(this.dealTime != 0){
+								if(this.type == 1){
+									return '正在开团中...'
+								}else{
+									const name = this.Linder.userInfo.nickname
+									return `正在参加${name}的团`
+								}
 						}else{
-							const name = this.Linder.userInfo.nickname
-							return `正在参加${name}的团`
+							return '拼团失败，订单已超时'
 						}
 					}
+					
+					
 				}
 			},
 			goDetail(item){
@@ -295,12 +306,28 @@
 				uni.navigateTo({
 					url:`../../ShopDetails/shopDetails?id=${id}`
 				})
+			},
+			// 返回拼团
+			goStoreInfo(){
+				uni.redirectTo({
+					url:'/pages/My/MyBooking/mybooking'
+				})
+			},
+			// 重新拼团
+			restart(){
+				uni.navigateTo({
+					url:'../../Home/BookingList/bookingList'
+				})
 			}
 		}
 	}
 </script>
 
 <style lang="scss">
+	page,.content{
+		height: 100vh;
+		overflow: hidden;
+	}
 	/* 隐藏scroll-view滚动条*/
 	::-webkit-scrollbar {
 		width: 0;
@@ -326,7 +353,6 @@
 	.bookingMessage-title-left{
 		height: 96upx;
 		position: relative;
-		border-radius: 50%;
 		height: 96upx;
 		width: 96upx;
 		border: #FFFFFF 2upx solid;
@@ -334,6 +360,7 @@
 		.bookingMessage-title-headimgone{
 			width: 100%;
 			height: 100%;
+			border-radius: 50%;
 		}
 	}
 	.bookingMessage-head-text{
@@ -360,7 +387,7 @@
 		width: 660upx;
 		height: 92upx;
 		background-color: #CD3233;
-		margin-top: 80upx;
+		margin-top: 40upx;
 		border-radius: 46upx;
 		color: #FFFFFF;
 		font-size: 34upx;
@@ -370,7 +397,7 @@
 		color: #999999;
 		font-size: 28upx;
 		text-align: center;
-		padding: 22upx 0 34upx 0;
+		padding-top: 25upx;
 	}
 	.bookingMessage-bottom{
 		margin-top: 20upx;
@@ -541,5 +568,8 @@
 		font-size: 34upx;
 		text-align: center;
 		color: $uni-text-color;
+	}
+	.text-fail{
+		color: #e54d42 !important;
 	}
 </style>

@@ -5,8 +5,9 @@ import {replaceImage} from '@/utils/dealUrl'
 
 
 // 商品分类接口
-export function getCategory(){
+export function getCategory(showModel){
 	return http({
-		url:replaceImage('http://www.test.com/ebapi/store_api/get_product_category')
+		url:replaceImage('http://www.test.com/ebapi/store_api/get_product_category'),
+		showModel
 	})
 }

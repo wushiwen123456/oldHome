@@ -1,7 +1,7 @@
 <template>
-	<view :style="{ 'min-height': windowHeight + 'px'}" class="bg-white" v-if="bookingList.length">
+	<view :style="{ 'min-height': windowHeight + 'px'}" class="bg-white">
 		<image class="booking-title-image" :src="banner"></image>
-		<view >
+		<mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption" :top="256">
 			<view v-for="(vo,key) in bookingList" @click="bookingDetallClick(vo,key)" :key="key" class="flex align-center booking-mian-all">
 				<view>
 					<image class="booking-shop-image " :src="vo.image"></image>
@@ -24,18 +24,23 @@
 					</view>
 				</view>
 			</view>
-		</view>
-		<uni-load-more v-if="loadImg" :contentText="contentText" :loadingType="loadingType"></uni-load-more>
+	</mescroll-uni>
+		<!-- <uni-load-more v-if="loadImg" :contentText="contentText" :loadingType="loadingType"></uni-load-more> -->
 	</view>
+
 </template>
 
 <script>
 	import {getCombinationListData} from '@/network/Home'
 	import {replaceImage} from '@/utils/dealUrl'
-	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
+	// import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
+	
+	// 下拉刷新
+	import MescrollUni from "@/components/mescroll-uni/mescroll-uni.vue";
 	export default{
 		components:{
-			uniLoadMore
+			// uniLoadMore
+			MescrollUni
 		},
 		data(){
 			return{
@@ -45,30 +50,30 @@
 				shopList:{
 					limit:[]	
 				},
-				pages:1,
 				banner:'',
-				loadImg:false,
-				loadingType:1,
-				isMaxLoad:false,
-				contentText:{
-					contentdown: "上拉加载更多",
-					contentrefresh: "努力加载中...",
-					contentnomore: "———— 我也是有底线的 ————"
-				}
+				hasNext:false,
+				// 下拉刷新的常用配置
+				downOption: { 
+					use: true, // 是否启用下拉刷新; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行下拉刷新的回调; 默认true
+				},
+				// 上拉加载的常用配置
+				upOption: {
+					use: true, // 是否启用上拉加载; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行上拉加载的回调; 默认true
+					page: {
+						num: 0, // 当前页码,默认0,回调之前会加1,即callback(page)会从1开始
+						size: 5 // 每页数据的数量,默认10
+					},
+					noMoreSize: 5, // 配置列表的总数量要大于等于5条才显示'-- END --'的提示
+					textNoMore:'-- 没有更多了 --',
+					empty: {
+						tip: '暂无相关数据'
+					}
+				},
 			}
 		},
-		onReachBottom(){
-			if(!this.isMaxLoad){
-				this.loadImg = true
-				const num = this.pages
-				this.getCombinationListData(num)
-			}else{
-				this.contentText.contentrefresh = '———— 我也是有底线的 ————'
-				this.loadingType = 2
-				this.loadImg = true
-			}
-		},
-		onShow() {
+		onLoad() {
 			var that = this
 			uni.getSystemInfo({
 			    success: function (res) {
@@ -76,40 +81,51 @@
 			        console.log('屏幕高度为'+res.windowHeight);
 			    }
 			});
-			// 获取拼团数据
-			this.getCombinationListData(this.pages)
 		},
 		methods:{
 			//去拼团
 			bookingDetallClick(vo,key){
 				this.$store.commit('setcombinId',vo.id)
-				console.log(this.$store.state)
 				uni.navigateTo({
 					url:"../../ShopDetails/groubBooking"
 				})
 			},
 			// 获取拼团数据
-			getCombinationListData(pages){
-				getCombinationListData(pages).then(res => {
+			getCombinationListData(pageNum,pageSize,mescroll){
+				getCombinationListData(pageNum,pageSize).then(res => {
 					if(res.data.code == 200){
 						const obj = res.data.data.data
 						this.banner = replaceImage(res.data.data.banner) 
 						
 						if(obj.length){
-							this.pages ++
 							obj.forEach(x => {
 								x.image = replaceImage(x.image)
 							})
 							this.bookingList.push(...obj)
 						}
-						else{
-							this.contentText.contentrefresh = '没有更多数据了'
-							this.isMaxLoad = true
+						if(obj.length < pageSize){
+							this.hasNext = false
+						}else{
+							this.hasNext = true
 						}
-						this.loadImg = false
+						if(pageNum == 1) this.bookingList = [];
+						this.bookingList = this.bookingList.concat(obj)
+						console.log(mescroll)
+						mescroll.endSuccess(obj.length, this.hasNext)
 					}
 				})
-			}
+			},
+			// 下拉刷新方法
+			downCallback(mescroll) { 
+				mescroll.resetUpScroll()
+			},
+			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
+			upCallback(mescroll) {
+				// 此时mescroll会携带page的参数:
+				let pageNum = mescroll.num; // 页码, 默认从1开始
+				let pageSize = mescroll.size; // 页长, 默认每页10条
+				this.getCombinationListData(pageNum,pageSize,mescroll)
+			},
 		},
 		
 	}

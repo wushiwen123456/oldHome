@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "招聘详情",
   "navigationBarBackgroundColor": "#FFFFFF",
+  "bounce": "none",
   "usingComponents": {
     "uni-popup": "/components/uni-popup/uni-popup"
   }

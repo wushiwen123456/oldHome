@@ -1,48 +1,41 @@
 <template>
-	<mescroll-uni :down="downOption" @down="downCallback" :up="upOption" @up="upCallback" ref="mescroll">
-	<view v-if="Object.keys(List).length != 0">
+	<view>
 		<tui-tabs class="tui" selectedColor="#D14243" sliderBgColor="#D14243" :tabs="navbar" :currentTab="currentTab - 1" @change="change" itemWidth="50%"></tui-tabs>
+		<mescroll-uni :down="downOption" @down="downCallback" :up="upOption" @up="upCallback" ref="mescroll" :top="70">
 			<view v-if="currentTab == 1">
-				<view v-for="(vo,key) in List" @click="inDetail(vo)" :key="key" class="flex align-center justify-between bg-white margin-top-xs padding">
-					<view>
-						<view class="text-wuer text-lg text-bold margin-bottom-xs">{{vo.name}}</view>
-						<view class="text-jiujiujiu text-sm-erliu margin-bottom">{{vo.title}}</view>
-						<view class="text-wuer text-lg text-bold margin-bottom-xs">Tel: {{vo.phone}}</view>
-<!-- 						<view class="text-jiujiujiu text-sm-erliu">{{vo.phone}}</view>
-						<view class="margin-top-sm text-red-my text-bold text-df">{{vo.see ? '面议' : vo.min + '-' + vo.max}}</view> -->
-					</view>
-					<view class="flex flex-direction align-end">
-						<view class="text-jiujiujiu text-sm">{{vo.sTime}}</view>
-						<view class="flex align-center public-phone-button" @click.stop="inDetail(vo)">
-							<view>查看详情</view>
-						</view>
-					</view>
-				</view>
-			</view>
-			<view v-else>
-				<view v-for="(vo,key) in List" @click="inDetail(vo)" :key="key" class="flex align-center justify-between bg-white margin-top-xs padding">
-					<view>
-						<view>
-							<view class="flex align-center text-lg text-wuer text-bold">
-								<view>{{vo.name}}</view>
-								<view class="margin-lr-xs">|</view>
-								<view>{{vo.birth}}岁</view>
-								<image class="invite-sex" src="../../../../static/sexa.png"></image>
-								<image class="invite-sex" src="../../../../static/sexb.png"></image>
+							<view v-for="(vo,key) in List" @click="inDetail(vo)" :key="key" class="flex align-center justify-between bg-white margin-top-xs padding">
+								<view>
+									<view class="text-wuer text-lg text-bold margin-bottom-xs">{{vo.name}}</view>
+									<view class="text-jiujiujiu text-sm-erliu margin-bottom">{{vo.title}}</view>
+									<view class="text-wuer text-lg text-bold margin-bottom-xs">Tel: {{vo.phone}}</view>
+			<!-- 						<view class="text-jiujiujiu text-sm-erliu">{{vo.phone}}</view>
+									<view class="margin-top-sm text-red-my text-bold text-df">{{vo.see ? '面议' : vo.min + '-' + vo.max}}</view> -->
+								</view>
+								<view class="flex flex-direction align-end">
+									<view class="text-jiujiujiu text-sm">{{vo.sTime}}</view>
+									<view class="flex align-center public-phone-button" @click.stop="inDetail(vo)">
+										<view>查看详情</view>
+									</view>
+								</view>
 							</view>
 						</view>
-						<view class="margin-top-sm text-sm-erliu text-jiujiujiu">{{vo.job}}</view>
-					</view>
-					<view class="flex flex-direction align-end">
-						<view class="text-jiujiujiu text-sm">{{vo.sTime}}</view>
-						<view class="flex align-center public-phone-button" @click.stop="inDetail(vo)">
-							<view>查看详情</view>
+						<view v-else>
+							<view v-for="(vo,key) in List" @click="inDetail(vo)" :key="key" class="flex align-center justify-between bg-white align-center margin-top-xs padding">
+								<view class="text-xuqiu text-cut">
+									<view class="text-bold text-black text-lg">{{vo.title}}</view>
+									<view class="text-sm text-gray">{{vo.name}}</view>
+								</view>
+								<view class="flex flex-direction align-center justify-center">
+									<view class="text-jiujiujiu text-sm">{{vo.sTime}}</view>
+									<view class="flex align-center public-phone-button" @click.stop="inDetail(vo)">
+										<view>查看详情</view>
+									</view>
+								</view>
+							</view>
 						</view>
-					</view>
-				</view>
-			</view>
+		</mescroll-uni>
 	</view>
-	</mescroll-uni>
+	
 </template>
 
 <script>
@@ -128,14 +121,14 @@
 				const token = this.token
 				const cate = this.currentTab
 				getSupplyList(page,limit,cate,token).then(res => {
-					const list = res.data.data
+					let list = res.data.data
 					if(list.length){
-						this.List.push(...list.map(x => {
+						list = list.map(x => {
 							return {
 								sTime:that.dealTime(x.add_time),
 								...x
 							}
-						}))
+						})
 					}
 					if(list.length < page){
 						this.isLoading = false
@@ -148,6 +141,7 @@
 				})
 			},
 			change(e) {
+				this.List = []
 				this.currentTab = e.index*1 + 1
 				this.$refs.mescroll.mescroll.resetUpScroll()
 			},
@@ -159,9 +153,10 @@
 			// 跳转详情页
 			inDetail(vo){
 				const type = this.currentTab
+				const id = vo.id
 				// 保存信息
 				uni.navigateTo({
-					url:`suppleDetail?type=${type}`
+					url:`suppleDetail?type=${type}&id=${id}`
 				})
 			},
 			
@@ -202,7 +197,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		margin-top: 20upx;
+		margin-top: 10upx;
 		width:130upx;
 		height:50upx;
 		border:1px solid rgba(205,50,51,1);
@@ -223,10 +218,7 @@
 		height:34upx;
 		margin-left: 20upx;
 	}
-	.mescroll {
-		position: fixed;
-		top: 78px;
-		bottom: 0;
-		height: auto;
+	 .text-xuqiu{
+		 line-height: 1.6;
 	 }
 </style>

@@ -13,7 +13,7 @@ export function getAffirmInfo(cartId,token){
 		header:{
 			token
 		},
-		method:"POST"
+		method:"POST",
 	})
 }
 
@@ -28,7 +28,8 @@ export function placeOrder(str,token){
 			'content-type': 'application/x-www-form-urlencoded',
 			token
 		},
-		method:"POST"
+		method:"POST",
+		showModel:true	
 	})
 } 
 
@@ -71,7 +72,8 @@ export function payorder(uni,paytype,token){
 		header:{
 			token
 		},
-		method:"POST"
+		method:"POST",
+		showModel:true
 	})
 }
 
@@ -86,7 +88,8 @@ export function payOrders(uni,paytype,token){
 		header:{
 			token
 		},
-		method:"POST"
+		method:"POST",
+		showModel:true
 	})
 }
 
@@ -100,7 +103,8 @@ export function payIntegral(cartId,token){
 		header:{
 			token
 		},
-		method:"POST"
+		method:"POST",
+		showModel:true
 	})
 }
 
@@ -118,7 +122,8 @@ export function gitOrder(obj,token){
 		header:{
 			token
 		},
-		method:"POST"
+		method:"POST",
+		showModel:true
 	})
 }
 
@@ -132,7 +137,8 @@ export function getPinkStatus(uni,token){
 		header:{
 			token
 		},
-		method:"GET"
+		method:"GET",
+		showModel:true
 	})
 }
 
@@ -145,7 +151,8 @@ export function affirmOrder(uni,token){
 		},
 		header:{
 			token
-		}
+		},
+		showModel:true
 	})
 }
 
@@ -158,7 +165,7 @@ export function evalu(obj,token){
 			token
 		},
 		method:"POST",
-		hideModel:true
+		showModel:true
 	})
 }
 
@@ -172,6 +179,7 @@ export function queryLogistics(uni,token){
 		header:{
 			token
 		},
-		method:"GET"
+		method:"GET",
+		showModel:true
 	})
 }

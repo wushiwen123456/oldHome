@@ -2,13 +2,14 @@
 	<view>
 		<!-- head -->
 		<!-- head -->
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 		<view class="shopDetails-title" >
-			<swiper class="screen-swiper" :hidden="!autoplay">
+<!-- 			<swiper class="screen-swiper" :hidden="!autoplay">
 				<swiper-item>
 					<video id="myVideo" :src="itemInfo.video"
 				 autoplay="false" loop muted show-play-btn controls objectFit="contain" @pause="ZhanTing" @ended="ZhanTing"></video>
 				</swiper-item>
-			</swiper>
+			</swiper> -->
 			<swiper :hidden="autoplay" class="screen-swiper" circular="true"
 			 :autoplay="!autoplay" interval="3500" duration="500" :current="swiperNum" @change="swiperChange">
 				<swiper-item @tap="BoFang" v-if="itemInfo.video" class="item1">
@@ -130,10 +131,7 @@
 						<view class="shop-detal-name">{{storeInfo.info.storeName}}</view>
 						<view class="flex align-center text-xs shop-experience">
 							<view>综合体验</view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
-							<view class="lg text-red-my cuIcon-favorfill"></view>
+							<tui-rate :current="storeInfo.info.totalFen*1" normal="#ccc" active="#FF5400" :size="10"></tui-rate>
 						</view>
 					</view>
 				</view>
@@ -170,9 +168,9 @@
 				</view>
 			</view>
 			<view class="flex align-center padding-left padding-right">
-				<view class="flex-sub" v-for="(item,index) in recommend" :key="index" @click="recommClick(item,index)">
+				<view class="flex-sub" style="margin-right: 20upx;" v-for="(item,index) in recommend" :key="index" @click="recommClick(item,index)">
 					<image class="tuijian-shop-three-image" :src="item.image"></image>
-					<view class="text-sm-erliu text-black">{{item.store_name}}</view>
+					<view class="text-sm-erliu text-black text-cut" style="width: 200upx;">{{item.store_name}}</view>
 					<view class="text-red-my text-sm-erliu margin-top-sm margin-bottom-sm">￥{{item.price}}</view>
 				</view>
 			</view>
@@ -192,19 +190,19 @@
 		
 		<!-- 底部操作条 -->
 		<view class="cu-bar bg-white tabbar border shop shopDetails-bottom-all" v-if="Object.keys(itemInfo).length != 0">
-			<view class="flex align-center text-xs ">
-				<view @tap="shopClick" class="margin-left flex flex-direction align-center justify-center">
+			<view class="flex align-center text-xs tab-bar-bottom">
+				<view @tap="shopClick" class="flex flex-direction align-center justify-center tab-bar-item">
 					<image class="shop-bottom-kefu" src="../../static/shop.png"></image>
 					<view>店铺</view>
 				</view>
-				<view @tap="serviceClick()" class="margin-left flex flex-direction align-center justify-center">
+				<view @tap="serviceClick()" class="flex flex-direction align-center justify-center tab-bar-item">
 					<image class="shop-bottom-kefu" src="../../static/kefu.png"></image>
 					<view>客服</view>
-				</view>
-				<view @tap="collectClick(1)" class="margin-left flex flex-direction align-center justify-center">
-					<image class="shop-bottom-kefu" src="../../static/collect.png" v-show="!itemInfo.userCollect"></image>
+				</view>	
+				<view @tap="collectClick(1)" class="flex flex-direction align-center justify-center tab-bar-item">
+					<image class="shop-bottom-kefu" src="../../static/collect.png" v-if="!itemInfo.userCollect"></image>
 					<!-- 已收藏 -->
-					<image src="../../static/collectClick.png" class="shop-bottom-kefu" v-show="itemInfo.userCollect"></image>
+					<image src="../../static/collectClick.png" class="shop-bottom-kefu" v-if="itemInfo.userCollect"></image>
 					<view>{{isUserCollect}}</view>
 				</view>
 			</view>
@@ -296,6 +294,8 @@
 	var that;
 	import tuiNumberbox from "@/components/numberbox/numberbox"
 	import uniPopup  from "@/components/uni-popup/uni-popup"
+	import tuiRate from "@/components/rate/rate"
+	
 	// 导入vuex
 	import { mapGetters } from 'vuex'
 	
@@ -313,7 +313,8 @@
 	export default{
 		components: {
 			uniPopup,
-			tuiNumberbox
+			tuiNumberbox,
+			tuiRate
 		},
 		
 		data(){
@@ -360,10 +361,11 @@
 						expressageFen:'' ,//物流评分
 						produceFen:'' ,//商品评分
 						serviceFen:'' ,// 服务评分
-						totalFen:'' ,  // 总评分
+						totalFen:0 ,  // 总评分
 						storeName:'' , //店铺名称
 						storeLogo:'' , //店铺logo
 						storeId:''  ,  //店铺id
+						totalFen2:2
 					},
 					shopFans:''  , //粉丝数量
 				},
@@ -373,7 +375,8 @@
 				// 店铺折扣信息
 				discount:{},
 				autoplay:false,
-				commont:{}//评价信息
+				commont:{},//评价信息
+				videoContext:''
 			}
 			
 		},
@@ -389,7 +392,10 @@
 				})
 			}
 			that = this
-		},	
+		},
+		onReady() {
+			this.$refs.loading.open()			
+		},
 		onShow() {
 			// 当返回时判断是否重新加载
 			if(this.$store.state.shopId == ""){
@@ -398,15 +404,9 @@
 				})
 			}
 		},
-		onBackPress() {
-			// #ifdef APP-PLUS
-			//监听back键，关闭弹出菜单
-			if (nvImageMenu.isVisible()) {
-				nvImageMenu.hide()
-				nvMask.hide()
-				return true
-			}
-			// #endif
+		// 页面销毁前清除事件监听器
+		onUnload(){
+			uni.$off('videoDetail')
 		},
 		methods:{
 			// 获取商品商店数据
@@ -430,6 +430,14 @@
 				}
 				getDetailData(id,this.isToken)
 				.then(res => {
+					if(res.data.code != 200){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('数据错误，请重试')
+						// #endif
+						uni.navigateBack()
+						return
+					}
+					this.$refs.loading.close() 
 					const data = res.data.data.storeInfo
 					
 					data.slider_image = data.slider_image.map(x => {
@@ -457,6 +465,10 @@
 					this.itemInfo.is_group = data.is_group //是否拼团
 					this.itemInfo.is_bargain = data.is_bargain //是否砍价
 					this.itemInfo.video = replaceImage(data.video)
+					// // 向nvue页面发送数据
+					uni.$emit('page-detail',{
+						video:this.itemInfo.video
+					})					
 					
 					// 获取并处理选择规格数据
 						this.list = [...res.data.data.productAttr]
@@ -497,18 +509,6 @@
 						type:'image'
 					}
 				})
-				// if(data.video){
-				// 	const obj = {
-				// 		url:replaceImage(data.video),
-				// 		id:0,
-				// 		type:'video'
-				// 	}
-				// 	this.swiperList.unshift(obj)
-				// }
-				
-				if(this.itemInfo.video){
-					this.videoContext = uni.createVideoContext('myVideo',this)
-				}
 			},
 			//选择商品属性
 			selectShopClick(el,key,index){
@@ -696,13 +696,11 @@
 					obj.avatar = replaceImage(obj.avatar)
 					this.commont = obj
 				}
-				console.log(obj)
-				console.log(this.commont)
 			},
 			//点击收藏
 			collectClick(id){
+				this.itemInfo.userCollect = !this.itemInfo.userCollect
 				let category;
-				console.log(this.itemInfo)
 				
 				if(!!this.itemInfo.isSeckill || !!this.itemInfo.isGroup || !!this.itemInfo.is_bargain){
 					if(this.itemInfo.isSeckill){
@@ -716,26 +714,15 @@
 				}else{
 					category = 'product'
 				}
-				if(!this.itemInfo.userCollect){
+				if(this.itemInfo.userCollect){
 					collectProduct(this.itemInfo.id,category,this.isToken).then(res => {
 						if(res.data.code == 200){
-							console.log(res)
-							uni.showToast({
-								title:'收藏成功',
-								icon:'none'
-							})
-							this.itemInfo.userCollect = true
 						}
 						
 					})
 				}else{
 					unCollectProduct(this.itemInfo.id,category,this.isToken).then(res => {
 						if(res.data.code == 200){
-							uni.showToast({
-								title:'已取消收藏',
-								icon:'none'
-							})
-							this.itemInfo.userCollect = false
 						}
 					})
 				}
@@ -769,66 +756,94 @@
 			},
 			//转发弹出
 			outloginSharClick(){
+				const that = this
 				let shareInfo={
-					href:"https://uniapp.dcloud.io",
+					href:`http://jn.51kdd.com/index.html#/?href=oldHome://abc`,
 					title:'老家商城',
-					desc:'老家商城，我的家就是你的家',
-					imgUrl:'/static/56524a9a3b6bdab0753eb8ed922d57d.png'
+					desc:that.itemInfo.name,
+					imgUrl:that.itemInfo.image
 				};
-				this.shareObj=share(shareInfo,this.shareList,(index) => {
-						console.log("点击按钮的序号: " + index);
-						let shareObj={
-							href:shareInfo.href||"",
-							title:shareInfo.title||"",
-							summary:shareInfo.desc||"",
-							success:(res)=>{
-								console.log("success:" + JSON.stringify(res));
-							},
-							fail:(err)=>{
-								console.log("fail:" + JSON.stringify(err));
-							}
-						};
-						switch (index) {
-							case 0:
-								shareObj.provider="weixin";
-								shareObj.scene="WXSceneSession";
-								shareObj.type=0;
-								shareObj.imageUrl=shareInfo.imgUrl||"";
-								uni.share(shareObj);
-								break;
-							case 1:
-								shareObj.provider="weixin";
-								shareObj.scene="WXSenceTimeline";
-								shareObj.type=0;
-								shareObj.imageUrl=shareInfo.imgUrl||"";
-								uni.share(shareObj);
-								break;
-							case 2:
-								uni.setClipboardData({
-									data:shareInfo.href,
-									complete() {
-										uni.showToast({
-											title: "已复制到剪贴板"
-										})
-									}
-								})
-								break;
-							case 3:
-								plus.share.sendWithSystem({
-									type:"web",
-									title:shareInfo.title||"",
-									thumbs:[shareInfo.imgUrl||""],
-									href:shareInfo.href||"",
-									content: shareInfo.desc||"",
-								})
-								break;
-						};
-					});
-					
-					this.$nextTick(()=>{
-						this.shareObj.alphaBg.show();
-						this.shareObj.shareMenu.show();
-					})
+				let shareList=[
+					{
+						icon:"/static/sharemenu/wechatfriend.png",
+						text:"微信好友",
+					},
+					{
+						icon:"/static/sharemenu/wechatmoments.png",
+						text:"朋友圈"
+					},
+					{
+						icon:"/static/sharemenu/copyurl.png",
+						text:"复制"
+					},
+					{
+						icon:"/static/sharemenu/more.png",
+						text:"更多"
+					},
+				];
+				this.shareObj=share(shareInfo,shareList,function(index){
+					console.log("点击按钮的序号: " + index);
+					let shareObj={
+						href:shareInfo.href||"",
+						title:shareInfo.title||"",
+						summary:shareInfo.desc||"",
+						success:(res)=>{
+							console.log("success:" + JSON.stringify(res));
+							uni.hideLoading()
+						},
+						fail:(err)=>{
+							console.log("fail:" + JSON.stringify(err));
+							uni.hideLoading()
+						}
+					};
+					switch (index) {
+						case 0:
+							shareObj.provider="weixin";
+							shareObj.scene="WXSceneSession";
+							shareObj.type=0;
+							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.showLoading({
+								title:'加载中...',
+								mask:true
+							})
+							uni.share(shareObj);
+							break;
+						case 1:
+							shareObj.provider="weixin";
+							shareObj.scene="WXSenceTimeline";
+							shareObj.type=0;
+							shareObj.imageUrl=shareInfo.imgUrl||"";
+							uni.showLoading({
+								title:'加载中...',
+								mask:true
+							})
+							uni.share(shareObj);
+							break;
+						case 2:
+							uni.setClipboardData({
+								data:shareInfo.href,
+								complete() {
+									uni.showToast({
+										title: "已复制到剪贴板"
+									})
+								}
+							})
+							break;
+						case 3:
+							plus.share.sendWithSystem({
+								type:"web",
+								title:shareInfo.title||"",
+								thumbs:[shareInfo.imgUrl||""],
+								href:shareInfo.href||"",
+								content: shareInfo.desc||"",
+							})
+							break;
+					};
+				});
+				this.$nextTick(()=>{
+					this.shareObj.alphaBg.show();
+					this.shareObj.shareMenu.show();
+				})
 			},
 			
 			//转发关闭
@@ -940,9 +955,7 @@
 			getShopDiscount(id,token){
 				getShopDiscount(id,token).then(res => {
 					if(res.data.code == 200) {
-						console.log(res)
 						 this.discount = res.data.data
-						console.log(this.discount)
 					}
 				})
 			},
@@ -987,8 +1000,19 @@
 			},
 			BoFang(){
 				if(that.autoplay==false){
-					that.autoplay=true;
-					this.videoContext.play();
+					
+					// 触发事件
+					// 在 subNVue/vue 页面触发事件  
+					// $emit(eventName, data)  
+					uni.$emit('videoDetail', {  
+					    video:this.itemInfo.video
+					})
+					// // 通过 id 获取 nvue 子窗体
+					const subNVue = uni.getSubNVueById('video_mask')  
+					
+					subNVue.show('fade-in', 300, function(){  
+						console.log('打开成功')
+					})    
 				}
 			},
 			ZhanTing(){
@@ -1185,7 +1209,7 @@
 	.shop-experience{
 		background:rgba(0,0,0,0.1);
 		border-radius: 14upx;
-		width: 220upx;
+		width: 242upx;
 		display: flex;
 		align-items: center;
 		justify-content: center;

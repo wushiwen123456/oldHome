@@ -10,6 +10,7 @@
     ]
   },
   "usingComponents": {
+    "x-loading": "/components/loding/w-loading",
     "parser": "/components/jyf-Parser/index"
   }
 }

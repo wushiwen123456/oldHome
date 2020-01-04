@@ -25,7 +25,8 @@ return new Promise(function(resolve,reject) {
 				})
 			}
 		},
-		fail: () => {
+		fail: (err) => {
+			reject(err)
 		},
 		complete() {
 			if (loading) uni.hideLoading()
@@ -236,6 +237,10 @@ export function edit_user(data,loading) {
 				if(res.data.code == 200){
 					let data = res.data.data
 					resolve(data)
+				}else{
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast(res.data.msg,{duration:'long'})
+					// #endif
 				}
 			},
 			fail: () => {

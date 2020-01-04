@@ -23,7 +23,8 @@ export function removeCart(ids,token){
 		header:{
 			token
 		},
-		method:"GET"
+		method:"GET",
+		showModel:true
 	})
 }
 

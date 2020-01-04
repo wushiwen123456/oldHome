@@ -73,3 +73,16 @@ export function pushPublish(obj,token){
 		method:"POST"
 	})
 }
+
+// 供应详情
+export function gongDetail(id,token){
+	return http({
+		url:replaceImage('http://www.test.com/ebapi/msg_api/gq_detail'),
+		data:{
+			id
+		},
+		header:{
+			token
+		}
+	})
+}

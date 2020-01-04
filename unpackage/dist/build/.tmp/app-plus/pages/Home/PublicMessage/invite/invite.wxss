@@ -30,4 +30,10 @@
 	height:34rpx;
 	margin-left: 20rpx;
 }
+.mescroll {
+	position: fixed;
+	top: 78px;
+	bottom: 0;
+	height: auto;
+}
 

@@ -16,7 +16,7 @@
 				<view class="login-all">
 					<view class="login-message">
 						<image src="../../static/password.png"></image>
-						<input class="input-textlength" v-model="password" password="true" placeholder="请输入密码" />
+						<input class="input-textlength" v-model="password" @confirm="startLogin" password="true" placeholder="请输入密码" />
 					</view>
 				</view>
 				<view class="login-function">
@@ -26,9 +26,9 @@
 			</view>
 			
 			<!-- 登录 防抖 -->
-			<wButton text="登 录" :rotate="isRotate"  @click.native="startLogin()" ></wButton>
+			<wButton v-if="isShowButton" text="登 录" :rotate="isRotate"  @click.native="startLogin()" ></wButton>
 		</canvas>
-		
+		<x-modal  v-model="show1" title='提示' :text="msg" @cancel="reset" @confirm="reset" />
 	</view>
 </template>
 
@@ -44,11 +44,14 @@
 		},
 		data() {
 			return {
+				show1:false,
 				windowHeight:0,//屏幕高度
 				phone:'',//手机号
 				password:'',//密码
 				isRotate: false, //是否加载旋转
 				modalName:'',//忘记密码
+				msg:'',
+				isShowButton:true
 			}
 		},
 		onLoad(option) {
@@ -88,7 +91,6 @@
 					})
 					return
 				}
-				console.log(that.password.length)
 				if(that.password.length < 6){
 					uni.showToast({
 						title:'密码最少为6位',
@@ -97,42 +99,37 @@
 					return
 				}
 				that.isRotate = true
-				setTimeout(function() {that.isRotate = false}, 5000);
 				let data = {
 					phone:that.phone,
 					pwd:that.password
 				}
-				console.log(this.$store.state.userInfo)
 
 				login(data).then(res => {
+					if(res.data.code == 200){
 						const token = res.data.data.token
 						uni.setStorage({
 							key:"token",
 							data:token,
 						})
 						this.$store.commit('login',token)
-						uni.showToast({
-							title:'登录成功',
-							icon:'none'
-						})
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('登录成功',{duration:'long'})
+						// #endif
 						const pages  = getCurrentPages()
-						if(pages.length == 1){
-							uni.switchTab({
-								url:"../Home/home"
-							})
-						}else{
-							uni.navigateBack()
-						}
-				}).catch(res => {
-					if(res.data.code == 400){
-						uni.showToast({
-							title:'用户名或密码错误',
-							icon:'none'
+						uni.switchTab({
+							url:'../Home/home'
 						})
-						this.phone = ''
-						this.password = ''
+					}else{
+						this.msg = res.data.msg
+						this.show1 = true
 					}
+					this.isRotate = false
+				}).catch(res => {
+					this.msg = res.data.msg
+					this.show1 = true
+					this.isRotate = false
 				})
+				
 			},
 			//忘记密码
 			showModal(){
@@ -140,6 +137,9 @@
 					url:'forget'
 				})
 			},
+			reset(){
+				this.password = ''
+			}
 		}
 	}
 </script>

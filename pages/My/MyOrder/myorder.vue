@@ -1,61 +1,75 @@
 <template>
-	<view>
-		<tui-tabs :tabs="tabs2" :currentTab="currentTab"  class="tui-tab" selectedColor="#CD3233" sliderBgColor="#CD3233"  @change="change"></tui-tabs>
-		<canvas v-if="Nodata" :style="{height:windowHeight + 'px'}" class="bg-white text-width" disable-scroll="true">
-			<view style="padding-top: 200upx;">
-				<image class="text-width" mode="widthFix" src="../../../static/nodatab.png"></image>
-			</view>
-		</canvas>
-		<view v-for="(vo,key) in orderInfo" :key="key" class="bg-white margin-top-sm" @click="detail(vo)">
-			<view class="flex align-center padding-left padding-right padding-top-sm padding-bottom-sm s-content">
-				<view class="s-item1">
-					<view v-if="vo.shopInfo" style="font-size: 36upx;" class="lg cuIcon-shop margin-right-sm"></view>
-					<image v-if="vo.pay_type == 'integral'" class="integralShop-title-image" src="../../../static/jifenb.png"></image>
-					<view class="text-sm" style="color: #636362;">{{storeName(vo,key)}}</view>
-				</view>
-				<view class="s-status">{{DetlVoStatus(vo)}}</view>
-			</view>
-			<block v-for="(item,indexKey) in vo.cartInfo" :key="indexKey">
-				<view  class="flex align-start margin-left margin-right" :class="{'padding-bottom':vo._status._type == 3}">
-					<view class="mybooking-image">
-						<image :src="listImage(item,indexKey)"></image>
+	<view class="content" :style="{height:height + 'px'}">
+		<view>
+			<tui-tabs :tabs="tabs2" :currentTab="currentTab"  class="tui-tab" selectedColor="#CD3233" sliderBgColor="#CD3233"  @change="change"></tui-tabs>
+			<mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption" :top="79">
+			<view>
+				<view v-for="(vo,key) in orderInfo" :key="key" class="bg-white margin-top-sm">
+					<view class="flex align-center padding-left padding-right padding-top-sm padding-bottom-sm s-content">
+						<view class="s-item1">
+							<view v-if="vo.shopInfo" style="font-size: 36upx;" class="lg cuIcon-shop margin-right-sm"></view>
+							<image v-if="vo.pay_type == 'integral'" class="integralShop-title-image" src="../../../static/jifenb.png"></image>
+							<view class="text-sm" style="color: #636362;">{{storeName(vo,key)}}</view>
+						</view>
+						<view class="s-status text-cut" style="width: 180upx;">{{DetlVoStatus(vo)}}</view>
 					</view>
-					<view class="text-width margin-left-sm ">
-						<view class="flex align-center justify-between">
-							<view class="flex-five text-hieed">{{item.productInfo.store_name}}</view>
-							<view class="text-price text-red flex-sub text-center">{{item.productInfo.price}}</view>
+					<view v-for="(item,indexKey) in vo.cartInfo" :key="indexKey">
+						<view  class="flex align-start margin-left margin-right"	 :class="{'padding-bottom':vo._status._type == 3}" @tap="detail(vo)">
+							<view class="mybooking-image">
+								<image :src="listImage(item,indexKey)" @tap.stop="shopDetail(item,vo)"></image>
+							</view>
+							<view class="text-width margin-left-sm ">
+								<view class="flex align-center justify-between">
+									<view class="flex-five text-hieed" @tap.stop="shopDetail(item,vo)">{{item.productInfo.store_name}}</view>
+									<view class="text-price text-red flex-sub text-center">{{item.productInfo.price}}</view>
+								</view>
+								<view class="flex align-center justify-between margin-top-xs">
+									<view class="flex-five text-jiujiujiu text-sm" v-if="item.productInfo.attrInfo">种类：{{item.productInfo.attrInfo.suk}}</view>
+									<view class="flex-sub" :class="{'text-right':!item.productInfo.attrInfo}">x{{item.cart_num}}</view>
+								</view>
+								<view class="flex justify-end pingjia" v-if="vo._status._type == 3">
+									<text @tap.stop="goPingjia(item,indexKey)">立即评价</text>
+								</view>
+							</view>
+							
 						</view>
-						<view class="flex align-center justify-between margin-top-xs">
-							<view class="flex-five text-jiujiujiu text-sm" v-if="item.productInfo.attrInfo">种类：{{item.productInfo.attrInfo.suk}}</view>
-							<view class="flex-sub" :class="{'text-right':!item.productInfo.attrInfo}">x1</view>
-						</view>
-						<view @click.stop="goPingjia(item,indexKey)" class="flex justify-end pingjia" v-if="vo._status._type == 3">
-							<text>立即评价</text>
-						</view>
+						
 					</view>
-					
+					<view class="flex justify-end padding-left solid-top padding-top padding-bottom padding-right">
+						<view class="flex align-center text-df">
+							<view class="text-black">共{{vo.cartInfo.length}}件,</view>
+							<view class="text-jiujiujiu">合计：</view>
+							<view class="text-price text-red text-bold">{{vo.pay_price}}</view>
+						</view>
+						
+					</view>	
+					<view class="flex justify-between align-center f-button margin-top-sm item-center">
+						<!-- <button class="mybooking-button ">评价</button> -->
+						<!-- <view class="mybooking-button mybooking-button-colse" @tap="detail(vo,key)">{{dealBtnLeft(vo)}}</view> -->
+						<view class="flex flex-direction">
+							<text class="text-red text-sm text-cut" style="margin-bottom:15upx ; width: 280upx;">{{b_status(vo)}}</text>
+							<text class="text-red text-sm">{{shopType(vo)}}</text>
+						</view>
+						<view class="flex">
+							<view v-if="dealBtnLeft(vo)" style="margin-right:20upx ;" class="cu-btn round line-black text-cut" @click.stop="btnCliclLeft(vo,key)">{{dealBtnLeft(vo)}}</view>
+							<view v-if="dealBtnRight(vo)" @click.stop="btnClickRight(vo,key)" class="cu-btn round line-black text-cut" :class="{'button-r' : vo._status._type == 2 || vo._status._type == 0 || vo._status._type == 3 }">{{dealBtnRight(vo)}}</view>
+						</view>
+						<!-- <button class="mybooking-button mybooking-button-colse">取消订单</button> -->
+						<!-- <button class="mybooking-button ">确认付款</button> -->
+						<!-- <button class="mybooking-button mybooking-button-colse">提醒发货</button> -->
+					</view>
 				</view>
-				
-			</block>
-			<view class="flex justify-end padding-left solid-top padding-top padding-bottom padding-right">
-				<view class="flex align-center text-df">
-					<view class="text-black">共{{vo.cartInfo.length}}件,</view>
-					<view class="text-jiujiujiu">合计：</view>
-					<view class="text-price text-red text-bold">{{vo.pay_price}}</view>
-				</view>
-				
-			</view>	
-			<view v-if="vo._status._type < 3" class="flex justify-end padding-bottom f-button margin-top-sm">
-				<!-- <button class="mybooking-button ">评价</button> -->
-				<!-- <view class="mybooking-button mybooking-button-colse" @tap="detail(vo,key)">{{dealBtnLeft(vo)}}</view> -->
-				<view class="mybooking-button mybooking-button-colse" @click.stop="btnCliclLeft(vo,key)">{{dealBtnLeft(vo)}}</view>
-				<view @click.stop="btnClickRight(vo,key)" class="mybooking-button mybooking-button-colse" :class="{'button-r' : vo._status._type == 2 || vo._status._type == 0 || vo._status._type == 3 }">{{dealBtnRight(vo)}}</view>
-				<!-- <button class="mybooking-button mybooking-button-colse">取消订单</button> -->
-				<!-- <button class="mybooking-button ">确认付款</button> -->
-				<!-- <button class="mybooking-button mybooking-button-colse">提醒发货</button> -->
 			</view>
+			<!-- <view v-if="!Nodata && isLoading" class="empty-img" :style="{height:style.height + 'px',transform:'translateY(-10%)'}">
+				<image src="/static/nodatab.png" mode="widthFix"></image>
+			</view>
+			<view v-if="!isLoading" class="loading">
+				<image src="../../../static/logo/logo.png" class="load-img" mode=""></image>
+			</view> -->
+			</mescroll-uni>
 		</view>
-		<Modal v-model="show1" title='提示' class="con-fim" text='是否确认收货' @confirm="ConfirmOrder" />
+		
+			<Modal v-model="show1" title='提示' class="con-fim" text='是否确认收货' @confirm="ConfirmOrder" />
 	</view>
 </template>
 
@@ -67,15 +81,18 @@
 	
 	// 导入弹出层
 	import Modal from '@/components/x-modal/x-modal'
+	// 下拉刷新
+	import MescrollUni from "@/components/mescroll-uni/mescroll-uni.vue";
+	
 	export default{
 		components: {
 			tuiTabs,
-			Modal
+			Modal,
+			MescrollUni
 		},
 		data(){
 			return{
 				windowHeight:0,//屏幕高度
-				Nodata:false,//暂无数据
 				currentTab: 0,
 				tabs2: [{
 					name: "全部",
@@ -96,41 +113,85 @@
 				orderInfo:[],
 				show1:false,
 				currentClick:-1,
-				token:''
+				token:'',
+				style:{
+					height:''
+				},
+				height:'',
+				// 下拉刷新的常用配置
+				downOption: { 
+					use: true, // 是否启用下拉刷新; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行下拉刷新的回调; 默认true
+				},
+				// 上拉加载的常用配置
+				upOption: {
+					use: true, // 是否启用上拉加载; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行上拉加载的回调; 默认true
+					page: {
+						num: 0, // 当前页码,默认0,回调之前会加1,即callback(page)会从1开始
+						size: 10 // 每页数据的数量,默认10
+					},
+					noMoreSize: 5, // 配置列表的总数量要大于等于5条才显示'-- END --'的提示
+					textNoMore:'-- 没有更多了 --',
+					empty: {
+							use : true ,
+						  tip : "您还没有相关的订单",
+						  btnText : "",
+						  fixed: true,
+						  top: "35%",
+						  zIndex: 99
+					}
+				},
+				hasNext:true
 			}
 		},
 		onLoad(e) {
+			
+			const view = uni.getSystemInfoSync()
+			this.style.height = view.windowHeight;
 			var that = this
 			let num = parseInt(e.index)
 			
 			that.currentTab = num
-			uni.getSystemInfo({
-			    success: function (res) {
-					that.windowHeight = res.windowHeight
-			        console.log('屏幕高度为'+res.windowHeight);
-			    }
-			});
 			that.token = that.$store.getters.isToken
+			
 			if(!this.$store.getters.isToken){
 				uni.switchTab({
 					url:"../../Home/home"
 				})
 			}else{
-				this.orderInfo = [],
-				this.userOrder(that.currentTab,that.token)
+				this.orderInfo = []
 			}
+			this.height = uni.getSystemInfoSync().windowHeight
+			
+		},
+		onReady() {
 		},
 		onShow() {
-			this.orderInfo = [],
-			this.userOrder(this.currentTab,this.token)
+
 		},
 		methods:{
 			// 查看详情
 			detail(vo,key){
 				this.$store.commit('setOrderKey',vo.order_id)
-				uni.navigateTo({
-					url:'orderdetail'
-				})
+				const status = vo._status._type
+				if(status == -1 || status == -2 || status == 6){
+					uni.navigateTo({
+						url:'../MyBooking/refund/refundMessage'
+					})
+				}else if(status == 1 && vo._status._title == '拼团中'){
+					
+					const unified_order = vo.unified_order
+					this.$store.commit('setOrderKey',unified_order)
+					uni.navigateTo({
+						url:'/pages/PayOrder/payOrderMessage/payorderMessage'
+					})
+				}
+				else{
+					uni.navigateTo({
+						url:'orderdetail'
+					})
+				}
 			},
 			// 列表图片
 			listImage(item,indexKey){
@@ -161,38 +222,54 @@
 				}
 			},
 			change(e) {
-				this.currentTab = e.index
-				console.log(this.currentTab)
-				
-				// 测试测试
-				this.userOrder(this.currentTab,this.$store.getters.isToken)
+				if(this.currentTab != e.index){
+					this.currentTab = e.index
+					this.orderInfo = []
+					const mescroll = this.$refs.mescroll.mescroll
+					mescroll.resetUpScroll()
+				}
 			},
-			userOrder(type,token){
-				userOrder(type,token)
+			userOrder(pageNum,pageSize,mescroll){
+				const type = this.currentTab,
+				token = this.token
+				userOrder(type,pageNum,pageSize,token)
 					.then(res => {
 						if(res.data.code == 200){
-							this.orderInfo = res.data.data
-							if(!this.orderInfo.length){
-								this.Nodata = true
-								return 
-							}else{
-								this.Nodata = false
-							}
-							this.orderInfo.forEach(x => {
-								x.cartInfo.forEach(item => {
-									const img = item.productInfo.attrInfo ? item.productInfo.attrInfo.image : item.productInfo.image
-									const img2 = replaceImage(img)
-									if(item.productInfo.attrInfo){
-										item.productInfo.attrInfo.image = img2
-									}else{
-										item.productInfo.image = img2
-									}
+							let list = res.data.data
+							if(list.length != 0){
+								list.forEach(x => {
+									x.cartInfo.forEach(item => {
+										const img = item.productInfo.attrInfo ? item.productInfo.attrInfo.image : item.productInfo.image
+										const img2 = replaceImage(img)
+										if(item.productInfo.attrInfo){
+											item.productInfo.attrInfo.image = img2
+										}else{
+											item.productInfo.image = img2
+										}
+									})
 								})
-							})
+							}
+							this.hasNext = list.length >= pageSize
+							if(pageNum == 1) this.orderInfo = []
+							this.orderInfo = this.orderInfo.concat(list)
+							mescroll.endSuccess(list.length, this.hasNext);
+							
+						}else{
+							mescroll.endErr()
 						}
 					})
 			},
-			
+			// 下拉刷新方法
+			downCallback(mescroll) { 
+				mescroll.resetUpScroll()
+			},
+			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
+			upCallback(mescroll) {
+				// 此时mescroll会携带page的参数:
+				let pageNum = mescroll.num; // 页码, 默认从1开始
+				let pageSize = mescroll.size; // 页长, 默认每页10条
+				this.userOrder(pageNum,pageSize,mescroll)
+			},
 			// 提醒买家发货
 			tixing(){
 				uni.showToast({
@@ -234,10 +311,13 @@
 			dealBtnLeft(vo){
 				const state = parseInt(vo._status._type)
 			 	switch(state){
+					case -2 : return '查看售后'
+					case -1 : return '查看售后'
 					case 0 : return  '查看详情'; 
 					case 1 : return  '查看详情' ;
 					case 2 : return  '查看物流' ;
 					case 3 : return  '查看物流' ;
+					default: return '查看详情'
 				}
 				
 				//	下面是测试版本
@@ -252,26 +332,29 @@
 				const state = parseInt(vo._status._type)
 				switch(state){
 					case 0 : return  '立即付款'; 
-					case 1 : return  '提醒卖家发货' ;
+					case 1 : 
+						if(this.shopType(vo) == '拼团商品'){
+							return  '我的拼团' ;
+						}else{
+							return '提醒卖家发货'
+						}
+						break
 					case 2 : return  '确认收货' ;
 					case 3 : return  '立即评价' ;
+					default :
+						if(this.shopType(vo)=='拼团商品'){
+							return '我的拼团'
+						}
 				}
 			},
 			// 订单上方状态
 			DetlVoStatus(vo){
-				const state = parseInt(vo._status._type)
-				switch(state){
-					case 0 : return  '等待付款'; 
-					case 1 : return  '等待卖家发货' ;
-					case 2 : return  '买家已发货' ;
-					case 3 : return  '交易成功' ;
-					default : return '交易完成'
-				}
+				return vo._status._title
+				// return state._title || ''
 			},
 			// 左按钮点击
 			btnCliclLeft(vo,ken){
 				const state = parseInt(vo._status._type)
-				console.log(state)
 				switch(state){
 					case 0 : 
 						this.detail(vo) 
@@ -292,6 +375,8 @@
 							
 						})
 						break;
+					default: 
+						this.detail(vo)
 				}
 				
 				
@@ -327,9 +412,14 @@
 						this.detail(vo) 
 						break;
 					case 1 :
-					// 提醒发货
-						this.tixing()
-						break;
+						if(this.shopType(vo) == '拼团商品'){
+							uni.navigateTo({
+								url:'../MyBooking/mybooking'
+							})
+						}else{
+							this.tixing(vo)
+						}
+						break
 					case 2 :
 					// 确认收货
 						this.show1 = true
@@ -339,9 +429,29 @@
 					// 评价页
 						// this.goPingjia(vo)
 						break;
+					default :
+						if(this.shopType(vo) == '拼团商品'){
+							uni.navigateTo({
+								url:'../MyBooking/mybooking'
+							})
+						}
 				}
 			},
-			// 确认收货
+			// 进入商品详情
+			shopDetail(item,vo){
+				if(item.combination_id){
+					this.$store.commit('setcombinId',item.combination_id)
+					uni.navigateTo({
+						url:"../../ShopDetails/groubBooking"
+					})
+				}else{
+					const id = item.productInfo.id
+					uni.navigateTo({
+						url:`../../ShopDetails/shopDetails?id=${id}`
+					})
+				}
+				
+			},
 			ConfirmOrder(){
 				const obj = this.orderInfo[this.currentClick]
 				affirmOrder(obj.order_id,this.token).then(res => {
@@ -362,12 +472,30 @@
 				uni.navigateTo({
 					url:`evaluate`
 				})
+			},
+			b_status(vo){
+				return vo._status._msg || ''
+			},
+			shopType(vo){
+				if(vo.pink_id){
+					return '拼团商品'
+				}
+				if(vo.seckill_id){
+					return '秒杀商品'
+				}
+				if(vo.bargain_id){
+					return '砍价商品'
+				}
+				return '普通商品'
 			}
 		},
 	}
 </script>
 
 <style lang="scss">
+	page,.content{
+		overflow: hidden;
+	}
 	.f-button{
 		padding: 0 15upx 20upx;
 		box-shadow: 0 3px 4px rgba(0,0,0,.1);

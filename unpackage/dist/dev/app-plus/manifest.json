@@ -7,8 +7,8 @@
   "id": "__UNI__EA8B4CA",
   "name": "老家商城",
   "version": {
-    "name": "1.0.0",
-    "code": "100"
+    "name": "1.1.0",
+    "code": 100
   },
   "description": "老家商城",
   "launch_path": "__uniappview.html",
@@ -21,6 +21,9 @@
     "Payment": {},
     "VideoPlayer": {},
     "Share": {},
+    "Maps": {
+      "coordType": "gcj02"
+    },
     "UniNView": {
       "description": "UniNView原生渲染"
     }
@@ -90,6 +93,9 @@
         }
       },
       "google": {
+        "schemes": [
+          "oldHome"
+        ],
         "permissions": [
           "<uses-feature android:name=\"android.hardware.camera\"/>",
           "<uses-feature android:name=\"android.hardware.camera.autofocus\"/>",
@@ -134,6 +140,12 @@
           }
         },
         "push": {},
+        "maps": {
+          "amap": {
+            "appkey_ios": "1",
+            "appkey_android": "4e70ab184d2066f7c8f5b4ff476fe0c7"
+          }
+        },
         "audio": {
           "mp3": {
             "description": "Android平台录音支持MP3格式文件"

@@ -55,7 +55,11 @@ const store = new Vuex.Store({
 		// 拼团详细信息
 		pinkInfo:{},
 		// 获取订单商品详情
-		orderDetail:{}
+		orderDetail:{},
+		// 公益信息存储
+		publicMessage:{},
+		skillTime:0,
+		richHtml:{}
 	},
 	mutations:{
 		// 保存用户名
@@ -66,7 +70,6 @@ const store = new Vuex.Store({
 		login(state,token){
 			state.userInfo.login = true
 			state.userInfo.token = token
-			
 		},
 		// 设置用户是否是商户正在审核状态
 		setUserIsSubmit(state,payload){
@@ -115,9 +118,14 @@ const store = new Vuex.Store({
 			console.log(item)
 			state.address = item
 		},
+		// 清空用户地址
+		emptyAddress(state){
+			state.address = {}
+		},
 		// 秒杀id存储
-		setSkillId(state,id){
-			state.skillId = id
+		setSkillId(state,payload){
+			state.skillId = payload.id
+			state.skillTime = payload.time
 		},
 		// 拼团id存储
 		setcombinId(state,id){
@@ -164,6 +172,13 @@ const store = new Vuex.Store({
 		// 保存评价商品详情信息
 		setOrderDetail(state,obj){
 			state.orderDetail = {...obj}
+		},
+		setPublicMessage(state,obj){
+			state.publicMessage = obj
+		},
+		// 保存富文本信息
+		setRichHtml(state,obj){
+			state.richHtml = obj
 		}
 	},
 	getters:{
@@ -198,6 +213,7 @@ const store = new Vuex.Store({
 				uni.getLocation({
 					type:"gcj02",
 					success :(res) =>  {
+						console.log(res)
 						// 储存到缓存中
 						uni.setStorage({
 							key:'addresss',
@@ -206,10 +222,55 @@ const store = new Vuex.Store({
 						resolve(res)
 					},
 					fail:(err) => {
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('获取地理位置失败',{duration:'long'})
+						// #endif
 						reject(err)
 					}
 				})
 			})
+		},
+		// 根据经纬度(wgs)并且根据经纬度获取城市(h5+app)
+		getWarpweft() {
+			// #ifdef APP-PLUS
+			let seconds = 3,longitude,latitude,obj = {}
+			return new Promise((resolve,reject) => {
+				let countdown = setInterval(() => {
+					seconds--
+					uni.getLocation({
+					            type: 'wgs84',
+					            success: function(res) {
+									if (seconds <= 0) {
+										seconds = 3
+										longitude = res.longitude //当前位置的经度
+										latitude = res.latitude	//当前位置的纬度
+										clearInterval(countdown)
+										var point = new plus.maps.Point(longitude, latitude);
+										plus.maps.Map.reverseGeocode(
+										    point,
+										    {},
+										    function(event) {
+										        obj.address = event.address; // 转换后的地理位置
+										        obj.point = event.coord; // 转换后的坐标信息
+										        obj.coordType = event.coordType; // 转换后的坐标系类型
+										        var reg = /.+?(省|市|自治区|自治州|县|区)/g;					                        
+										        obj.addressList = obj.address.match(reg).toString().split(",");
+												obj.city = obj.addressList[1].slice(0,obj.addressList[1].length-1)
+												resolve(obj)
+										    },
+										    function(e) {
+												reject(e)
+											}
+										)
+									}
+					            },
+								fail:() => {
+									reject(0)
+								}
+					        })
+				}, 1000)
+			})
+			// #endif
 		}
 	}
 })

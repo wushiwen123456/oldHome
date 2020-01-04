@@ -20,6 +20,7 @@
 				</view>
 			</view>
 		</view>
+		 <x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -76,6 +77,9 @@
 			}
 			
 		},
+		onReady() {
+			this.$refs.loading.open()
+		},
 		methods:{
 			// 处理时间轴
 			dealData(item){
@@ -93,6 +97,7 @@
 			getDiscounts(page,token){
 				getDiscounts(page,token)
 					.then(res => {
+						this.$refs.loading.close()
 						if(res.data.code == 200){
 							const obj = res.data.data
 							const keys = Object.keys(obj)

@@ -36,4 +36,7 @@
 	width:578rpx;
 	height:418rpx;
 }
+.beizhu{
+	padding: 0 !important;
+}
 

@@ -1,433 +1,160 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* 左侧导航布局 start*/
-
-/* 隐藏scroll-view滚动条*/
-.native-list-image image{
-	height: 180rpx;
-	width: 180rpx;
+@charset "UTF-8";
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+/*边框*/
+.b-b:after,
+.b-t:after {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  height: 0;
+  content: '';
+  -webkit-transform: scaleY(0.5);
+          transform: scaleY(0.5);
+  border-bottom: 1px solid #E4E7ED;
 }
-.native-txt-red{
-	width:86rpx;
-	height:40rpx;
-	background:rgba(205,50,51,1);
-	border-radius:16rpx;
-	font-size: 20rpx;
+.b-b:after {
+  bottom: 0;
 }
-.navtive-center{
-	width: auto;
-	display:inline-block !important;
-	display:inline;
-	height: 40rpx;
-	line-height: 40rpx;
-	margin: 16rpx 0;
-	padding: 0 10rpx;
-	background: #F9F9F9;
-	color: #999999;
-	font-size: 22rpx;
+.b-t:after {
+  top: 0;
 }
-::-webkit-scrollbar {
-	width: 0;
-	height: 0;
-	color: transparent;
+page, .content {
+  height: 100%;
+  background-color: #f8f8f8;
 }
-.tui-searchbox {
-	width: 100%;
-	height: 92rpx;
-	padding: 0 30rpx;
-	box-sizing: border-box;
-	background: #fff;
-	display: -webkit-box;
-	display: -webkit-flex;
-	display: flex;
-	-webkit-box-align: center;
-	-webkit-align-items: center;
-	        align-items: center;
-	-webkit-box-pack: center;
-	-webkit-justify-content: center;
-	        justify-content: center;
-	position: fixed;
-	left: 0;
-	top: 0;
-	
-	z-index: 100;
+.content {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
 }
-.tab-view {
-	/* height: 100%; */
-	width: 200rpx;
-	position: fixed;
-	left: 0;
-	z-index: 10;
+.left-aside {
+  -webkit-flex-shrink: 0;
+          flex-shrink: 0;
+  width: 200rpx;
+  height: 100%;
+  background-color: #fff;
 }
-.tab-bar-item {
-	width: 200rpx;
-	height: 110rpx;
-	background: #FFF;
-	box-sizing: border-box;
-	display: -webkit-box;
-	display: -webkit-flex;
-	display: flex;
-	-webkit-box-align: center;
-	-webkit-align-items: center;
-	        align-items: center;
-	-webkit-box-pack: center;
-	-webkit-justify-content: center;
-	        justify-content: center;
-	font-size: 26rpx;
-	color: #444;
-	font-weight: 400;
+.f-item {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+          justify-content: center;
+  width: 100%;
+  height: 100rpx;
+  font-size: 28rpx;
+  color: #333333;
+  position: relative;
 }
-.active {
-	position: relative;
-	color: #333333;
-	font-size: 30rpx;
-	font-weight: 600;
-	background: #F8F8F8;
+.f-item.active {
+    color: #cd3233;
+    background-color: #f8f8f8;
 }
-.active::before {
-	content: "";
-	position: absolute;
-	border-left: 8rpx solid #E41F19;
-	height: 100%;
-	left: 0;
+.f-item.active.before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      -webkit-transform: translateY(-50%);
+              transform: translateY(-50%);
+      height: 36rpx;
+      width: 8rpx;
+      background-color: #cd3233;
+      border-radius: 0 4px 4px 0;
+      opacity: .8;
 }
-.xian-curry{
-	background: #CD3233!important;
-	color: #FFF;
+.right-aside {
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+          flex: 1;
+  overflow: hidden;
+  padding: 29rpx 15rpx;
+  background-color: #fff;
 }
-
-/* 左侧导航布局 end*/
-.right-box {
-	width: 100%;
-	position: fixed;
-	padding-left: 220rpx;
-	box-sizing: border-box;
-	left: 0;
+.cu-avatar {
+  font-size: 28rpx !important;
 }
-.page-view {
-	width: 100%;
-	overflow: hidden;
-	padding-top: 20rpx;
-	padding-right: 20rpx;
-	box-sizing: border-box;
-	padding-bottom: env(safe-area-inset-bottom);
+.view-box {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+          justify-content: center;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
 }
-.swiper {
-	width: 100%;
-	height: 220rpx;
-	border-radius: 12rpx;
-	overflow: hidden;
-	-webkit-transform: translateZ(0);
-	        transform: translateZ(0);
+.view-box text {
+    padding: 15rpx 25rpx;
+    background-color: #e54d42;
+    color: #FFFFFF;
+    font-size: 30rpx;
+    border-radius: 10rpx;
 }
-
-
-.swiper .wx-swiper-dot {
-	width: 8rpx;
-	height: 8rpx;
-	display: -webkit-inline-box;
-	display: -webkit-inline-flex;
-	display: inline-flex;
-	background: none;
-	-webkit-box-pack: justify;
-	-webkit-justify-content: space-between;
-	        justify-content: space-between;
+.t-list {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+          flex-wrap: wrap;
+  margin-bottom: 20rpx;
 }
-.swiper .wx-swiper-dot::before {
-	content: '';
-	-webkit-box-flex: 1;
-	-webkit-flex-grow: 1;
-	        flex-grow: 1;
-	background: rgba(255, 255, 255, 0.8);
-	border-radius: 16rpx;
-	overflow: hidden;
+.t-list .t-item {
+    width: 158rpx;
+    height: 66rpx;
+    margin-top: 20rpx;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+            justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+            align-items: center;
+    background-color: #F8F8F8;
+    color: #333;
+    font-size: 28rpx;
+    border-radius: 10rpx;
 }
-.swiper .wx-swiper-dot-active::before {
-	background: #fff;
+.set-item1 {
+  margin-right: 20rpx;
 }
-.swiper .wx-swiper-dot.wx-swiper-dot-active {
-	width: 16rpx;
+.right-con {
+  margin-bottom: 48rpx;
 }
-
-
-
-
-.slide-image {
-	width: 100%;
-	height: 220rpx;
-}
-.class-item {
-	background: #fff;
-	width: 100%;
-	min-height: 100vh;
-	box-sizing: border-box;
-	padding: 20rpx;
-	margin-bottom: 20rpx;
-	border-radius: 12rpx;
-}
-.class-name {
-	font-size: 32rpx;
-	font-weight: bold;
-}
-.g-container {
-	/* padding-top: 20upx; */
-	display: -webkit-box;
-	display: flex;
-	display: -webkit-flex;
-	-webkit-box-pack: start;
-	-webkit-justify-content: flex-start;
-	        justify-content: flex-start;
-	-webkit-box-orient: horizontal;
-	-webkit-box-direction: normal;
-	-webkit-flex-direction: row;
-	        flex-direction: row;
-	-webkit-flex-wrap: wrap;
-	        flex-wrap: wrap;
-}
-.g-box {
-	width: 33.3333%;
-	text-align: center;
-	padding-top: 40rpx;
-}
-.g-image {
-	width: 120rpx;
-	height: 120rpx;
-}
-.g-title {
-	display: -webkit-box;
-	display: -webkit-flex;
-	display: flex;
-	-webkit-box-align: center;
-	-webkit-align-items: center;
-	        align-items: center;
-	-webkit-box-pack: center;
-	-webkit-justify-content: center;
-	        justify-content: center;
-	width:158rpx;
-	height:66rpx;
-	background:rgba(248,248,248,1);
-	border-radius:10rpx;
-	font-size: 28rpx;
+.hover-itmeclick {
+  background-color: #CD3233 !important;
+  color: #FFFFFF !important;
 }
 

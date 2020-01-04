@@ -1,7 +1,7 @@
 <template>
-	<view>
+	<view class="bg-white">
 		
-		<view v-if="!Nodata" class="margin-top-sm bg-white enter-margin">
+		<view v-if="Nodata" class="margin-top-sm bg-white enter-margin">
 			<view v-for="(vo,key) in getListData" :key="key" class="flex align-center justify-between enter-margin-all">
 				<view class="flex align-center">
 					<view class="enter-left-image">
@@ -22,10 +22,8 @@
 			</view>
 		</view>
 		
-		<view v-else class="bg-white" :style="{ height: windowHeight + 'px'}">
-			<view class="nodata">
-				<image src="../../../../static/nodataa.png"></image>
-			</view>
+		<view v-else class="empty-img" :style="{height:style.height + 'px',transform:'translateY(-10%)'}">
+			<image src="/static/nodatamessage.png" mode="widthFix"></image>
 		</view>
 	</view>
 	
@@ -45,17 +43,16 @@
 					image:'../../../../static/demo14.png',
 					name:'超松数码专营店',
 					time:'2019-09-26'
-				}]
+				}],
+				style:{
+					height:''
+				},
 			}
 		},
 		onLoad() {
 			var that = this
-			uni.getSystemInfo({
-			    success: function (res) {
-					that.windowHeight = res.windowHeight
-			        console.log('屏幕高度为'+res.windowHeight);
-			    }
-			});
+			const view = uni.getSystemInfoSync()
+			this.style.height = view.windowHeight;
 		},
 		methods:{
 			//进店逛逛

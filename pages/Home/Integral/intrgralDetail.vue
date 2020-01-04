@@ -1,19 +1,25 @@
 <template>
-	<view v-if="list.length">
-		<view class="intrgralDetail-title">
-			<view class="text-xxxl text-white">{{totalIntegral}}</view>
-			<image class="intrgralDetail-title-image" src="../../../static/jifenw.png"></image>
-		</view>
-		<view v-for="(vo,key) in list" :key="key">
-			<view class="flex align-center justify-between padding-left padding-right-lg bg-white intrgralDetail-mian-all">
-				<view>
-					<view class="text-wuer text-lg text-bold margin-bottom-xs">{{vo.pm == 1 ? '购买商品' : '兑换商品'}}</view>
-					<view class="text-jiujiujiu text-sm-erliu">{{vo.add_time}}</view>
-				</view>
-				<view class="text-red-my text-lg text-bold">{{vo.pm == 1 ? '+' : '-'}}{{vo.number}}</view>
+	<view>
+		<view v-if="list.length">
+			<view class="intrgralDetail-title">
+				<view class="text-xxxl text-white">{{totalIntegral}}</view>
+				<image class="intrgralDetail-title-image" src="../../../static/jifenw.png"></image>
 			</view>
+			<view v-for="(vo,key) in list" :key="key">
+				<view class="flex align-center justify-between padding-left padding-right-lg bg-white intrgralDetail-mian-all">
+					<view>
+						<view class="text-wuer text-lg text-bold margin-bottom-xs">{{vo.pm == 1 ? '购买商品' : '兑换商品'}}</view>
+						<view class="text-jiujiujiu text-sm-erliu">{{vo.add_time}}</view>
+					</view>
+					<view class="text-red-my text-lg text-bold">{{vo.pm == 1 ? '+' : '-'}}{{vo.number}}</view>
+				</view>
+			</view>
+			<image class="intrgralDetail-right-image" src="../../../static/jifenr.png"></image>
 		</view>
-		<image class="intrgralDetail-right-image" src="../../../static/jifenr.png"></image>
+		<view class="userNodes" v-else>
+			您还没有兑换记录哦~
+		</view>
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -39,11 +45,15 @@
 				totalIntegral:0
 			}
 		},
+		onReady() {
+			this.$refs.loading.open()
+		},
 		methods:{
 			// 获取积分信息
 			userIntegral(token){
 				userIntegral(token)
 				.then(res => {
+					this.$refs.loading.close()
 					if(res.data.code == 200){
 						this.list = res.data.data.list
 						this.totalIntegral = res.data.data.userBill

@@ -1,16 +1,16 @@
 <template>
-	<view>
+	<view class="content">
 		<image class="native-banner" src="../../../static/laojiatchang.png"></image>
 		<!-- 头部四位 -->
 		<view class="bg-white grid margin-bottom-xs text-center col-4">
 			<view @tap="nativeClick(vo,key)" class="native-image-all" v-for="(vo,key) in titleList" :key="key">
-				<!-- <image :src="vo.image"></image> -->
+				<image :src="vo.image"></image>
 				<view>{{vo.label}}</view>
 			</view>
 		</view>
 		<!-- 列表 -->
-		<view>
-			<view @click="itemClick(item)" v-if="hotList.length" class="flex align-center bg-white padding margin-top-xs" v-for="(item,index) in hotList" :key = 'index'>
+		<mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption" :top="480">
+			<view @click="itemClick(item)" class="flex align-center bg-white padding margin-top-xs" v-for="(item,index) in hotList" :key = 'index'>
 				<view class="native-list-image">
 					<image :src="item.image"></image>
 				</view>
@@ -23,7 +23,7 @@
 					</view>
 				</view>
 			</view>
-		</view>
+		</mescroll-uni>
 		
 		<!-- 加载 -->
 		<uni-load-more v-if="loadingimg" :loadingType="loadingType" ></uni-load-more>
@@ -38,13 +38,15 @@
 				</view>
 			</view>
 		</uni-popup>
-		
+		 <x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
 <script>
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
+	// 下拉刷新
+	import MescrollUni from "@/components/mescroll-uni/mescroll-uni.vue";
 	
 	// 工具
 	import {replaceImage} from '@/utils/dealUrl'
@@ -59,7 +61,8 @@
 	export default{
 		components: {
 			uniPopup,
-			uniLoadMore
+			uniLoadMore,
+			MescrollUni
 		},
 		data(){
 			return{
@@ -70,13 +73,35 @@
 				hotList:[],
 				pages:1,
 				limit:5,
-				currentIndex:0
+				currentIndex:0,
+				province:'',
+				// 下拉刷新的常用配置
+				downOption: { 
+					use: true, // 是否启用下拉刷新; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行下拉刷新的回调; 默认true
+				},
+				// 上拉加载的常用配置
+				upOption: {
+					use: true, // 是否启用上拉加载; 默认true
+					auto: true, // 是否在初始化完毕之后自动执行上拉加载的回调; 默认true
+					page: {
+						num: 0, // 当前页码,默认0,回调之前会加1,即callback(page)会从1开始
+						size: 10 // 每页数据的数量,默认10
+					},
+					noMoreSize: 5, // 配置列表的总数量要大于等于5条才显示'-- END --'的提示
+					textNoMore:'-- 没有更多了 --',
+					empty: {
+						tip: '暂无相关数据'
+					}
+				},
+				hasNext:true
 			}
 		},
-		onLoad() {
-			// 加载商品数据
-			this.getDetailData()
-
+		onLoad(e) {
+			this.province = e.province || ''
+		},
+		onReady() {
+			this.$refs.loading.open()
 		},
 		methods:{
 			// 获取省份
@@ -85,18 +110,37 @@
 						const titleArr = []
 						const othersArr = []
 						province.forEach(x => {
-							
-							x.label = x.label.replace(/(['省''市'('自治区')'馆'])/g,'')+'馆'
+							let label = x.label
+							label = label.replace(/(['省''市'('自治区')'馆'])/g,'')+'馆'
 
-							if(x.label == '河南馆' || x.label == '上海馆' || x.label == '陕西馆'){
-								titleArr.push(x)
-							}else{
-								othersArr.push(x)
+							// if(x.label == '河南馆' || x.label == '上海馆' || x.label == '陕西馆'){
+							// 	switch(x.label)
+							// 	titleArr.push(x)
+							// }else{
+							// 	othersArr.push(x)
+							// }
+							
+							switch (label){
+								case '河南馆':
+									x.image = '/static/nativea.png'
+									titleArr.push(x)
+									break
+								case '上海馆':
+									x.image = '/static/nativeb.png'
+									titleArr.push(x)
+									break
+								case '陕西馆':
+									x.image = '/static/nativec.png'
+									titleArr.push(x)
+									break
+								default:
+									othersArr.push(x)
+									break
 							}
 							
 						})
 						titleArr.push({
-							image:'',
+							image:'/static/natived.png',
 							label:'其他'
 						})
 						console.log(titleArr)
@@ -143,29 +187,55 @@
 			},
 			
 			// 商品列表
-			getDetailData(){
+			getDetailData(pageNum,pageSize,mescroll){
 				getDetailData({
-					limit:this.limit,
-					page:this.pages,
-					isHot:1
+					limit:pageSize,
+					page:pageNum,
+					is_hot:1,
+					province:this.province
 				}).then(res => {
+					this.$refs.loading.close()
 					if(res.data.code == 200){
-						const obj	= res.data.data
-						obj.forEach(x => {
-							x.image = replaceImage(x.image)
-							this.detalHotitem(x)
-						})
-						this.hotList = obj
+						let obj	= res.data.data
+						if(obj.length){
+							obj.forEach(x => {
+								x.image = replaceImage(x.image)
+								this.detalHotitem(x)
+							})
+						}
+						if(obj.length < pageSize){
+							this.hasNext = false
+						}else{
+							this.hasNext = true
+						}
+						if(pageNum == 1) this.hotList = [];
 						// 处理省份
 						this.getProvince(province)
+						this.hotList = this.hotList.concat(obj)
+						mescroll.endSuccess(obj.length, this.hasNext);
 					}
 				})
-			}
+			},
+			// 下拉刷新方法
+			downCallback(mescroll) { 
+				mescroll.resetUpScroll()
+			},
+			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
+			upCallback(mescroll) {
+				// 此时mescroll会携带page的参数:
+				let pageNum = mescroll.num; // 页码, 默认从1开始
+				let pageSize = mescroll.size; // 页长, 默认每页10条
+				this.getDetailData(pageNum,pageSize,mescroll)
+			},
 		}
 	}
 </script>
 
 <style>
+	page,.content{
+		height: 100vh;
+		overflow: hidden;
+	}
 	.native-banner{
 		height: 256upx;
 		width: 100%;

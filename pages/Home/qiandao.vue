@@ -1,5 +1,5 @@
 	<template>
-	<view>
+	<view class="content">
 		<view class="sing-all-text">
 			<image src="../../static/singback.png"></image>
 			<view @tap="singClick"  class="sing-text">
@@ -10,8 +10,8 @@
 			<view class="margin-lr-lg bg-white sing-all-main">
 				<view class="flex align-center justify-center padding-tb">
 					<view class="flex align-center text-lg ">
-						<view>已连续签到</view>
-						<view class="flex align-center justify-center text-xl text-bold text-red-my sing-data-imag">{{time}}</view>
+						<view>已签到</view>
+						<view class="flex align-center justify-center text-xl text-bold text-red-my sing-data-imag" v-if="isCheck">{{dealDay}}</view>
 						<view>天</view>
 					</view>
 				</view>
@@ -23,11 +23,20 @@
 					</view>
 				</view>
 			</view>
-			<view class="flex align-center justify-center my-money">
+			<view class="flex align-center justify-center my-money margin-top">
 				<image class="sing-bottom-image margin-right-xs" src="../../static/jifenw.png"></image>
-				<view class="text-white">{{money}}</view>
+				<view class="text-white" v-if="isCheck">{{money}}</view>
 			</view>
 		</view>
+		<view class="sing-animation" v-if="isShowAnimate">
+			<view class="move-box">
+				<image src="/static/jifenw.png"></image>
+				<view>
+					+ {{addMoney}}
+				</view>
+			</view>
+		</view>
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
@@ -43,6 +52,10 @@
 				today:0,//当天多少号
 				time:0,
 				money:0,//
+				SingDay:[],//已签到的日子
+				isShowAnimate:false ,//签到动画
+				addMoney:0.1,
+				isCheck:true
 			}
 		},
 		onLoad() {
@@ -55,9 +68,15 @@
 			});
 			that.yearClick()
 		},
+		onReady() {
+			this.$refs.loading.open()
+		},
 		computed:{
 			bottomheight:function(){
 				return this.windowHeight - this.titleHeight
+			},
+			dealDay(){
+				return this.SingDay.length
 			}
 		},
 		methods: {
@@ -66,17 +85,20 @@
 				var date = new Date(); //得到当前日期原始模式
 				var newyear = date.getFullYear(); //得到当前日期年份
 				var newmonth = date.getMonth() + 1; //得到当前日期月份（注意： getMonth()方法一月为 0, 二月为 1, 以此类推。）
-				that.today = date .getDate();
+				that.today = date.getDate();
 				console.log(newyear+'年'+'   '+ newmonth + '月'+that.today+'号')
 				var yearNum = new Date(newyear, newmonth, 0).getDate()
 				console.log(newyear+'年'+ newmonth + '月,有'+ yearNum +'天')
 				for(var i = 1 ; i < yearNum + 1; i++){
 					that.List.push({num:i,type:false})
 				}
-				console.log(that.List)
-				sign_index(true).then(res =>{
+				sign_index(false).then(res =>{
+					this.$refs.loading.close()
 					that.time = res.sign_num
-					that.money = res.money
+					let money = res.money
+					that.money  = Number(money).toFixed(2)
+					console.log(that.money)
+					that.SingDay = res.day
 					let list = res.day
 					list.forEach(function(item){
 						let num = item - 1
@@ -88,17 +110,43 @@
 				})
 			},
 			singClick(){
-				var that = this
-				if(that.singtext  == '已签到') return
+				var that = this				
+				
+				if(that.singtext  == '已签到'){
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('今天已经签到了哦，明天再来吧~')
+					// #endif
+					return
+				}
+				// this.isCheck = false
+				// that.isShowAnimate = false
+				// // #ifdef APP-PLUS
+				// plus.nativeUI.toast('签到成功',{duration:'long'})
+				// // #endif
+				// that.List[that.today - 1].type = true
+				// that.time += 1
+				// console.log(that.time)
+				// that.singtext = '已签到'	
+				// that.money = that.numAdd(Number(money),'')
+				// console.log(that.money)
+				// that.SingDay.push(that.today)	
+				// console.log(that.SingDay)
+
 				sign(true).then( res =>{
-					that.List[that.today - 1].type = true
-					that.time += 1
-					that.singtext = '已签到'
-					that.money = that.numAdd(res.money,that.money)
-					uni.showToast({
-						title:'签到成功',
-						icon:'none'
-					})
+					that.isShowAnimate = true
+					setTimeout(() => {
+						that.isShowAnimate = false
+						that.List[that.today - 1].type = true
+						that.money = that.numAdd(Number(that.money),0.1)
+						const arr = that.SingDay
+						arr.push(that.today)
+						that.SingDay = [...new Set(arr)] 
+					},3000)
+				}).catch(err => {
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('网络好像出了点问题...',{duration:'long'})
+					// #endif
+					that.isShowAnimate = false
 				})
 			},
 			/** 
@@ -123,7 +171,11 @@
 	}
 </script>
 
-<style>
+<style lang="scss">
+	page,.content{
+		height:100vh ;
+		overflow: hidden;
+	}
 	.sing-all-text{
 		background: #E8211F;
 	}
@@ -188,4 +240,45 @@
 	.sing-all-main{
 		border-radius: 24upx;
 	}
+	.sing-animation{
+		position: fixed;
+		height: 100vh;
+		width: 100vw;
+		top: 0;
+		z-index: 99999;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: rgba(255,255,255,.7);
+		image{
+			width: 84upx;
+			height: 80upx;
+			margin-right: 15upx;
+			animation-timing-function: ease-out;
+			animation-fill-mode: both;
+			animation-duration: 1s;
+			animation-name: move;
+			display: inline-block;
+		}
+		.move-box{
+			font-size: 60upx;
+			display: flex;
+			width: 100%;
+			justify-content: center;
+			align-items: center;
+			color: rgb(247,255,113);
+			font-weight: bolder;
+			margin-top: -180upx;
+		}
+	}
+	@keyframes move {
+		0% {
+			transform: rotateY(0);
+		}
+		
+		100% {
+			transform: rotateY(720deg);
+		}
+	}
+	
 </style>

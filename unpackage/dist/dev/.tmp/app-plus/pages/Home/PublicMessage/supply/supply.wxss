@@ -9,7 +9,7 @@
 	-webkit-box-pack: center;
 	-webkit-justify-content: center;
 	        justify-content: center;
-	margin-top: 20rpx;
+	margin-top: 10rpx;
 	width:130rpx;
 	height:50rpx;
 	border:1px solid rgba(205,50,51,1);
@@ -30,10 +30,7 @@
 	height:34rpx;
 	margin-left: 20rpx;
 }
-.mescroll {
-	position: fixed;
-	top: 78px;
-	bottom: 0;
-	height: auto;
+.text-xuqiu{
+	 line-height: 1.6;
 }
 
