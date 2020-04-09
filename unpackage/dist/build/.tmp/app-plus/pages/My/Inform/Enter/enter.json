@@ -3,5 +3,7 @@
   "navigationBarTitleText": "入驻通知",
   "scrollIndicator": "none",
   "bounce": "none",
-  "usingComponents": {}
+  "usingComponents": {
+    "x-loading": "/components/loding/w-loading"
+  }
 }

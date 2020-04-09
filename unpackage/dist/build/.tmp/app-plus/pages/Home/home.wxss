@@ -125,11 +125,17 @@
 	display: block;
 }
 .native-txt-red{
-	width:86rpx;
 	height:40rpx;
 	background:rgba(205,50,51,1);
 	border-radius:16rpx;
 	font-size: 20rpx;
+	display:-webkit-inline-box;
+	display:-webkit-inline-flex;
+	display:inline-flex;
+	-webkit-box-align: center;
+	-webkit-align-items: center;
+	        align-items: center;
+	color: #fff;
 }
 .tui-proimg-list {
 	width: 260rpx;

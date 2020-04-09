@@ -15,8 +15,8 @@
   "usingComponents": {
     "x-modal": "/components/x-modal/x-modal",
     "q-s-tabs": "/components/QS-tabs/QS-tabs",
-    "uni-load-more": "/components/uni-load-more/uni-load-more",
     "city-select": "/components/linzq-citySelect/linzq-citySelect",
-    "popup-layer": "/components/popup-layer/popup-layer"
+    "popup-layer": "/components/popup-layer/popup-layer",
+    "mescroll-uni": "/components/mescroll-uni/mescroll-uni"
   }
 }

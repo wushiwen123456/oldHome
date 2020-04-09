@@ -174,4 +174,17 @@ page.data-v-a456dae2{
 	        justify-content: space-between;
 	width: 90%;
 }
+.popups-center.data-v-a456dae2{
+	width:578rpx;
+	height:418rpx;
+}
+.refund-button.data-v-a456dae2{
+	margin: 0 30rpx;
+	margin-top: 200rpx;
+	height:94rpx;
+	line-height: 94rpx;
+	background:rgba(205,50,51,1);
+	border-radius:47rpx;
+	color: #FFFFFF;
+}
 

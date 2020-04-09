@@ -37,7 +37,23 @@
 	
 	// 导入注册方法
 	import { login } from '@/network/login'
-
+	
+	// 获取个人信息
+	import { getProfileData } from '@/network/getProfileData'
+	
+	// 聊天记录列表
+	import  {
+		noNetWorkChat,
+		noNetWork,
+		charCompare
+	} 	from '@/utils/chat'
+	
+	// 导入工具类
+	import { replaceImage } from '@/utils/dealUrl'
+	
+	//保存头像到本地
+	import { saveAvatar } from '@/utils/storage'
+	
 	export default {
 		components:{
 			wButton
@@ -106,16 +122,30 @@
 
 				login(data).then(res => {
 					if(res.data.code == 200){
-						const token = res.data.data.token
-						uni.setStorage({
-							key:"token",
-							data:token,
-						})
+						const token = res.data.data.token,
+						date = new Date().getTime()
+						// 将用户信息同步存储到缓存
+						const data = {
+								token:token,
+								username:that.phone,
+								password:that.password,
+								saveTime:date
+						}
+						console.log(data)
+						uni.setStorageSync('userData',data)
+						// 将token存储到vuex中
+						
+						
+						
 						this.$store.commit('login',token)
+						// 读取聊天记录
+						this.getUserChatMessages(token)
+						
+						// 获取用户个人信息，且存入缓存
+						this.getProfileData(token)
 						// #ifdef APP-PLUS
 						plus.nativeUI.toast('登录成功',{duration:'long'})
 						// #endif
-						const pages  = getCurrentPages()
 						uni.switchTab({
 							url:'../Home/home'
 						})
@@ -139,7 +169,85 @@
 			},
 			reset(){
 				this.password = ''
-			}
+			},
+			
+			// 获取用户聊天记录
+			getUserChatMessages(token){
+				this.$store.dispatch('getUserChatList',token)
+				.then(res => {
+					// 将数据和缓存中的数据进行对比,返回结果数组
+					const resArr = charCompare(res)
+					// 将数据存储到vuex中
+					this.$store.commit('setUserChatMessages',resArr)
+					console.log('获取聊天记录成功，返回合并后的聊天记录')
+					console.log(this.$store.state.userChatMessages)
+				})
+				.catch(err => {
+					switch (err) {
+						case '1':
+							// 连接服务器失败
+							noNetWork()
+							break
+					}
+				})
+			},
+			
+			// 获取用户个人信息
+			getProfileData(token){
+				getProfileData(token).then(res => {
+					if(res.data.code == 200){
+						const data = res.data.data
+						data.avatar = replaceImage(data.avatar)
+						// 存入缓存
+						uni.setStorage({
+							key:'Message_key',
+							data,
+							success:(res) => {
+								console.log('个人信息写入缓存成功')
+							}
+						})
+						// 获取本地头像文件缓存
+						const localAvatar = uni.getStorageSync('integrlUrl')
+						// 根据缓存路径读取本地文件，判断是否有这个文件
+						if(localAvatar){
+							uni.getSavedFileInfo({
+								filePath:localAvatar,
+								success:(res) => {
+									if(res.size){
+										// 有缓存文件，写入vuex中
+										console.log('本地头像路径获取成功')
+										this.$store.commit('setLocalAvatar',localAvatar)
+										console.log(this.$store.state.userInfo.localAvatar)
+									}
+								},
+								fail:err => {
+									// 读取文件失败，执行保存用户网络头像到本地操作
+									saveAvatar(data.avatar).then(res => {
+										// 存入vuex中
+										this.$store.commit('setLocalAvatar',res)
+										console.log('网络图片写入本地成功')
+									}).catch(err => {
+										console.log('本地头像保存失败')
+									})
+								}
+							})
+						}else{
+							// 读取文件失败，执行保存用户网络头像到本地操作
+							saveAvatar(data.avatar).then(res => {
+								// 存入vuex中
+								this.$store.commit('setLocalAvatar',res)
+								console.log('网络图片写入本地成功')
+							}).catch(err => {
+								console.log('本地头像保存失败')
+							})
+						}
+						
+						// 个人数据存入vuex
+						this.$store.commit('setUserData',data)
+							
+					}
+				})
+			},
 		}
 	}
 </script>

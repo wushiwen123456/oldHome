@@ -55,7 +55,8 @@
 				SingDay:[],//已签到的日子
 				isShowAnimate:false ,//签到动画
 				addMoney:0.1,
-				isCheck:true
+				isCheck:true,
+				token:''
 			}
 		},
 		onLoad() {
@@ -66,6 +67,7 @@
 			        console.log('屏幕高度为'+res.windowHeight);
 			    }
 			});
+			this.token = this.$store.getters.isToken
 			that.yearClick()
 		},
 		onReady() {
@@ -92,7 +94,7 @@
 				for(var i = 1 ; i < yearNum + 1; i++){
 					that.List.push({num:i,type:false})
 				}
-				sign_index(false).then(res =>{
+				sign_index(this.token,false).then(res =>{
 					this.$refs.loading.close()
 					that.time = res.sign_num
 					let money = res.money
@@ -118,21 +120,8 @@
 					// #endif
 					return
 				}
-				// this.isCheck = false
-				// that.isShowAnimate = false
-				// // #ifdef APP-PLUS
-				// plus.nativeUI.toast('签到成功',{duration:'long'})
-				// // #endif
-				// that.List[that.today - 1].type = true
-				// that.time += 1
-				// console.log(that.time)
-				// that.singtext = '已签到'	
-				// that.money = that.numAdd(Number(money),'')
-				// console.log(that.money)
-				// that.SingDay.push(that.today)	
-				// console.log(that.SingDay)
 
-				sign(true).then( res =>{
+				sign(this.token,true).then( res =>{
 					that.isShowAnimate = true
 					setTimeout(() => {
 						that.isShowAnimate = false
@@ -141,6 +130,7 @@
 						const arr = that.SingDay
 						arr.push(that.today)
 						that.SingDay = [...new Set(arr)] 
+						that.singtext = '已签到'
 					},3000)
 				}).catch(err => {
 					// #ifdef APP-PLUS

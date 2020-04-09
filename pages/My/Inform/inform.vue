@@ -5,12 +5,19 @@
 				<image class="inform-image-all" :src="vo.image"></image>
 				<view>{{vo.name}}</view>
 			</view>
-			<view class="margin-right inform-all-badge">2</view>
+			<view class="margin-right inform-all-badge" v-if="vo.tips">{{vo.tips}}</view>
 		</view>
 	</view>
 </template>
 
 <script>
+	import {userMessages} from '@/network/getProfileData'
+	import  {
+		noNetWorkChat,
+		noNetWork,
+		charCompare
+	} 	from '@/utils/chat'
+	
 	export default{
 		data(){
 			return{
@@ -18,15 +25,21 @@
 					name:'物流消息',
 					image:'../../../static/informa.png',
 				},{
-					name:'聊天记录',
+					name:'我的消息',
 					image:'../../../static/informb.png',
+					tips:0
 				},{
 					name:'系统通知',
 					image:'../../../static/informc.png',
 				},{
 					name:'入驻通知',
 					image:'../../../static/informd.png',
-				}]
+				},{
+					name:'退款通知',
+					image:'/static/mytwoe.png'
+				}
+				],
+				isLoad:false
 			}
 		},
 		onLoad() {
@@ -37,8 +50,41 @@
 			        console.log('屏幕高度为'+res.windowHeight);
 			    }
 			});
+		},	
+		onShow() {
+			const token = this.$store.getters.isToken
+			// 获取其他消息
+			this.getMessages(token)
+			// 获取vuex中所有未接收的消息,返回到我的消息的tips中
+			this.$set(this.list[1],'tips', this.$store.getters.allUnabsorbed)
 		},
 		methods:{
+			// 获取消息条数
+			getMessages(token){
+				userMessages(token).then(res =>{
+					if(res.data.code == 200){
+						const data = res.data.data,list = this.list
+						this.list.forEach(x => {
+							const name = x.name
+							switch (name) {
+								case '物流消息':
+									this.$set(x,'tips',data.orderNotice)
+									break
+								case '入驻通知':
+									
+									this.$set(x,'tips',this.$store.getters.isLookSettled ? data.shopNotice : 0)
+									break
+								case '系统通知':
+									this.$set(x,'tips',data.systemNotice)
+									break
+								case '退款通知':
+									this.$set(x,'tips',data.payRefunNotice)
+									break
+							}
+						})
+					}
+				})
+			},
 			//点击消息
 			informClick(key){
 				if(key == 0){
@@ -47,6 +93,9 @@
 						url:'Logistics/logistics'
 					})
 				}if(key == 1){
+					if(this.isLoad = false){
+						return 
+					}
 					//聊天记录
 					uni.navigateTo({
 						url:'Chat/chat'
@@ -58,11 +107,17 @@
 					})
 				}if(key == 3){
 					//入驻通知
+					this.$store.state.lookSettled = false
 					uni.navigateTo({
 						url:'Enter/enter'
 					})
+				}if(key == 4){
+					// 退款通知
+					uni.navigateTo({
+						url:`refund/refund`
+					})
 				}
-			},
+			}
 		}
 	}
 </script>

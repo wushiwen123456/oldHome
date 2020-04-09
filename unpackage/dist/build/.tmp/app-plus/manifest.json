@@ -7,8 +7,8 @@
   "id": "__UNI__EA8B4CA",
   "name": "老家商城",
   "version": {
-    "name": "1.1.0",
-    "code": 100
+    "name": "0.0.7",
+    "code": 17
   },
   "description": "老家商城",
   "launch_path": "__uniappview.html",
@@ -161,7 +161,7 @@
       }
     },
     "uni-app": {
-      "compilerVersion": "2.4.6",
+      "compilerVersion": "2.5.1",
       "control": "v8",
       "nvueCompiler": "uni-app",
       "renderer": "auto",

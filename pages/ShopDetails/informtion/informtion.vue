@@ -1,18 +1,18 @@
 <template>
 	<view>
-		<scroll-view scroll-y id="openHeight" class="cu-chat" :style="{height:style.contentViewHeight + 'px'}" :scroll-top="scrollTop">
-			<view v-for="(vo,key) in messageList" :key="key" class="m-item">
+		<scroll-view scroll-y id="openHeight" class="cu-chat" :style="{height:style.contentViewHeight + 'px'}" :scroll-top="scrollTop" v-if="messageList">
+			<view v-for="(vo,key) in messageList.messageList" :key="key" class="m-item">
 				<view v-if="vo.cate == 0" class="cu-item self">
 					<view class="main">
 						<!-- <view class="content shadow"> -->
 							<rich-text class="content shadow" :nodes="vo.content"></rich-text>
 						<!-- </view> -->
 					</view>
-					<image class="cu-avatar radius" mode="aspectFill" :src="message.avatar"></image>
+					<image class="cu-avatar radius" mode="aspectFill" :src="localAvatar || message.avatar"></image>
 					<view class="date">{{photoList(vo.add_time)}}</view>
 				</view>
-				<view  v-else class="cu-item">
-					<image class="cu-avatar radius" :src="shopInfo.storeLogo"></image>
+				<view  v-if="vo.cate == 1" class="cu-item">
+					<image class="cu-avatar radius" :src="shopInfo.shop_logo"></image>
 					<view class="main">
 						<rich-text class="content shadow" :nodes="vo.content"></rich-text>
 					</view>
@@ -30,13 +30,15 @@
 			 @focus="InputFocus" @blur="InputBlur" @confirm="sendClick"></input>
 			<image @tap="sendClick" class="fasong-button" src="../../../static/dasong.png"></image>
 		</view>
-
+		 <x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
 <script>
 	import {test,send_message,get_service_message} from '@/network/sign.js'
 	import { formatDate } from '@/utils/dealData'
+	// 导入长连接方法
+	import { openWebScoket } from '@/utils/chat'
 	export default {
 		data() {
 			return {
@@ -46,7 +48,7 @@
 				shopInfo:null,//店铺信息
 				messageall:[],//所有聊天记录 storeId：店铺id  messageList:[]
 				messageList:[],//与打开店铺有关的聊天记录
-				type:-1,//0 缓存 存在与该店铺的聊天记录  1 不存在
+				type:1,//0 缓存 存在与该店铺的聊天记录  1 不存在
 				typepage:-1,//存在的聊天记录下标
 				// 聊天页面时时滚动样式
 				style: {
@@ -56,8 +58,9 @@
 					mitemHeight: 0
 				},
 				scrollTop:0,
-				scrollHeight:600,
-				isShowScroll:true
+				isShowScroll:true,
+				openWebScoket:true,
+				localAvatar:''
 			};
 		},
 		
@@ -81,105 +84,59 @@
 				}
 			}
 		},
-		onBackPress(){
-			uni.closeSocket()
+		onUnload(){
+			if(this.openWebScoket){
+				uni.closeSocket({
+					success: () => {
+						console.log('Socket退出成功')
+						
+					}
+				}) 
+			}
+			// 将当前聊天对象的小红点消除
+			if(this.messageList){
+				this.messageList.newMessageNum = 0
+			}
+			console.log(this.messageall)
+			// 将聊天数据存储到缓存
+			uni.setStorage({
+				key:'messageall_key',
+				data:this.messageall,
+				success:() => {
+					console.log('存储聊天记录成功')
+				}
+			})
+			if(this.openWebScoket){
+				uni.$off('refreshList')
+			}
 		},
 		onLoad(e){
-			this.getScrollHeight()
-			var that = this
-			console.log(e)
-			
-			that.shopInfo = JSON.parse(e.shopInfo),//店铺信息
-			console.log(that.shopInfo)
-			that.message = uni.getStorageSync('Message_key');//个人信息
-			let list = uni.getStorageSync('messageall_key');//聊天数据
-			if(list){
-				that.messageall = list
-				//存在聊天记录
-				for(var i = 0 ; i < list.length ; i++){
-					if(list[i].storeId == that.shopInfo.storeId){
-						that.messageList = list[i].messageList
-						that.type = 0
-						that.typepage = i
-						console.log('存在聊天记录，且下标为')
-						console.log(that.typepage)
-						break;
-					}else{
-						console.log('缓存内存在聊天记录，但不存在该店铺')
-						that.type = 1
-					}
-				}
+			if(e.indet){
+				console.log('是从消息列表进来的')
+				this.openWebScoket = false
 			}else{
-				//不存在聊天记录
-				that.type = 1
-				let group_id = that.message.uid + '_' + that.shopInfo.storeId
-				get_service_message({group_id:group_id}).then(res =>{
-					if(res.length > 0){  //服务器存在聊天记录
-						that.messageList = res
-						let arr = []
-						// 添加缓存
-						let data = {
-							storeId:that.shopInfo.storeId,
-							messageList:res
-						}
-						arr.push(data)
-						uni.setStorage({
-						    key: 'messageall_key',
-						    data: arr,
-						});
-						that.type = 0
-						that.typepage = 0
-					}
-				})
+				console.log('不是从消息列表进来的')
+				this.openWebScoket = true
 			}
-			uni.connectSocket({
-				url: 'ws://49.234.24.76:9502',
-			});
-			uni.onSocketOpen(function (res) {
-				console.log('WebSocket连接已打开！');
-			});
-			uni.onSocketMessage(function (res) {
-				let data = JSON.parse(res.data)
-				if(data.type == 'init'){
-					console.log('第一次连接')
-					let mydata ={
-						client_id:data.client_id,
-						uid:that.message.uid
-					}
-					test(mydata)
-					return
-				}
-				console.log('收到服务器内容：' );
-				console.log(data)
-				var timestamp = Math.round(new Date().getTime()/1000).toString();
-				let dataList = {
-					cate:1,
-					add_time:timestamp,
-					content:data.msg
-				}
-				that.messageList.push(dataList)
-				that.messageall[that.typepage].messageList = that.messageList
-				// that.scrollToBottom()
-				uni.setStorage({
-				    key: 'messageall_key',
-				    data: that.messageall,
-				});
-				
-			});
+			var that = this		
+			that.shopInfo = JSON.parse(e.shopInfo),//店铺信息
+			that.message = this.$store.state.userInfo.userData//个人信息
+			// 从vuex中读取用户本地头像
+			that.localAvatar = this.$store.state.userInfo.localAvatar//用户本地头像
+			console.log(that.localAvatar)
+			// 获取vuex中的数据
+			this.messageall = this.$store.state.userChatMessages
+			this.messageList = this.messageall.find(x => x.storeId == that.shopInfo.shop_id)
 			const res = uni.getSystemInfoSync();   //获取手机可使用窗口高度
 			that.style.pageHeight = res.windowHeight;
 			that.style.contentViewHeight = res.windowHeight - uni.getSystemInfoSync().screenWidth/750* (100) - 50;	
+			that.isOpenWebScoket()
 		},
 		onReady() {
 			this.scrollToBottom()
+
 		},
 		methods: {
-			// 计算scroll的高度
-			getScrollHeight(){
-				const res = uni.getSystemInfoSync();
-				this.scrollHeight = `calc( ${res.windowHeight}px - ${this.InputBottom}px )`
-				console.log(this.scrollHeight)
-			},
 			// 时间转换
 			padLeftZero (str) {
 			  return ('00' + str).substr(str.toString().length);
@@ -193,41 +150,28 @@
 				let data = {
 					message:send,
 					uid:that.message.uid,
-					shop_id:that.shopInfo.storeId,
+					shop_id:that.shopInfo.shop_id,
 				}
 				var timestamp = Math.round(new Date().getTime()/1000).toString();
-				let dataList = {
-					cate:0,
-					add_time:timestamp,
-					content:send
-				}
-				that.messageList.push(dataList)
 				
-				// that.scrollToBottom()
-				if(that.type == 0){
-					console.log('存在店铺')
-					//存在与该店铺的聊天记录
-					that.messageall[that.typepage].messageList = that.messageList
-				}else{
-					let data = {
-						storeId:that.shopInfo.storeId,
-						messageList:[dataList]
-					}
-					that.messageall.push(data)
-					console.log(that.messageall)
-					that.type = 0
-					that.typepage = that.messageall.length - 1
-					console.log('不存在店铺，已添加到缓存位置为：')
-					console.log(that.typepage)
-				}
-				uni.setStorage({
-				    key: 'messageall_key',
-				    data: that.messageall,
-				});
-				send_message(data).then(res =>{
-					
+				let dataList = {
+						msg:send,
+						shop_id:that.shopInfo.shop_id,
+						cate:0
+				}			
+				// 发送至vuex中存储
+				this.$store.commit('dealSocketMessage',{
+					dataList,
+					shop_info:that.shopInfo
 				})
-				that.scrollToBottom()
+				send_message(data)
+				that.$nextTick(() =>{
+					that.scrollToBottom()
+					if(!this.messageList){
+						this.messageList = this.messageall.find(x => x.storeId == that.shopInfo.shop_id)
+					}
+					that.scrollToBottom()
+				})
 			},
 			
 			scrollToBottom(e){
@@ -235,7 +179,7 @@
 				let query = uni.createSelectorQuery()
 				query.selectAll('.m-item').boundingClientRect()
 				query.select('#openHeight').boundingClientRect()
-				query.exec( (res) => {
+				query.exec( (res) => {	
 					that.style.mitemHeight = 0
 					res[0].forEach(rect => {
 						that.style.mitemHeight = that.style.mitemHeight + rect.height + 40
@@ -249,17 +193,45 @@
 			//点击店铺
 			shopClick(){
 				uni.navigateTo({
-					url:'../StoreDetails/storedetails?id=' + this.shopInfo.storeId,
+					url:'../StoreDetails/storedetails?id=' + this.shopInfo.shop_id,
 				})
 			},
 			InputFocus(e) {
 				this.InputBottom = e.detail.height
-				this.scrollToBottom()
+				this.$nextTick(() => {
+					this.scrollToBottom()
+				})
 			},
 			InputBlur(e) {
 				this.InputBottom = 0
-				this.scrollToBottom()
+				this.$nextTick(() => {
+					this.scrollToBottom()
+				})
 			},
+			isOpenWebScoket(){
+				if(this.openWebScoket){
+					openWebScoket()
+					uni.onSocketOpen(function (res) {
+						console.log('WebSocket连接已打开！');
+					});
+					uni.onSocketError(res => {	
+						console.log('WebSocket连接失败,请检查')
+					})
+					uni.onSocketMessage(res => {				
+						this.$store.commit('dealSocketMessage',{
+							res,
+							shop_info:this.shopInfo
+						})
+						this.$nextTick(() => {
+							if(!this.messageList){
+								this.messageList = this.messageall.find(x => x.storeId == this.shopInfo.shop_id)
+							}
+							console.log(this.messageList)
+							this.scrollToBottom()
+						})
+					});
+				}
+			}
 		}
 	}
 </script>

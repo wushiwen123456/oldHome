@@ -462,7 +462,6 @@
   color: #ffffff;
   font-size: 32rpx;
   font-weight: bold;
-  height: 100%;
   display: -webkit-box;
   display: -webkit-flex;
   display: flex;
@@ -473,5 +472,6 @@
   -webkit-align-items: center;
           align-items: center;
   position: relative;
+  height: 100rpx;
 }
 

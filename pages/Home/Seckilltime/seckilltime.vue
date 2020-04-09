@@ -99,16 +99,12 @@
 					let calc = res.windowHeight;
 					that.winHeight = calc;
 				}
-			});
-			
+			});		
+			// 获取秒杀时间列表和商品列表
+			this.getSecKillData()
 		},
 		onReady() {
 			this.$refs.loading.open()
-		},
-		onShow() {		
-			this.currentTab = 0
-			// 获取秒杀时间列表和商品列表
-			this.getSecKillData()
 		},
 		methods: {
 			// 加载秒杀数据

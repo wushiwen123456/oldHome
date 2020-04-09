@@ -30,6 +30,9 @@ const http = (options) => {
 			},
 			fail:(err) => {
 				reject(err)
+				// #ifdef APP-PLUS
+				plus.nativeUI.toast('连接服务器失败',{duration:'long'})
+				// #endif
 			},
 			complete:() => {
 				if(options.showModel){

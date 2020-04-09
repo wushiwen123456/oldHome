@@ -41,7 +41,7 @@
 			
 			const info = uni.getStorageSync('Message_key')
 			console.log(info)
-			const integrlUrl = uni.getStorageSync('integrlUrl')
+			const integrlUrl = this.$store.state.userInfo.localAvatar
 			if(info && integrlUrl){
 				this.info = info
 				this.icon = integrlUrl

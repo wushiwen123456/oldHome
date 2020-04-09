@@ -202,10 +202,6 @@
 
 
 
-
-
-
-
 /*tabbar start*/
 ::-webkit-scrollbar {
 	width: 0;

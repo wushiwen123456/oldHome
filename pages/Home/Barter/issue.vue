@@ -7,15 +7,15 @@
 					<input placeholder="请输入商品标题" confirm-type="done" v-model="inputInfo.title" name="input"></input>
 				</view>
 				<view class="cu-form-group">
-					<view class="title text-black">置换物品</view>
+					<view class="title text-black">置换物品(选填)</view>
 					<input placeholder="请输入想要置换的物品" confirm-type="done" v-model="inputInfo.product" name="input"></input>
 				</view>
 				<view class="cu-form-group">
 					<view class="title text-black">商品分类</view>
-					<input @click="fenleiClick" placeholder="请选择商品分类" disabled="true" v-model="inputInfo.category" confirm-type="done" name="input"></input>
+					<input @click="fenleiClick" placeholder="请选择商品分类" disabled="true" v-model="inputInfo.category.label" confirm-type="done" name="input"></input>
 				</view>
 				<view class="cu-form-group">
-					<view class="title text-black">换货价</view>
+					<view class="title text-black">换货价(选填)</view>
 					<input placeholder="请填写换货价格" confirm-type="done" type="digit" v-model="inputInfo.price" name="input"></input>
 				</view>
 				<view class="cu-form-group">
@@ -131,6 +131,9 @@
 
 <script>
 	import wPicker from '@/components/w-picker/w-picker.vue'
+	import { upload } from '@/network/sign'
+	import { yi_publish } from '@/network/yiwu'
+	
 	export default{
 		components:{
 			wPicker
@@ -140,6 +143,7 @@
 				spacing:100,//键盘与text的距离
 				focus: false,
 				imgList: [],//上传轮播图
+				updataImgList:[],
 				selectList:[
 					{
 						label:'规格1',
@@ -196,14 +200,27 @@
 				inputInfo:{
 					title:'',
 					product:'',
-					category:'',
+					category:{},
 					price:'',
 					name:'',
 					phone:'',
 					address:''
 				},
-				shopDetail:''
+				shopDetail:'',
+				address2:[],
+				token:''
 			}
+		},
+		onLoad(e) {
+			if(e.list){
+				this.doChoose1List(e.list)
+			}else{
+				// #ifdef APP-PLUS
+				plus.nativeUI.toast('页面出现错误，请重试')
+				// #endif
+				uni.navigateBack()
+			}
+			this.token = this.$store.getters.isToken
 		},
 		onShow() {
 			// 获取富文本内容信息
@@ -225,27 +242,15 @@
 					 // #endif
 					 return
 				 }
-				 if(!that.inputInfo.product){
-				 					 // #ifdef APP-PLUS
-				 					 plus.nativeUI.toast('请填写置换物品',{duration:'long',verticalAlign:'center'})
-				 					 // #endif
-				 					 return
-				 }
 				 if(!that.inputInfo.category){
 				 					 // #ifdef APP-PLUS
 				 					 plus.nativeUI.toast('请选择商品分类',{duration:'long',verticalAlign:'center'})
 				 					 // #endif
 				 					 return
 				 }
-				 if(!that.inputInfo.price){
-				 					 // #ifdef APP-PLUS
-				 					 plus.nativeUI.toast('请输入换货价格',{duration:'long',verticalAlign:'center'})
-				 					 // #endif
-				 					 return
-				 }
 				 if(!that.imgList.length){
 				 					 // #ifdef APP-PLUS
-				 					 plus.nativeUI.toast('请上传商品图片',{duration:'long',verticalAlign:'center'})
+				 					 plus.nativeUI.toast('请上传商品图片(至少一张)',{duration:'long',verticalAlign:'center'})
 				 					 // #endif
 				 					 return
 				 }
@@ -255,9 +260,9 @@
 				 					 // #endif
 				 					 return
 				 }
-				 if(!that.inputInfo.phone){
+				 if(!(/^1[3456789]\d{9}$/.test(that.inputInfo.phone))){
 				 					 // #ifdef APP-PLUS
-				 					 plus.nativeUI.toast('请填写您的电话',{duration:'long',verticalAlign:'center'})
+				 					 plus.nativeUI.toast('请输入正确的电话格式',{duration:'long',verticalAlign:'center'})
 				 					 // #endif
 				 					 return
 									 
@@ -268,24 +273,87 @@
 				 					 // #endif
 				 					 return
 				 }
-				let obj = {
-					title:that.inputInfo.title,
-					product:that.inputInfo.product,
-					category:that.inputInfo.category,
-					price:that.inputInfo.price,
-					imgList:that.imgList,
-					attr:that.guigeList,
-					name:that.inputInfo.name,
-					phone:that.inputInfo.phone,
-					address:that.inputInfo.address,
-					html:Object.keys(that.$store.state.richHtml).length ? that.$store.state.richHtml : ''
-				}
-				console.log(obj)
+				 uni.showLoading({
+				 	mask:true
+				 })
+				 // 图片上传至服务器
+				 that.imgList.forEach(x =>{
+					upload(x,true).then(res => {
+						that.updataImgList.push(res.url)
+						console.log(that.updataImgList)
+						console.log(that.imgList)
+						if(that.updataImgList.length == that.imgList.length){
+							let arr = {}
+							if(that.guigeList.length){
+								arr = {...that.guigeList.map(x => {
+											return {
+												name:x.name,
+												price:x.price,
+												num:x.size
+											}
+								})}					
+							}
+							let obj = {
+								title:that.inputInfo.title,
+								goods_name:that.inputInfo.product || '暂时没想好',
+								cate_id:that.inputInfo.category.value,//分类id，暂时没实现
+								price:that.inputInfo.price || 0,
+								images:that.updataImgList.join(','),
+								info:arr,
+								province:that.address2[0],
+								city:that.address2[1],
+								name:that.inputInfo.name,
+								phone:that.inputInfo.phone,
+								content:Object.keys(that.$store.state.richHtml).length ? that.$store.state.richHtml : ''
+							}
+							console.log(obj)
+							const token = that.token
+							yi_publish(obj,token).then(res => {
+								uni.hideLoading()
+								if(res.data.code == 200){
+									// #ifdef APP-PLUS
+									plus.nativeUI.toast('发布成功',{duration:'long'})
+									// #endif
+									uni.redirectTo({
+										url:`BaterClsaaify`
+									})
+								}else{
+									// #ifdef APP-PLUS
+									plus.nativeUI.toast(res.data.msg,{duration:'long'})
+									// #endif
+									that.updataImgList = []
+									uni.showToast({
+										title:res.data.msg,
+										icon:'none'
+									})
+								}
+							})
+						}else if(that.updataImgList.length > that.imgList){
+							that.updataImgList = []
+							uni.hideLoading()
+						}
+					})
+				 })
+				 
+				 
+				 
+				 
+				
 			},
 			//编辑详情
 			issueClick(){
 				uni.navigateTo({
 					url:'../texts/index/index'
+				})
+			},
+			// 处理选择的分类
+			doChoose1List(list){
+				let _list = JSON.parse(list)
+				this.selectList = _list.map(x => {
+					return {
+						label:x.cate_name,
+						value:x.id
+					}
 				})
 			},
 			//轮播图选择
@@ -419,12 +487,13 @@
 			},
 			// 单选框确认
 			onConfirm1(e){
-				this.inputInfo.category = e.result
+				this.inputInfo.category = e.checkArr
 			},
 			addressClick(){
 				this.$refs.region.show()
 			},
 			onConfirm2(e){
+				this.address2 = e.checkArr
 				this.inputInfo.address = e.result
 			}
 		},

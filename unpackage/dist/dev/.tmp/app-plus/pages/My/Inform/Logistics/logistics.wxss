@@ -5,25 +5,17 @@
 .nodata image{
 	width: 100%;
 }
-.logistics-all{
-	margin-top: 10rpx;
-	padding: 24rpx 30rpx 24rpx 24rpx;
+.system-all{
+	height: 144rpx;
 }
-.logistics-left-all{
+.system-left-image image{
+	width:84rpx;
+	height:84rpx;
 }
-.logistics-left-all image{
-	width:228rpx;
-	height:228rpx;
+.text-color{
+	color: #838383;
 }
-.logistics-right-all{
-	width: 100%;
-}
-.logistics-right-all-button{
-	width:170rpx;
-	height:58rpx;
-	border:1px solid rgba(207,50,51,1);
-	border-radius:30rpx;
-	color: #CF3233;
-	font-size: 32rpx;
+.text-max-width{
+	max-width: 560rpx;
 }
 

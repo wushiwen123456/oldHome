@@ -16,7 +16,7 @@
 					<view v-for="(item,indexKey) in vo.cartInfo" :key="indexKey">
 						<view  class="flex align-start margin-left margin-right"	 :class="{'padding-bottom':vo._status._type == 3}" @tap="detail(vo)">
 							<view class="mybooking-image">
-								<image :src="listImage(item,indexKey)" @tap.stop="shopDetail(item,vo)"></image>
+								<image :src="listImage(item,indexKey)" @tap.stop="detail(vo,key)"></image>
 							</view>
 							<view class="text-width margin-left-sm ">
 								<view class="flex align-center justify-between">
@@ -28,7 +28,7 @@
 									<view class="flex-sub" :class="{'text-right':!item.productInfo.attrInfo}">x{{item.cart_num}}</view>
 								</view>
 								<view class="flex justify-end pingjia" v-if="vo._status._type == 3">
-									<text @tap.stop="goPingjia(item,indexKey)">立即评价</text>
+									<text @tap.stop="goPingjia(item,indexKey)" class="button-r">立即评价</text>
 								</view>
 							</view>
 							
@@ -52,7 +52,7 @@
 						</view>
 						<view class="flex">
 							<view v-if="dealBtnLeft(vo)" style="margin-right:20upx ;" class="cu-btn round line-black text-cut" @click.stop="btnCliclLeft(vo,key)">{{dealBtnLeft(vo)}}</view>
-							<view v-if="dealBtnRight(vo)" @click.stop="btnClickRight(vo,key)" class="cu-btn round line-black text-cut" :class="{'button-r' : vo._status._type == 2 || vo._status._type == 0 || vo._status._type == 3 }">{{dealBtnRight(vo)}}</view>
+							<view v-if="dealBtnRight(vo)" @click.stop="btnClickRight(vo,key)" class="cu-btn round line-black text-cut" :class="{'button-r' : vo._status._type == 2 || vo._status._type == 0}">{{dealBtnRight(vo)}}</view>
 						</view>
 						<!-- <button class="mybooking-button mybooking-button-colse">取消订单</button> -->
 						<!-- <button class="mybooking-button ">确认付款</button> -->
@@ -70,6 +70,7 @@
 		</view>
 		
 			<Modal v-model="show1" title='提示' class="con-fim" text='是否确认收货' @confirm="ConfirmOrder" />
+			<Modal v-model="show2" title='提示' class="con-fim" text='去评价一下？' @confirm="goPingJia2" />
 	</view>
 </template>
 
@@ -94,6 +95,7 @@
 			return{
 				windowHeight:0,//屏幕高度
 				currentTab: 0,
+				show2:false,
 				tabs2: [{
 					name: "全部",
 					page:0
@@ -277,7 +279,6 @@
 					icon:'none'
 				})
 			},
-			//确认收货
 			affirmClick(vo,key){
 				// uni.navigateTo({
 				// 	url:'orderdetail'
@@ -316,7 +317,7 @@
 					case 0 : return  '查看详情'; 
 					case 1 : return  '查看详情' ;
 					case 2 : return  '查看物流' ;
-					case 3 : return  '查看物流' ;
+					case 3 : return  '查看订单' ;
 					default: return '查看详情'
 				}
 				
@@ -340,7 +341,7 @@
 						}
 						break
 					case 2 : return  '确认收货' ;
-					case 3 : return  '立即评价' ;
+					case 3 : return  '查看物流' ;
 					default :
 						if(this.shopType(vo)=='拼团商品'){
 							return '我的拼团'
@@ -370,10 +371,8 @@
 						})
 						break;
 					case 3 : 
-					// 评价页
-						uni.navigateTo({
-							
-						})
+					// 查看订单
+						this.detail(vo)
 						break;
 					default: 
 						this.detail(vo)
@@ -403,6 +402,11 @@
 				// 		break;
 				// }
 			},
+			goPingJia2(){
+				this.change({
+					index:4
+				})
+			},
 			// 右按钮点击
 			btnClickRight(vo,ken){
 				const state = parseInt(vo._status._type)
@@ -426,8 +430,11 @@
 						this.currentClick = ken
 						break;
 					case 3 : 
-					// 评价页
-						// this.goPingjia(vo)
+					// 查看物流
+						const id = vo.order_id
+						uni.navigateTo({
+							url:`../logistics/logistics?id=${id}`
+						})
 						break;
 					default :
 						if(this.shopType(vo) == '拼团商品'){
@@ -460,6 +467,9 @@
 						plus.nativeUI.toast('已收货');	
 						// #endif
 						this.orderInfo.splice(this.currentClick,1)
+						setTimeout(() => {
+							this.show2 = true
+						},300)
 					}else{
 						// #ifdef APP-PLUS
 						plus.nativeUI.toast(res.data.msg);

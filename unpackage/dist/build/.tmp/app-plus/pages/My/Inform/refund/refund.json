@@ -1,0 +1,9 @@
+{
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "退款详情",
+  "scrollIndicator": "none",
+  "bounce": "none",
+  "usingComponents": {
+    "x-loading": "/components/loding/w-loading"
+  }
+}

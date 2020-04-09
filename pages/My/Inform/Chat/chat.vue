@@ -1,13 +1,14 @@
 <template>
 	<view class="bg-white">
-		<view v-if="NOdata">
+		<view v-if="userList.length">
 			<view class="list">
 				<view class="flex_col" @longpress="onLongPress" :class="{'active':pickerUserIndex==index}" @tap="listTap(item)" v-for="(item,index) in userList"
 				 :key="index" :data-index="index">
-					<image src="../../../../static/demo3.png" mode="aspectFill"></image>
-					<view class="flex_grow" v-if="item.isLoad">
+					<image :src="item.user.shop_logo" mode="aspectFill"></image>
+					<view class="flex_grow">
 						<view class="flex_col">
 							<view class="flex_grow">{{item.user.shop_name}}</view>
+							<view class="inform-all-badge" v-if="item.newMessageNum">{{item.newMessageNum}}</view>
 						</view>
 						<view class="flex justify-between">
 							<view class="info">{{item.lastData.content}}</view>
@@ -15,6 +16,7 @@
 						</view>
 					</view>
 				</view>
+				
 			</view>
 			<view class="shade" v-show="showShade" @tap="hidePop">
 				<view class="pop" :style="popStyle" :class="{'show':showPop}">
@@ -27,19 +29,25 @@
 		<view v-else class="empty-img" :style="{height:style.height + 'px',transform:'translateY(-10%)'}">
 			<image src="/static/nodatamessage.png" mode="widthFix"></image>
 		</view>
-		
+		 <x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
+		 <x-modal v-model="show1" title='提示' text='是否删除与该商家的聊天记录？' @confirm="deleteChatMessages" />
 	</view>
 </template>
 
 <script>
-	// 聊天列表接口
-	import { chatList,chatData } from '@/network/getProfileData'
-	
 	// 导入工具类
-	import { replaceImage } from '@/utils/dealUrl'
+	import { replaceImage} from '@/utils/dealUrl'
+	import { formatDate } from '@/utils/dealData'
+	
+	// 导入长连接方法
+	import { openWebScoket } from '@/utils/chat'
+	// 导入网络方法
+	import {test,send_message,get_service_message,removeChatMessages} from '@/network/sign.js'
+	import { getStoreInfo } from '@/network/detail'
 	export default{
 		data(){
 			return{
+				show1:false,
 				NOdata:false,//暂无数据
 				userList: [],
 				/* 窗口尺寸 */
@@ -57,22 +65,38 @@
 				style:{
 					height:''
 				},
+				profile:{},
+				pickerUserIndex2:-1
 			}
 		},
 		onLoad() {
-			
-			this.getWindowSize();
 			this.token = this.$store.getters.isToken
 			const view = uni.getSystemInfoSync()
 			this.style.height = view.windowHeight;
-			
-			this.getListData();
 			// #ifdef H5
 			document.onLong = function(e) {
 				var e = e || window.event;
 				e.preventDefault();
 			};
 			// #endif
+			// 获取个人档案
+			this.profile = uni.getStorageSync('Message_key')
+			this.getListData();
+			// 设置开启长连接
+			this.setWebSocket()
+		},
+		onShow() {
+		},
+		onReady() {
+			// this.$refs.loading.open()
+			
+		},
+		onUnload() {
+			uni.closeSocket({
+				success:() => {
+					console.log('关闭Scoket连接成功')
+				}
+			})
 		},
 		methods: {
 			/* 列表触摸事件 */
@@ -81,45 +105,33 @@
 				if (this.showShade) {
 					return;
 				}
-				const obj = {
-					expressageFen:item.user.expressage_score,
-					produceFen:item.user.product_score,
-					serviceFen:item.user.service_score,
-					totalFen:item.user.zong,
-					storeName:item.user.shop_name,
-					storeLogo:item.user.shop_logo,
-					storeId:item.user.shop_id
-					
-				}
+				
+				const obj = item.user
 				const str = JSON.stringify(obj)
+				this.$store.commit('setUserChatMessages',this.userList)
 				uni.navigateTo({
-					url:`../../../ShopDetails/informtion/informtion?shopInfo=${str}`
+					url:`../../../ShopDetails/informtion/informtion?shopInfo=${str}&indet=c`
 				})
-		
-				console.log("列表触摸事件触发")
+
+			},
+			// 长连接设置开启
+			setWebSocket(){
+				const that = this
+				openWebScoket()
+				uni.onSocketOpen(function (res) {
+					console.log('WebSocket连接已打开！');
+				});
+				uni.onSocketError(res => {	
+					console.log('WebSocket连接失败,请检查')
+				})
+				uni.onSocketMessage(function (res) {
+					uni.$emit('getMessage',res)										
+				});
 			},
 			/* 获取列表数据 */
 			getListData() {
-				const that = this
-				chatList(that.token).then(res => {
-					if(res.data.code == 200){
-						const list = res.data.data.shopGroup
-						list.forEach(x => {
-							x.user.shop_logo = replaceImage(x.user.shop_logo)
-							x.isLoad = false
-							// 获取每个聊天对象的消息记录
-							chatData(that.token,x.group_id).then(res => {
-								if(res.data.code == 200){
-									x.lastData = res.data.data[res.data.data.length-1]
-									// that.userList.push(x)
-									x.isLoad = true
-								}
-							})
-						})
-						that.userList = list
-					}
-				})
-				
+				this.userList = this.$store.state.userChatMessages
+				if(this.userList.length) this.NOdata = true
 			},
 			/* 获取窗口尺寸 */
 			getWindowSize() {
@@ -165,18 +177,56 @@
 					this.showShade = false;
 				}, 250);
 			},
+			// 删除聊天记录
+			deleteChatMessages(){
+				console.log(this.pickerUserIndex2)
+				const index = this.pickerUserIndex2
+				const id = this.userList[index].group_id
+				removeChatMessages(id,this.token).then(res => {
+					if(res.data.code == 200){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('删除成功',{duration:'long'})
+						// #endif
+						// 删除全局变量状态
+						this.$store.commit('removeSomeChatMessages',index)
+						// 修改本地缓存
+						uni.setStorage({
+							key:'messageall_key',
+							data:this.userList,
+							success:() => {
+								console.log('删除缓存成功')
+							}
+						})
+					}
+				})
+				
+				
+			},
 			/* 选择菜单 */
 			pickerMenu(e) {
 				let index = Number(e.currentTarget.dataset.index);
+				this.pickerUserIndex2 = this.pickerUserIndex
+				console.log(this.pickerUserIndex2)
 				console.log(`第${this.pickerUserIndex+1}个用户,第${index+1}个按钮`);
 				// 在这里开启你的代码秀
-		
-				uni.showToast({
-					title: `第${this.pickerUserIndex+1}个用户,第${index+1}个按钮`,
-					icon: "none",
-					mask: true,
-					duration: 600
-				});
+				
+				// uni.showToast({
+				// 	title: `第${this.pickerUserIndex+1}个用户,第${index+1}个按钮`,
+				// 	icon: "none",
+				// 	mask: true,
+				// 	duration: 600
+				// });
+				// 判断不同处理方式
+				switch (index+1) {
+					case 3:
+						this.show1 = true
+						break
+					case 2:
+						break
+					case 1:
+						break
+				}
+				
 		
 				/* 
 				 因为隐藏弹窗方法中会将当前选择的用户下标还原为-1,
@@ -219,6 +269,7 @@
 		-webkit-box-flex: 1;
 		-ms-flex-positive: 1;
 		flex-grow: 1;
+		line-height: 1.8;
 	}
 
 	.flex_row .flex_grow {
@@ -251,8 +302,8 @@
 			}
 
 			image {
-				height: 80upx;
-				width: 80upx;
+				height: 85upx;
+				width: 85upx;
 				border-radius: 4px;
 				margin-right: 20upx;
 			}
@@ -340,6 +391,19 @@
 				}
 			}
 		}
+	}
+	.inform-all-badge{
+		padding: 0 16upx;
+		color: #FFFFFF;
+		background: #CD3233;
+		border-radius: 50upx;
+		font-size: 22upx;
+		line-height: 1.5;
+	}
+	.flex_grow2{
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 	}
 </style>
 

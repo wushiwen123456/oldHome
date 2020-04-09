@@ -136,6 +136,9 @@
 					})
 				}
 				else{
+					uni.showLoading({
+						title:'正在保存'
+					})
 					let data = {
 						is_default:this.is_default ? 1 : 0,
 						real_name:this.real_name,
@@ -150,6 +153,7 @@
 			},
 			addAddress(data){
 				addAddress(data,this.isToken).then(res => {
+					uni.hideLoading()
 					if(res.data.code == 200){
 						// #ifdef APP-PLUS
 						plus.nativeUI.toast('设置成功',{duration:'long'})

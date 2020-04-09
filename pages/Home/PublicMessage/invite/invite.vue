@@ -27,8 +27,8 @@
 								<view>{{vo.name}}</view>
 								<view class="margin-lr-xs">|</view>
 								<view>{{vo.birth}}岁</view>
-								<image class="invite-sex" src="../../../../static/sexa.png"></image>
-								<image class="invite-sex" src="../../../../static/sexb.png"></image>
+								<!-- <image class="invite-sex" src="../../../../static/sexa.png"></image>
+								<image class="invite-sex" src="../../../../static/sexb.png"></image> -->
 							</view>
 						</view>
 						<view class="margin-top-sm text-sm-erliu text-jiujiujiu">{{vo.job}}{{vo.sTime}}</view>

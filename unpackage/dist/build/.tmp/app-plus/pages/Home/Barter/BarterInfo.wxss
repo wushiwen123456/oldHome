@@ -217,6 +217,7 @@
 	bottom: 0;
 	width: 100%;
 	z-index: 99;
+	height: 80rpx;
 }
 .shop-bottom-kefu{
 	width: 50rpx;
@@ -328,5 +329,10 @@
 	border-radius:46px;
 	color: #FFFFFF;
 	font-size: 36rpx;
+}
+.detail-category{
+	-webkit-box-flex: 1;
+	-webkit-flex: 1;
+	        flex: 1;
 }
 

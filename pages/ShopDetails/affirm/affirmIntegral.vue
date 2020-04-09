@@ -57,7 +57,13 @@
 			</view>
 			<button @tap="submitOrderClick" >立即兑换</button>
 		</view>
-
+		<uni-popup ref="popups" type="center" >
+			<view class="popups-center text-center">
+				<view style="font-size: 100upx;" class=" padding cuIcon-roundcheckfill text-green"></view>
+				<view class="text-wuer text-lg text-bold margin-bottom-xl">兑换成功</view>
+				<button @tap="backClick" style="margin-top: 0;" class="refund-button">返回首页</button>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
@@ -198,7 +204,13 @@
 						})
 					}
 				})
-			},					
+			},		
+			// 返回首页
+			backClick(){
+				uni.switchTab({
+					url:'../../Home/home'
+				})
+			},
 			//收货地址
 			shippingAddressClick(){
 				uni.navigateTo({
@@ -233,9 +245,10 @@
 							gitOrder(obj,this.token).then(res => {
 								//对返回的数据进行处理
 								if(res.data.code == 200){
-									uni.redirectTo({
-										url:'Integral_success'
-									})
+									// #ifdef APP-PLUS
+									plus.nativeUI.toast('兑换成功')
+									// #endif
+									this.$refs.popups.open()
 								}else{
 									uni.showToast({
 										title:res.data.msg,
@@ -396,5 +409,18 @@
 		display: flex;
 		justify-content: space-between;
 		width: 90%;
+	}
+	.popups-center{
+		width:578upx;
+		height:418upx;
+	}
+	.refund-button{
+		margin: 0 30upx;
+		margin-top: 200upx;
+		height:94upx;
+		line-height: 94upx;
+		background:rgba(205,50,51,1);
+		border-radius:47upx;
+		color: #FFFFFF;
 	}
 </style>

@@ -9,7 +9,7 @@
 						<swiper-item @tap="BoFang" v-if="videoUrl" class="item1">
 							<image src="/static/play/larkcloud_play.png" mode="aspectFill"></image>
 						</swiper-item>
-						<swiper-item @tap="swiperDetail" v-for="(item,index) in swiperList">
+						<swiper-item @tap="swiperDetail" v-for="(item,index) in swiperList" :key="index">
 							<image :src="item.url" mode="widthFix"></image>
 						</swiper-item>
 					</swiper>
@@ -180,12 +180,12 @@
 				</view>
 				
 				<!-- 推荐商品 end-->
-				<view style="height: 74upx;color: #525253;" class="flex align-center justify-center">———— 商品详情 ————</view>
+				<view style="height: 74upx;color: #525253;" class="flex align-center justify-center"><text  v-if="detailData.storeInfo.description">———— 商品详情 ————</text></view>
 				<!-- 文本分割线 -->
 				
 				<!-- 商品介绍 -->
-				<view>
-					<image :src="detailData.storeInfo.image" mode="widthFix" style="width: 100%;"></image>
+				<view  v-if="detailData.storeInfo.description">
+					<parser :html="detailData.storeInfo.description"></parser>
 				</view>
 				<!-- 商品介绍end -->
 				
@@ -306,6 +306,7 @@
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	import tuiCountdown from "@/components/countdown/countdown"
 	import tuiRate from "@/components/rate/rate"
+	import parser from "@/components/jyf-Parser/index"
 	
 	// 导入网络模块
 	import {getDetailSkill} from '@/network/skill'
@@ -313,6 +314,7 @@
 	import { clickDetail } from '@/common/detail'
 	// 导入工具类
 	import { replaceImage } from '@/utils/dealUrl'
+	
 	
 	// #ifdef APP-PLUS
 	// 导入分享方法
@@ -323,7 +325,8 @@
 			uniPopup,
 			tuiNumberbox,
 			tuiCountdown,
-			tuiRate
+			tuiRate,
+			parser
 		},
 		onUnload() {
 			uni.$off('videoDetail')
@@ -548,7 +551,9 @@
 			},
 			//点击kefu
 			serviceClick(shopname){
-				let shopInfo = JSON.stringify(this.detailData.shop_info)
+				const obj = this.detailData.shop_info
+				let shopInfo = JSON.stringify(obj)
+				
 				uni.navigateTo({
 					url:'informtion/informtion?shopInfo=' + shopInfo
 				})
@@ -608,7 +613,7 @@
 			},
 			// 点击图片预览
 			swiperDetail(){
-				let arr = this.swiperList.slice(1,this.swiperList.length-1)
+				let arr = this.swiperList
 				arr = arr.map(x => x.url)
 				console.log(arr)
 				// #ifdef APP-PLUS

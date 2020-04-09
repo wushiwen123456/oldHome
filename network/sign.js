@@ -1,11 +1,20 @@
-export var http = 'http://jn.51kdd.com/'
+var http = 'http://jn.51kdd.com/'
+
+// 引入ajax
+import http2 from '@/common/http'
+// 引入替换Url的方法
+import {replaceImage} from '@/utils/dealUrl'
+
+// 引入计算时间方法
+import  { getTimeUntilNow } from '@/utils/dealData'
 
 /**
  * 签到页面所需数据
  */
-export function sign_index(loading=false) {
+
+export function sign_index(token,loading=false) {
 if (loading) uni.showLoading({title: '加载中...'})
-const token = uni.getStorageSync('token');
+
 return new Promise(function(resolve,reject) {
 	uni.request({
 		url: http +'ebapi/user_api/sign_index',
@@ -39,10 +48,11 @@ return new Promise(function(resolve,reject) {
 /**
  * 签到接口
  */
-export function sign(loading=false) {
+export function sign(token,loading=false) {
 if (loading) uni.showLoading({title: '加载中...'})
-const token = uni.getStorageSync('token');
+
 return new Promise(function(resolve,reject) {
+	console.log(http)
 	uni.request({
 		url: http +'ebapi/user_api/sign',
 		method: 'GET',
@@ -72,12 +82,14 @@ return new Promise(function(resolve,reject) {
 
 
 // 上传图片接口
-export function upload(data,show = false)  {
-	const token = uni.getStorageSync('token');
+export function upload(token,_url,show = false)  {
+	console.log(_url)
 	return new Promise(function(resolve,reject) {
+		const url = http +'ebapi/public_api/upload'
+		console.log(token)
 	uni.uploadFile({
-		url: http +'ebapi/public_api/upload',
-		filePath: data,
+		url: url,
+		filePath: _url,
 		header: {
 			'token': token
 		},
@@ -86,8 +98,8 @@ export function upload(data,show = false)  {
 			'filename': 'specialname',
 		},
 		success: res => {
-			console.log(res)
-			let data = JSON.parse(res.data)
+			const _data = res.data
+			let data = JSON.parse(_data)
 			if(data.code == 200){
 				if(!show){
 					uni.showToast({
@@ -191,8 +203,7 @@ export function send_message(data,loading) {
 /**
  * 聊天记录接口
  */
-export function get_service_message(data,loading) {
-	const token = uni.getStorageSync('token');
+export function get_service_message(token,data,loading) {
 	if(loading) loading.open()
 	return new Promise(function(resolve,reject) {
 		uni.request({
@@ -217,12 +228,28 @@ export function get_service_message(data,loading) {
 		})
 	})
 }
-
+/**
+ * @param {token} String
+ * @param {group_id} String
+ * 聊天记录删除接口
+ */
+export function removeChatMessages(group_id,token){
+	console.log()
+	return http2({
+		url:replaceImage('http://www.test.com/ebapi/user_api/remove_message'),
+		data:{
+			group_id
+		},
+		header:{
+			token
+		},
+		showModel:true
+	})
+}
 /**
  * 个人信息修改
  */
-export function edit_user(data,loading) {
-	const token = uni.getStorageSync('token');
+export function edit_user(token,data,loading) {
 	if(loading) loading.open()
 	return new Promise(function(resolve,reject) {
 		uni.request({
@@ -255,8 +282,7 @@ export function edit_user(data,loading) {
 /**
  * 用户积分兑换记录
  */
-export function user_integral(data,loading) {
-	const token = uni.getStorageSync('token');
+export function user_integral(token,loading) {
 	if(loading) loading.open()
 	return new Promise(function(resolve,reject) {
 		uni.request({
@@ -266,7 +292,6 @@ export function user_integral(data,loading) {
 				'content-type': 'application/x-www-form-urlencoded' ,//自定义请求头信息
 				'token': token
 			},
-			data:data,
 			success: res => {
 				if(res.data.code == 200){
 					let data = res.data.data
@@ -295,8 +320,7 @@ export function user_integral(data,loading) {
 /**
  * 用户积分兑换记录删除
  */
-export function user_integral_remove(data,loading) {
-	const token = uni.getStorageSync('token');
+export function user_integral_remove(token,data,loading) {
 	if(loading) loading.open()
 	return new Promise(function(resolve,reject) {
 		uni.request({
@@ -325,8 +349,7 @@ export function user_integral_remove(data,loading) {
 /**
  * 浏览记录
  */
-export function user_visit(data,loading) {
-	const token = uni.getStorageSync('token');
+export function user_visit(token,data,loading) {
 	if(loading) loading.open()
 	return new Promise(function(resolve,reject) {
 		uni.request({
@@ -342,13 +365,15 @@ export function user_visit(data,loading) {
 					let data = res.data.data
 					data.forEach(function(item){
 						var date = new Date(item.add_time * 1000);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
-						var Y = date.getFullYear() + '年';
-						var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '月';
-						var D = date.getDate() + '日 ';
-						var h = date.getHours() + ':';
-						var m = date.getMinutes();
-						item.add_time = Y + M + D + h + m ;
+						// var Y = date.getFullYear() + '年';
+						// var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '月';
+						// var D = date.getDate() + '日 ';
+						// var h = date.getHours() + ':';
+						// var m = date.getMinutes();
+						// item.add_time = Y + M + D + h + m ;
+						item.add_time = getTimeUntilNow(item.add_time)
 						item.popu = false
+						item.info.image = replaceImage(item.info.image)
 					})
 					resolve(data)
 				}
@@ -367,8 +392,7 @@ export function user_visit(data,loading) {
 /**
  * 浏览记录删除
  */
-export function remove_visit(data,loading) {
-	const token = uni.getStorageSync('token');
+export function remove_visit(token,data,loading) {
 	if(loading) loading.open()
 	return new Promise(function(resolve,reject) {
 		uni.request({
@@ -397,8 +421,7 @@ export function remove_visit(data,loading) {
 /**
  * 用户确认收货接口
  */
-export function user_take_order(data,loading) {
-	const token = uni.getStorageSync('token');
+export function user_take_order(token,data,loading) {
 	if(loading) uni.showLoading({title:'确认收货中'})
 	return new Promise(function(resolve,reject) {
 		uni.request({

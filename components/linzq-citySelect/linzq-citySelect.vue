@@ -213,7 +213,6 @@
 						arr = arr.slice(0,5)
 					}
 					this.Visit = arr
-					console.log(this.Visit, "---最近访问")
 					uni.setStorage({
 						key: 'Visit_key',
 						data: this.Visit

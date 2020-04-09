@@ -2,8 +2,8 @@
     "name" : "老家商城",
     "appid" : "__UNI__EA8B4CA",
     "description" : "老家商城",
-    "versionName" : "1.1.0",
-    "versionCode" : 100,
+    "versionName" : "0.0.7",
+    "versionCode" : 17,
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
@@ -78,7 +78,8 @@
                         "appkey_ios" : "1",
                         "appkey_android" : "4e70ab184d2066f7c8f5b4ff476fe0c7"
                     }
-                }
+                },
+                "ad" : {}
             },
             "icons" : {
                 "android" : {

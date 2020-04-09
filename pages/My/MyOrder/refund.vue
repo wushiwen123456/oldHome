@@ -148,6 +148,13 @@
 					// #endif
 					return
 				}
+				if(!this.textareaBInput){
+					uni.showToast({
+						title:'请填写备注',
+						icon:'none'
+					})
+					return
+				}
 				const data = {
 					text:this.textareaBInput,
 					refund_reason_wap_img:'',
@@ -157,6 +164,10 @@
 				publishRegard(data,this.token).then(res => {
 					if(res.data.code == 200){
 						this.$refs.popups.open()
+					}else{
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast(res.data.msg,{duration:'long'})
+						// #endif
 					}
 				})
 			},

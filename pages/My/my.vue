@@ -5,8 +5,8 @@
 			<view  class="bg-white  margin-left margin-right my-one-all">
 				<view class="flex align-end justify-between margin-left-lg">
 					<view class="flex align-center" @click="mySet">
-						<image class="my-head-image" :src="userInfo.avatar"></image>
-						<view class="text-xl text-bold margin-left-sm">{{userInfo.nickname}}</view>
+						<image class="my-head-image" :src="localAvatar || userInfo.avatar"></image>
+						<view class="text-xl text-bold margin-left-sm nicket text-cut">{{userInfo.nickname}}</view>
 					</view>
 					<view @click="goQiandao" class="my-one-jifen flex align-center justify-center">
 						<image src="../../static/jifenw.png"></image>
@@ -135,8 +135,12 @@
 	import { HOST } from '@/common/const'
 	
 	
+	//保存头像到本地
+	import { saveAvatar } from '@/utils/storage'
+	
 	// 导入分享方法
 	import share from "@/common/share.js";
+	
 	export default{
 		data(){
 			return{
@@ -154,6 +158,7 @@
 				show1:false,
 				isLoading:false,
 				userInfo:{},
+				localAvatar:''
 			}
 		},
 		onShow() {
@@ -161,19 +166,29 @@
 				this.mytrue = false
 			}else{
 				this.mytrue = true
-				const userData =  uni.getStorageSync('Message_key')
+				// 从vuex 中读取用户数据
+				const userData =  this.$store.state.userInfo.userData
 				console.log(userData)
+				// 从vuex中读取用户本地头像
+				const localAvatr = this.$store.state.userInfo.localAvatar
+				// 判断是否有用户信息
 				if(Object.keys(userData).length){
 					this.userInfo = userData
-					this.isLoading = false
 				}else{
-					this.isLoading = true
+					setTimeout(() => {
+						const userData =  this.$store.state.userInfo.userData
+						this.userInfo = userData
+					},1000)
 				}
-				if(this.isLoading){
-					if(this.$refs.loading){
-						this.$refs.loading.open()
-					}
+				// #ifdef APP-PLUS
+				// 判断是否有用户本地头像
+				if(localAvatr){
+					this.localAvatar = this.$store.state.userInfo.localAvatar
+					console.log(this.localAvatar)
+				}else{
+					
 				}
+				// #endif
 				this.getProfileData(userData)
 			}
 		},
@@ -213,6 +228,7 @@
 				getProfileData(token).then(res => {
 					if(res.data.code == 200){
 						const obj = res.data.data
+						console.log(obj)
 						obj.avatar = replaceImage(obj.avatar)
 						let status = true
 						if(Object.keys(userData).length != 0){
@@ -227,11 +243,6 @@
 						}
 						if(!status){
 							this.userInfo = obj
-							if(this.isLoading){
-								if(this.$refs.loading){
-									this.$refs.loading.close()
-								}
-							}
 							// 存储缓存
 							uni.setStorage({
 								key: 'Message_key',
@@ -240,32 +251,23 @@
 									console.log('个人信息写入缓存成功');
 								}
 							})
+							// 判断用户头像是否相同
+							const a_status = this.dealUserAvatar(userData,obj)
 							
-							// #ifdef APP-PLUS
-							// 把头像储存到本地
-							const avatar = obj.avatar
-									saveFiles(avatar).then(res => {
-										if(res.statusCode == 200){
-											const path = res.tempFilePath
-											uni.saveFile({
-												tempFilePath:path,
-												success(res2) {
-													var savedFilePath = res2.savedFilePath
-													// 保存到缓存
-													uni.setStorage({
-														key:'integrlUrl',
-														data:savedFilePath
-													})
-												},
-												fail:(err2)=> {
-													plus.nativeUI.toast(err2,{duration:'long'})
-												}
-											})
-										}
-									}).catch(err => {
-										plus.nativeUI.toast(err,{duration:'long'})
-									})
-							// #endif
+							// 如果不相同，则把新的头像保存到本地，并且存到vuex中
+							if(!a_status){
+								// #ifdef APP-PLUS
+								saveAvatar(obj.avatar).then(res => {
+									// 存入vuex中
+									this.$store.commit('setLocalAvatar',res)
+								})
+								// #endif
+							}
+							
+							// 个人信息存储vuex
+							this.$store.commit('setUserData',obj)
+						}else{
+							console.log('用户信息相同')
 						}
 					}
 				})
@@ -285,6 +287,10 @@
 				uni.navigateTo({
 					url:'MyshopMessage/collect'
 				})
+			},
+			// 判断用户头像是否相同
+			dealUserAvatar(userData,obj){
+				return userData.avatar == obj.avatar
 			},
 			//店铺收藏
 			attrntionClick(){
@@ -625,5 +631,8 @@
 	.tixian{
 		width: 60upx;
 		height: 60upx;
+	}
+	.nicket{
+		width: 290upx;
 	}
 </style>

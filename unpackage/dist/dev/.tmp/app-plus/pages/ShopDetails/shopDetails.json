@@ -23,6 +23,7 @@
     "x-loading": "/components/loding/w-loading",
     "uni-popup": "/components/uni-popup/uni-popup",
     "tui-numberbox": "/components/numberbox/numberbox",
-    "tui-rate": "/components/rate/rate"
+    "tui-rate": "/components/rate/rate",
+    "parser": "/components/jyf-Parser/index"
   }
 }

@@ -51,7 +51,8 @@
 			</view>
 			<view v-else class="empty-cart" :style="{height:style.height + 'px'}">
 				<image src="/static/gouwuche.png" mode="widthFix"></image>
-				<view @click="goHome" class="goto-home base-bgc">去逛逛</view>
+				<view @click="goHome" v-if="!loginBtn" class="goto-home base-bgc">去逛逛</view>
+				<view @click="goLoagin" v-else class="goto-home base-bgc">去登陆</view>
 			</view>
 			<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 		</view>
@@ -113,6 +114,15 @@
 			this.$refs.loading.open()
 		},
 		onShow() {
+			if(!this.isToken){
+				this.loginBtn = true
+				this.$nextTick(() => {
+					this.$refs.loading.close()
+				})
+				return
+			}else{
+				this.loginBtn = false
+			}
 			if(this.$refs.loading){
 				this.$refs.loading.open()
 			}
@@ -141,6 +151,7 @@
 				style:{
 					height:''
 				},
+				loginBtn:false
 			}
 		},
 		computed:{
@@ -376,6 +387,12 @@
 			goHome(){
 				uni.switchTab({
 					url:'../Home/home'
+				})
+			},
+			// 去登陆
+			goLoagin(){
+				uni.reLaunch({
+					url:'/pages/login/login'
 				})
 			},
 			// 进入详情

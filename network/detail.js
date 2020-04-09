@@ -10,9 +10,6 @@ export function getDetailData(shopId,token){
 		url:replaceImage('http://www.test.com/ebapi/store_api/details'),
 		data:{
 			id:shopId
-		},
-		header:{
-			token
 		}
 	})
 }

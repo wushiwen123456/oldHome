@@ -42,16 +42,21 @@
 				loadingType:1,
 				page:1,
 				limit:10,
-				hasData:false
+				hasData:false,
+				token:''
 			}
 		},
 		onLoad() {
 			this.getWindowSize();
+			this.token = this.$store.getters.isToken
+		},
+		onReady() {
+			this.$refs.loading.open()
 			let data ={
 				page:this.page,
 				limit:this.limit,
 			}
-			user_visit(data).then(res =>{
+			user_visit(this.token,data).then(res =>{
 				this.$refs.loading.close()
 				if(res.length){
 					this.hasData = true
@@ -63,9 +68,6 @@
 				}
 				this.recordList = res
 			})
-		},
-		onReady() {
-			this.$refs.loading.open()
 		},
 		onReachBottom(){
 			if(this.loadingType == 2) return
@@ -115,9 +117,10 @@
 			delListClick(id,key){
 				var that = this
 				that.winSizeClick()
-				remove_visit({ids:id}).then(res =>{
-					that.recordList.splice(key,1)
+				remove_visit(this.token,{ids:id}).then(res =>{
+						
 				})
+				that.recordList.splice(key,1)
 			},
 			//查看详情
 			footprintClick(id,type){

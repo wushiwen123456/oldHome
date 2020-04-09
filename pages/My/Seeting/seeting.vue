@@ -17,7 +17,7 @@
 			</view>
 			<view @tap="versionsClick" class="flex align-center justify-between height-all">
 				<view  class="text-three">版本号</view>
-				<view class="text-jiujiujiu text-sm">版本号10.1.70</view>
+				<view class="text-jiujiujiu text-sm">{{version}}</view>
 			</view>
 		</view>
 		<view  class="margin-top-xs bg-white padding-left padding-right" :class="{'login-color':token}">
@@ -33,19 +33,29 @@
 			<view style="background: #EAEAEC;height: 10upx;"></view>
 			<view @tap="closePopupsSharClick" class="height-all flex align-center justify-center">取消</view>
 		</uni-popup>
+		<x-modal v-model="show1" title='提示' text='清除缓存会注销您的登录信息,是否继续' @confirm="clearStore" />
 	</view>
 </template>
 
 <script>
 	import uniPopup  from "@/components/uni-popup/uni-popup"
+	import {getVersion} from '@/js_sdk/version_check'
 	export default{
 		components: {
 			uniPopup,
 		},
 		data(){
 			return{
-				token:""
+				token:"",
+				version:'',
+				show1:false
 			}
+		},
+		onLoad() {
+			// #ifdef APP-PLUS
+			// 获取当前版本号
+			this.version = plus.runtime.version
+			// #endif
 		},
 		onShow() {
 				this.token = this.$store.getters.isToken
@@ -59,31 +69,11 @@
 			},
 			//清除缓存
 			removeClick(){
-				var that = this
-				uni.showLoading({
-					title:'正在清理...',
-					
-				})
-				setTimeout(function(){
-					uni.hideLoading()
-					uni.showToast({
-						title:'清理成功',
-						icon:'none'
-					})
-				},1500)
+				this.show1 = true
 			},
 			//检查更新
 			versionsClick(){
-				uni.showLoading({
-					title:'正在检查...',
-				})
-				setTimeout(function(){
-					uni.hideLoading()
-					uni.showToast({
-						title:'已是最新版本',
-						icon:'none'
-					})
-				},1500)
+				getVersion(true)
 			},
 			//登录弹出
 			outloginSharClick(){
@@ -105,6 +95,7 @@
 				this.token = false
 				this.$refs.popup.close()
 				uni.removeStorageSync('Message_key')
+				this.$store.commit('setUserData',{})
 				// #ifdef APP-PLUS
 				plus.nativeUI.toast('已退出登录',{duration:'long'})
 				// #endif
@@ -114,6 +105,18 @@
 				uni.navigateTo({
 					url:'../../login/login'
 				})
+			},
+			// 清理缓存
+			clearStore(){
+				uni.showLoading({
+					title:'正在清理...'
+				})
+				uni.clearStorageSync()			
+				this.$store.commit('logout')
+				uni.hideLoading()
+				// #ifdef APP-PLUS
+				plus.nativeUI.toast('清理成功',{duration:'long'})
+				// #endif
 			}
 		},
 		computed:{

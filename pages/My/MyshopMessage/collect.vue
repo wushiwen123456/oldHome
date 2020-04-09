@@ -51,27 +51,15 @@
 		methods: {
 			// 取消收藏
 			unCollect(vo,index){
-				uni.showModal({
-					title:'是否取消收藏',
-					content:'',
-					success:(res) =>  {
-						if(res.confirm){
-							
-							// 取消收藏
-							unCollectProduct2(vo.pid,this.isToken).then(res => {
-								if(res.data.code == 200){
-									uni.showToast({
-										title:'已取消',
-										icon:'none',
-										success:(res)=>  {
-											this.recordList.splice(index,1)
-										}
-									})
-								}
-							})
-						}
+				
+				// 取消收藏
+				unCollectProduct2(vo.pid,this.isToken)
+				.then(res => {
+					if(res.data.code == 200){
+						
 					}
 				})
+				this.recordList.splice(index,1)
 			},
 			// 获取数据源
 			profileCollect(page,token){

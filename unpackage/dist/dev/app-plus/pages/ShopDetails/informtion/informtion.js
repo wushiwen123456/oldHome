@@ -1,2 +1,0 @@
-setCssToHead(["body{ padding-bottom: ",[0,100],"; }\n.",[1],"fasong-button{ width:",[0,58],"; height:",[0,58],"; }\n.",[1],"solid-bottom-input{ border-radius: ",[0,24],"; background:rgba(255,255,255,1); box-shadow:",[0,0]," ",[0,0]," ",[0,3]," ",[0,0]," rgba(0, 0, 0, 0.31); border-radius:",[0,40],"; padding-left: ",[0,30],"; }\n",],undefined,{path:"./pages/ShopDetails/informtion/informtion.wxss"})();
-document.dispatchEvent(new CustomEvent("generateFuncReady", { detail: { generateFunc: $gwx('./pages/ShopDetails/informtion/informtion.wxml') } }));

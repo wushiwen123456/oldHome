@@ -1,6 +1,22 @@
 <script>
+import { getVersion } from 'js_sdk/version_check.js'
+import  {
+	noNetWorkChat,
+	noNetWork,
+	charCompare
+} 	from '@/utils/chat'
+import computedTime from 'utils/computedTime'
+	// 导入登录方法
+import { login } from '@/network/login'
+	// 获取个人信息
+import { getProfileData } from '@/network/getProfileData'
+
+// 导入工具类
 import { replaceImage } from '@/utils/dealUrl'
-import { app_update } from '@/network/login.js'
+
+//保存头像到本地
+import { saveAvatar } from '@/utils/storage'
+
 import Vue from 'vue'
 	export default {
 		data(){
@@ -8,22 +24,84 @@ import Vue from 'vue'
 				localVersion:''
 			}
 		},
-		onLaunch: function() {
-			const value = uni.getStorageSync('token')
-			if(value){
-				this.$store.commit('login',value)
-				uni.setStorageSync(
-					'token',
-					value
-				)
-			}
+		onLaunch(){
+			const userData = uni.getStorageSync('userData')
+			if(userData){
+				// 获取上次一保存token的时间
+				const saveTime = userData.saveTime,
+				dealTime = computedTime(saveTime)//计算上次保存的时间
+				
+				// 没有超过7天
+				if(dealTime){
+					// 执行登录方法
+					let data = {
+						phone:userData.username,
+						pwd:userData.password
+					}
+					login(data).then(res => {
+						if(res.data.code == 200){
+							console.log('异步登录成功')
+							// 刷新储存信息token
+							const token = res.data.data.token,
+							date = new Date().getTime()
+							uni.setStorage({
+								key:"userData",
+								data:{
+									token:token,
+									username:data.phone,
+									password:data.pwd,
+									saveTime:date
+								},
+							})
+							// 将token存储到vuex中
+							this.$store.commit('login',token)
+							
+							// 读取个人信息
+							this.saveProfile(token)
+							// 读取聊天记录
+							this.getUserChatMessages(token)
+							
+						}else{
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast('很久没来啦，从新登录下吧~',{duration:'long'})
+							// #endif
+							console.log('异步登录失败，请重新登陆')
+							uni.reLaunch({
+								url:'pages/login/login'
+							})
+						}
+					})
+				}else{
+					// 超过7天，跳转到登录
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('登录已失效，请重新登录',{duration:'long'})
+					// #endif
+					console.log('缓存时间已超时，请登录')
+					// 清理用户缓存
+					uni.removeStorage({
+						key:'Message_key'
+					})
+					uni.reLaunch({
+						url:'pages/login/login'
+					})
+				}
+				
+				
+				
+			}	
 			else{
+				// 清理用户缓存
+				uni.removeStorage({
+					key:'Message_key'
+				})
 				uni.reLaunch({
 					url:'pages/login/login'
 				})
 			}
 			// 获取版本号
 			this.getVersion()
+			// 商铺消息监听
+			this.monitorMessages()
 			
 			// colorUI相关
 			uni.getSystemInfo({
@@ -144,94 +222,98 @@ import Vue from 'vue'
 		},
 		methods: {
 			//版本信息
-					getVersion(){
-						var that = this;
-						console.log('开始请求最高版本')
-						// #ifdef APP-PLUS
-						app_update().then(res =>{
-							that.VersionUrlMessage = res.data.data
-							 
-							var localVersion = plus.runtime.version.split('.').join('') * 1 
-							console.log(Math.floor(that.VersionUrlMessage.num * 100))
-							console.log(localVersion)
-							if( Math.floor(that.VersionUrlMessage.num * 100)  > localVersion ){
-								uni.showModal({
-									title:'更新提醒',
-									content:'发现新版本,是否进行更新？',
-									success: function (res) {
-										if (res.confirm) {
-											let url= that.VersionUrlMessage.upUrl
-											console.log(url);
-											console.log('用户点击确定');
-											plus.nativeUI.toast('已在后台开始下载任务',{duration:'long'})
-											const downloadTask = uni.downloadFile({
-												url: url, 
-												success: (res) => {
-													if (res.statusCode === 200) {
-														uni.saveFile({
-															tempFilePath: res.tempFilePath,
-															success: function (res) {
-																that.installbutton(res.savedFilePath);  
-															}
-														});
-													}
-												},
-												fail: (fail) =>{
-													console.log('接口请求返回的fail:');
-													console.log(fail);
-													uni.showToast({
-														title:'下载失败'
-													})
-												}
-											});
-											
-											// let begin = new Date().getTime()
-											// let gap = 2000
-											// downloadTask.onProgressUpdate((res) => {
-											// 	let now = new Date().getTime()
-											// 	if (now - begin > gap || res.progress == 100){
-											// 		that.loadingPlan = res.progress
-											// 	}
-											// })
-										} else if (res.cancel) {
-											console.log('用户点击取消');
-											// plus.runtime.quit();
-											console.log('取消后退出应用');
-										}
-									}
-								})
-								
+			getVersion(){
+				getVersion()
+			},
+			
+			// 获取用户个人信息，存储到vuex中
+			saveProfile(token){
+				getProfileData(token).then(res => {
+					if(res.data.code == 200){
+						const data = res.data.data
+						data.avatar = replaceImage(data.avatar)
+						// 存入缓存
+						uni.setStorage({
+							key:'Message_key',
+							data,
+							success:(res) => {
+								console.log('个人信息写入缓存成功')
 							}
 						})
-						// #endif
-					},
-					//安装
-					installbutton(path){
-						 plus.runtime.install(path, {  
-							force: true  
-						}, function () {   
-							console.log("加载完成！");  
-							uni.navigateBack({  
-								delta: 1,  
-							});  
-						}, function (e) {  
+						
+						// 获取本地头像文件缓存
+						const localAvatar = uni.getStorageSync('integrlUrl')
+						// 根据缓存路径读取本地文件，判断是否有这个文件
+						if(localAvatar){
+							uni.getSavedFileInfo({
+								filePath:localAvatar,
+								success:(res) => {
+									if(res.size){
+										// 有缓存文件，写入vuex中
+										console.log('本地头像路径获取成功')
+										this.$store.commit('setLocalAvatar',localAvatar)
+										console.log(this.$store.state.userInfo.localAvatar)
+									}
+								},
+								fail:err => {
+									// 读取文件失败，执行保存用户网络头像到本地操作
+									saveAvatar(data.avatar).then(res => {
+										// 存入vuex中
+										this.$store.commit('setLocalAvatar',res)
+									}).catch(err => {
+										console.log('本地头像保存失败')
+									})
+								}
+							})
+						}else{
+							// #ifdef APP-PLUS
+							// 读取文件失败，执行保存用户网络头像到本地操作
+							saveAvatar(data.avatar).then(res => {
+								// 存入vuex中
+								this.$store.commit('setLocalAvatar',res)
+							}).catch(err => {
+								console.log('本地头像保存失败')
+							})
+							//  #endif
+						}
+						
+						// 个人数据存入vuex
+						this.$store.commit('setUserData',data)
+						console.log(data)
+					}
+				})
+			},
+			
+			// 获取用户聊天记录
+			getUserChatMessages(token){
+				this.$store.dispatch('getUserChatList',token)
+				.then(res => {
+					// 将数据和缓存中的数据进行对比,返回结果数组
+					const resArr = charCompare(res)
+					// 将数据存储到vuex中
+					this.$store.commit('setUserChatMessages',resArr)
+					console.log('获取聊天记录成功，返回合并后的聊天记录')
+					console.log(this.$store.state.userChatMessages)
+				})
+				.catch(err => {
+					switch (err) {
+						case '1':
+							// 连接服务器失败
+							noNetWork()
+							break
+					}
+				})
+			},
+			
+			// 监听Scoket消息
+			monitorMessages(){
+				console.log('开始监听消息')
+				uni.$on('getMessage' , (res)=> {
+					console.log('消息监听成功，已发送至vuex存储')
+					this.$store.commit('dealSocketMessage',res)
+				})
+			}
 					
-							console.log(JSON.stringify(e));  
-					
-						}); 
-					},
-
-		            // 检查是否安卓
-		            isandroid(){
-		                var that = this;
-		                uni.getSystemInfo({  
-		                    success:(res) => {  
-		                        if(res.platform=="android"){ 
-		                            that.AndroidCheckUpdate();  
-		                        }  
-		                    }  
-		                }) 
-		            },
 		}	
 	}
 </script>

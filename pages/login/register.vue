@@ -201,7 +201,8 @@
 							plus.nativeUI.toast('注册成功',{duration:'long'})
 							// #endif
 							that.isRotate = false
-							uni.navigateTo({
+							
+							uni.reLaunch({
 								url:'login'
 							})
 						}else{

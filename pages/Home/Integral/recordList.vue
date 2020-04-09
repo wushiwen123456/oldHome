@@ -27,12 +27,14 @@
 			return {
 				winSize:false,///* 显示遮罩 */
 				windowHeight:0,//高度
-				recordList:[]
+				recordList:[],
+				token:''
 			}
 		},
 		onLoad() {
+			this.token = this.$store.getters.isToken
 			this.getWindowSize();
-			user_integral().then(res =>{
+			user_integral(this.token).then(res =>{
 				this.recordList = res
 			})
 		},
@@ -65,7 +67,7 @@
 			delListClick(id,key){
 				var that = this
 				that.winSizeClick()
-				user_integral_remove({id:id}).then(res =>{
+				user_integral_remove(this.token,{id:id}).then(res =>{
 					that.recordList.splice(key,1)
 				})
 			},

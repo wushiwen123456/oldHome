@@ -61,7 +61,7 @@
 				</view>
 				<view class="flex align-center justify-between padding-bottom-sm margin-right-sm text-jiujiujiu">
 					<view>快递:<text class="margin-left-sm" v-if="itemInfo.isPostage == '1'">免运费</text><text v-else class="margin-left-sm">{{itemInfo.postage}}</text></view>
-					<view>销量:{{itemInfo.ficti}}</view>
+					<view>销量:{{itemInfo.sales}}</view>
 				</view>
 			</view>
 		</view>
@@ -177,12 +177,12 @@
 		</view>
 		
 		<!-- 推荐商品 end-->
-		<view style="height: 74upx;color: #525253;" class="flex align-center justify-center">———— 商品详情 ————</view>
+		<view style="height: 74upx;color: #525253;" class="flex align-center justify-center"><text  v-if="itemInfo.desc">———— 商品详情 ————</text></view>
 		<!-- 文本分割线 -->
 		
 		<!-- 商品介绍 -->
-		<view>
-			<image :src="itemInfo.image" mode="widthFix" style="width: 100%;"></image>
+		<view  v-if="itemInfo.desc">
+			<parser :html="itemInfo.desc"></parser>
 		</view>
 		<!-- 商品介绍end -->
 		
@@ -295,6 +295,7 @@
 	import tuiNumberbox from "@/components/numberbox/numberbox"
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	import tuiRate from "@/components/rate/rate"
+	import parser from "@/components/jyf-Parser/index"
 	
 	// 导入vuex
 	import { mapGetters } from 'vuex'
@@ -314,7 +315,8 @@
 		components: {
 			uniPopup,
 			tuiNumberbox,
-			tuiRate
+			tuiRate,
+			parser
 		},
 		
 		data(){
@@ -351,7 +353,8 @@
 					unique:''  ,//商品种类唯一识别id
 					id:''	,//商品id
 					is_bargain:'',
-					video:'' //商品视频
+					video:'' ,//商品视频
+					desc:''//商品详情
 					
 				},
 					
@@ -376,7 +379,8 @@
 				discount:{},
 				autoplay:false,
 				commont:{},//评价信息
-				videoContext:''
+				videoContext:'',
+				hasData:false
 			}
 			
 		},
@@ -391,10 +395,9 @@
 					url:'../Home/home'
 				})
 			}
-			that = this
-		},
-		onReady() {
-			this.$refs.loading.open()			
+			this.$nextTick(() => {
+				if(!this.hasData) this.$refs.loading.open()	
+			})
 		},
 		onShow() {
 			// 当返回时判断是否重新加载
@@ -411,25 +414,28 @@
 		methods:{
 			// 获取商品商店数据
 			_getDetailData(id){	
-				if(!this.isToken){
-					uni.showModal({
-						title:'需要登陆才能查看，是否去登陆？',
-						content:'isLogin?',
-						success:(res)  => {
-							if(res.confirm){
-								uni.switchTab({
-									url:'../login/login'				
-								})
-							}else{
-								uni.switchTab({
-									url:'../Home/home'
-								})
-							}
-						}
-					})
-				}
-				getDetailData(id,this.isToken)
+				// if(!this.isToken){
+				// 	uni.showModal({
+				// 		title:'需要登陆才能查看，是否去登陆？',
+				// 		content:'isLogin?',
+				// 		success:(res)  => {
+				// 			if(res.confirm){
+				// 				uni.switchTab({
+				// 					url:'../login/login'				
+				// 				})
+				// 			}else{
+				// 				uni.switchTab({
+				// 					url:'../Home/home'
+				// 				})
+				// 			}
+				// 		}
+				// 	})
+				// 	return
+				// }
+				getDetailData(id)
 				.then(res => {
+					this.$refs.loading.close() 
+					this.hasData = true
 					if(res.data.code != 200){
 						// #ifdef APP-PLUS
 						plus.nativeUI.toast('数据错误，请重试')
@@ -437,7 +443,7 @@
 						uni.navigateBack()
 						return
 					}
-					this.$refs.loading.close() 
+					
 					const data = res.data.data.storeInfo
 					
 					data.slider_image = data.slider_image.map(x => {
@@ -445,8 +451,9 @@
 					})
 					// 处理轮播图
 					this.dealSwiper(data)
-					
 					// 获取顶部数据
+					this.itemInfo.desc = data.description
+					console.log(this.itemInfo.desc)
 					this.itemInfo.id = data.id
 					this.itemInfo.price = data.price
 					this.itemInfo.oldPrice = data.ot_price
@@ -562,7 +569,23 @@
 			//点击kefu
 			//点击客服
 			serviceClick(){
-				let shopInfo = JSON.stringify(this.storeInfo.info)
+				if(!this.isToken){
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('请先去登录哦')
+					// #endif
+					return
+				}
+				const data = this.storeInfo.info
+				let shopInfo = {
+					shop_name:data.shop_name,
+					shop_logo:data.storeLogo,
+					shop_id:data.storeId,
+					product_score:data.produceFen,
+					expressage_score:data.expressageFen,
+					service_score:data.serviceFen,
+					zong:data.totalFen
+				}
+				shopInfo = JSON.stringify(shopInfo)
 				uni.navigateTo({
 					url:'informtion/informtion?shopInfo=' + shopInfo
 				})
@@ -574,6 +597,12 @@
 			},
 			// 评论详情
 			goMoreCommont(){
+				if(!this.isToken){
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('请先去登录哦')
+					// #endif
+					return
+				}
 				const id = this.itemInfo.id
 				uni.navigateTo({
 					url:`shopComment?id=${id}`	
@@ -670,7 +699,7 @@
 			},
 			// 点击轮播图预览
 			swiperDetail(){
-				let arr = this.swiperList.slice(1,this.swiperList.length-1)
+				let arr = this.swiperList
 				arr = arr.map(x => x.url)
 				console.log(arr)
 				// #ifdef APP-PLUS
@@ -699,6 +728,12 @@
 			},
 			//点击收藏
 			collectClick(id){
+				if(!this.isToken){
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('请先去登录哦')
+					// #endif
+					return
+				}
 				this.itemInfo.userCollect = !this.itemInfo.userCollect
 				let category;
 				
@@ -756,6 +791,12 @@
 			},
 			//转发弹出
 			outloginSharClick(){
+				if(!this.isToken){
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('请先去登录哦')
+					// #endif
+					return
+				}
 				const that = this
 				let shareInfo={
 					href:`http://jn.51kdd.com/index.html#/?href=oldHome://abc`,
@@ -852,6 +893,12 @@
 			},
 			//商品属性弹出
 			outloginShopClick(){
+				if(!this.isToken){
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('请先去登录哦')
+					// #endif
+					return
+				}
 				this.$refs.popupbottom.open()
 			},
 			//转发关闭
@@ -977,6 +1024,8 @@
 						}else{
 							return '立即领取'
 						}
+					}else{
+						return '已失效'
 					}
 				}
 				
@@ -999,7 +1048,7 @@
 				}
 			},
 			BoFang(){
-				if(that.autoplay==false){
+				if(this.autoplay==false){
 					
 					// 触发事件
 					// 在 subNVue/vue 页面触发事件  

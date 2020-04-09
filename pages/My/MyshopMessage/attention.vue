@@ -31,7 +31,7 @@
 			</view>
 			<view v-else class="bg-white" :style="{ height: windowHeight + 'px'}">
 				<view class="nodata">
-					<image src="../../../static/nodataa.png"></image>
+					<!-- <image src="../../../static/nodataa.png"></image> -->
 				</view>
 			</view>
 			<view v-show="winSize" @tap="winSizeClick" class="winSize-zehzaho" :style="{ height: windowHeight + 'px'}"></view>

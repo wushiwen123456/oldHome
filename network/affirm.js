@@ -179,7 +179,6 @@ export function queryLogistics(uni,token){
 		header:{
 			token
 		},
-		method:"GET",
-		showModel:true
+		method:"GET"
 	})
 }

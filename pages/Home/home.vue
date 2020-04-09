@@ -107,7 +107,7 @@
 					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(item.id)">
 						<image :src="item.image" class="tui-pro-img" mode="widthFix" />
 						<view class="tui-pro-content">
-							<view class="tui-pro-tit"><text v-if="item.is_hot" class="bg-grey text-xs padding-lr-xs margin-right-sm native-txt-red">{{dealTechan(item)}}特产</text>{{item.store_name}}</view>
+							<view class="tui-pro-tit"><text v-if="item.is_hot" class="text-xs padding-lr-xs margin-right-sm native-txt-red">{{dealTechan(item)}}特产</text>{{item.store_name}}</view>
 							<view class="flex align-center justify-between">
 								<view class="tui-sale-price">￥{{item.price}}</view>
 								<view class="tui-pro-pay">销量{{item.sales}}</view>
@@ -124,7 +124,7 @@
 					<view class="tui-pro-item" hover-class="hover" :hover-start-time="150" @tap="detailsClck(item.id)">
 						<image :src="item.image" class="tui-pro-img" mode="widthFix" />
 						<view class="tui-pro-content">
-							<view class="tui-pro-tit"><text v-if="item.is_hot" class="bg-grey text-xs padding-lr-xs margin-right-sm native-txt-red">{{dealTechan(item)}}特产</text>{{item.store_name}}</view>
+							<view class="tui-pro-tit"><text v-if="item.is_hot" class="text-xs padding-lr-xs margin-right-sm native-txt-red">{{dealTechan(item)}}特产</text>{{item.store_name}}</view>
 							<view class="flex align-center justify-between">
 								<view class="tui-sale-price">￥{{item.price}}</view>
 								<view class="tui-pro-pay">销量{{item.sales}}</view>
@@ -578,11 +578,13 @@
 		display: block;
 	}
 	.native-txt-red{
-		width:86upx;
 		height:40upx;
 		background:rgba(205,50,51,1);
 		border-radius:16upx;
 		font-size: 20upx;
+		display:inline-flex;
+		align-items: center;
+		color: #fff;
 	}
 	.tui-proimg-list {
 		width: 260rpx;

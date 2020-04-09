@@ -32,13 +32,13 @@
 /* 垂直间距 */
 /* 透明度 */
 /* 文章场景相关 */
-page.data-v-a70912bc, .bg-white.data-v-a70912bc {
+page.data-v-715432ca, .bg-white.data-v-715432ca {
   height: 100%;
   overflow: hidden;
   background-color: #fff;
 }
 /* 列式弹性盒子 */
-.flex_col.data-v-a70912bc {
+.flex_col.data-v-715432ca {
   display: -webkit-box;
   display: -webkit-flex;
   display: flex;
@@ -58,24 +58,25 @@ page.data-v-a70912bc, .bg-white.data-v-a70912bc {
           align-content: center;
 }
 /* 弹性盒子弹性容器 */
-.flex_col .flex_grow.data-v-a70912bc {
+.flex_col .flex_grow.data-v-715432ca {
   width: 0;
   -webkit-box-flex: 1;
   -webkit-flex-grow: 1;
           flex-grow: 1;
+  line-height: 1.8;
 }
-.flex_row .flex_grow.data-v-a70912bc {
+.flex_row .flex_grow.data-v-715432ca {
   -webkit-box-flex: 1;
   -webkit-flex-grow: 1;
           flex-grow: 1;
 }
 /* 弹性盒子允许换行 */
-.flex_col.flex_wrap.data-v-a70912bc {
+.flex_col.flex_wrap.data-v-715432ca {
   -webkit-flex-wrap: wrap;
           flex-wrap: wrap;
 }
 /* 列表 */
-.list.data-v-a70912bc {
+.list.data-v-715432ca {
   background-color: #fff;
   font-size: 28rpx;
   color: #333;
@@ -83,41 +84,41 @@ page.data-v-a70912bc, .bg-white.data-v-a70912bc {
           user-select: none;
   touch-callout: none;
 }
-.list > view.data-v-a70912bc {
+.list > view.data-v-715432ca {
     padding: 24rpx 30rpx;
     position: relative;
 }
-.list > view.data-v-a70912bc:active, .list > view.active.data-v-a70912bc {
+.list > view.data-v-715432ca:active, .list > view.active.data-v-715432ca {
       background-color: #f3f3f3;
 }
-.list > view image.data-v-a70912bc {
-      height: 80rpx;
-      width: 80rpx;
+.list > view image.data-v-715432ca {
+      height: 85rpx;
+      width: 85rpx;
       border-radius: 4px;
       margin-right: 20rpx;
 }
-.list > view > view.data-v-a70912bc {
+.list > view > view.data-v-715432ca {
       line-height: 40rpx;
 }
-.list > view > view .time.data-v-a70912bc,
-      .list > view > view .info.data-v-a70912bc {
+.list > view > view .time.data-v-715432ca,
+      .list > view > view .info.data-v-715432ca {
         color: #999;
         font-size: 24rpx;
 }
-.list > view > view .time.data-v-a70912bc {
+.list > view > view .time.data-v-715432ca {
         width: 280rpx;
         text-align: right;
 }
-.list > view > view .info.data-v-a70912bc {
+.list > view > view .info.data-v-715432ca {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         width: 375rpx;
 }
-.list > view.data-v-a70912bc:not(:first-child) {
+.list > view.data-v-715432ca:not(:first-child) {
     margin-top: 1px;
 }
-.list > view.data-v-a70912bc:not(:first-child)::after {
+.list > view.data-v-715432ca:not(:first-child)::after {
       content: '';
       display: block;
       height: 0;
@@ -131,7 +132,7 @@ page.data-v-a70912bc, .bg-white.data-v-a70912bc {
       /* 1px像素 */
 }
 /* 遮罩 */
-.shade.data-v-a70912bc {
+.shade.data-v-715432ca {
   position: fixed;
   z-index: 100;
   top: 0;
@@ -140,7 +141,7 @@ page.data-v-a70912bc, .bg-white.data-v-a70912bc {
   left: 0;
   -webkit-touch-callout: none;
 }
-.shade .pop.data-v-a70912bc {
+.shade .pop.data-v-715432ca {
     position: fixed;
     z-index: 101;
     width: 200rpx;
@@ -161,11 +162,11 @@ page.data-v-a70912bc, .bg-white.data-v-a70912bc {
     -webkit-transform: scale(0, 0);
             transform: scale(0, 0);
 }
-.shade .pop.show.data-v-a70912bc {
+.shade .pop.show.data-v-715432ca {
       -webkit-transform: scale(1, 1);
               transform: scale(1, 1);
 }
-.shade .pop > view.data-v-a70912bc {
+.shade .pop > view.data-v-715432ca {
       padding: 0 20rpx;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -174,7 +175,26 @@ page.data-v-a70912bc, .bg-white.data-v-a70912bc {
               user-select: none;
       -webkit-touch-callout: none;
 }
-.shade .pop > view.data-v-a70912bc:active {
+.shade .pop > view.data-v-715432ca:active {
         background-color: #f3f3f3;
+}
+.inform-all-badge.data-v-715432ca {
+  padding: 0 16rpx;
+  color: #FFFFFF;
+  background: #CD3233;
+  border-radius: 50rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+.flex_grow2.data-v-715432ca {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+          justify-content: space-between;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
 }
 

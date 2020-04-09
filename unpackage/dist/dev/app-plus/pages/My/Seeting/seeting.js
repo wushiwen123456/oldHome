@@ -1,2 +1,0 @@
-setCssToHead(["@charset \x22UTF-8\x22;\n.",[1],"height-all { height: ",[0,96],"; }\n.",[1],"login-color { background-color: #c02e25; }\n.",[1],"login-color wx-view { color: #FFFFFF; }\n",],undefined,{path:"./pages/My/Seeting/seeting.wxss"})();
-document.dispatchEvent(new CustomEvent("generateFuncReady", { detail: { generateFunc: $gwx('./pages/My/Seeting/seeting.wxml') } }));

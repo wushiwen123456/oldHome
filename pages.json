@@ -801,14 +801,6 @@
 					"bounce":"none"
 				}
 			}
-        }
-        ,{
-            "path" : "pages/ShopDetails/affirm/Integral_success",
-            "style" : {
-				"app-plus":{
-					"bounce":"none"
-				}
-			}
         },
 		{
 			"path": "pages/My/Mydata/mydata",
@@ -997,6 +989,17 @@
 								}
 							}
 						}
+        ,{
+            "path" : "pages/My/Inform/refund/refund",
+			"style": {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "退款详情",
+				"app-plus":{
+					"scrollIndicator":"none",//不显示滚动条
+					"bounce":"none"
+				}
+			}
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

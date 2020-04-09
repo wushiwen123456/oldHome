@@ -78,6 +78,8 @@
 
 <script>
 	import tColorPicke from '@/components/t-color-picker.vue';
+	import {upload} from '@/network/sign'
+	import { replaceImage } from '@/utils/dealUrl'
 	var _self;
 	export default {
 		components: {
@@ -101,7 +103,8 @@
 				keyboardHeight: 0,
 				isIOS: false,
 				html:{},//历史输入内容
-				isSave:false
+				isSave:false,
+				imgList:[]
 			};
 		},
 		onLoad() {
@@ -201,6 +204,7 @@
 							url: `../preview/preview?rich=${encodeURIComponent(res.html)}`
 						})
 						that.$store.commit('setRichHtml',res.html)
+						console.log(res)
 						// #ifdef APP-PLUS
 						plus.nativeUI.toast('保存成功',{duration:'long'})
 						// #endif
@@ -231,21 +235,34 @@
 			},
 
 			insertImage() {
-				// const that = this;
+				const that = this;
 				uni.chooseImage({
 					count: 1,
 					success: function(res) {
-						_self.editorCtx.insertImage({
-							src: res.tempFilePaths[0],
-							data: {
-								id: 'abcd',
-								role: 'god'
-							},
-							width: '80%',
-							success: function() {
-								console.log('insert image success');
+						uni.showLoading({
+							mask:true
+						})
+						// 发送上传图片请求
+						upload(res.tempFilePaths[0],true).then(res2 => {
+							uni.hideLoading()
+							if(res2.url){
+								console.log(res2.url)
+								_self.editorCtx.insertImage({
+									src:  replaceImage(res2.url) ,
+									data: {
+										id: 'abcd',
+										role: 'god'
+									},
+									width: '80%',
+									success: function() {
+										console.log('insert image success');
+									}
+								});
 							}
-						});
+						})
+						
+						
+						
 					}
 				});
 			}

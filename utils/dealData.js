@@ -5,6 +5,7 @@
  * 时间戳格式化函数
  */
 export function formatDate(date, fmt) {
+	console.log(date)
   if (/(y+)/.test(fmt)) {
     fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
   }
@@ -29,6 +30,7 @@ function padLeftZero (str) {
 };
 
   // 2、时间戳转换为距离现在多长时间
+  // mss:时间戳,10位
 export function getTimeUntilNow(mss) {
       var days = parseInt(mss / (1000 * 60 * 60 * 24));
     if (days > 0) {

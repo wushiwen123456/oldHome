@@ -1,2 +1,0 @@
-setCssToHead([".",[1],"height-all{ height: ",[0,96],"; }\n.",[1],"rule-image{ width: ",[0,20],"; height: ",[0,20],"; margin-right: ",[0,20],"; }\n",],undefined,{path:"./pages/My/Seeting/rule.wxss"})();
-document.dispatchEvent(new CustomEvent("generateFuncReady", { detail: { generateFunc: $gwx('./pages/My/Seeting/rule.wxml') } }));

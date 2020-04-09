@@ -3,14 +3,28 @@
   "navigationBarTitleText": "商品详情",
   "scrollIndicator": "none",
   "titleNView": {
-    "type": "transparent"
+    "type": "transparent",
+    "bounce": "none"
   },
-  "bounce": "none",
+  "subNVues": [
+    {
+      "id": "video_mask_skll",
+      "path": "pages/ShopDetails/subPages/video_mask_skll",
+      "type": "popup",
+      "style": {
+        "margin": "auto",
+        "width": "100%",
+        "height": "100%",
+        "background": "transparent"
+      }
+    }
+  ],
   "usingComponents": {
     "x-loading": "/components/loding/w-loading",
     "uni-popup": "/components/uni-popup/uni-popup",
     "tui-numberbox": "/components/numberbox/numberbox",
     "tui-countdown": "/components/countdown/countdown",
-    "tui-rate": "/components/rate/rate"
+    "tui-rate": "/components/rate/rate",
+    "parser": "/components/jyf-Parser/index"
   }
 }

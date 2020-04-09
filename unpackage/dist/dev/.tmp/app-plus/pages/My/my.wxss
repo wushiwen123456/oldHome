@@ -120,4 +120,7 @@
   width: 60rpx;
   height: 60rpx;
 }
+.nicket {
+  width: 290rpx;
+}
 

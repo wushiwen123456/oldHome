@@ -80,22 +80,23 @@
 				if((/^1[3456789]\d{9}$/).test(that.phone)){
 					if(that.getCodebutton){ return }
 					that.getCodebutton = true
-					
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('验证码已发送至您的手机',{duration:'long'})
+					// #endif
+					var interval = setInterval(function() {
+						that.codeTip = (currentTime - 1) + 's'
+						currentTime--;
+						if (currentTime <= 0) {
+							clearInterval(interval)
+							that.codeTip = '获取验证码'
+							that.getCodebutton = false
+						}
+					}, 1000)
 					// 发送验证码
 					sendCode(that.phone).then(res => {
 						if(res.data.code == 200){
-							// #ifdef APP-PLUS
-							plus.nativeUI.toast('验证码已发送至您的手机',{duration:'long'})
-							// #endif
-							var interval = setInterval(function() {
-								that.codeTip = (currentTime - 1) + 's'
-								currentTime--;
-								if (currentTime <= 0) {
-									clearInterval(interval)
-									that.codeTip = '获取验证码'
-									that.getCodebutton = false
-								}
-							}, 1000)
+							
+							
 						}
 					})
 					

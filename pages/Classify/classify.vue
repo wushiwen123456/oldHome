@@ -36,7 +36,8 @@
 				top: 0,
 				currentTab: 0, //预设当前项的值
 				scrollTop: 0 ,//tab标题的滚动条位置
-				List:[],//二级导航栏
+				List:[],//二级导航栏,
+				hasData:false
 			}
 		},
 		onLoad: function(options) {
@@ -57,6 +58,7 @@
 			
 			// 获取分类信息
 			getCategory().then(res => {
+				this.hasData = true
 				if(res.data.code == 200){
 					this.$refs.loading.close()
 					const arr = res.data.data
@@ -75,7 +77,9 @@
 			})
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(!this.hasData){
+				this.$refs.loading.open()
+			}
 		},
 		methods: {
 			// 点击标题切换当前页时改变样式

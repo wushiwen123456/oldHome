@@ -159,4 +159,24 @@ page.data-v-24b0c5a6, .total-wrap.data-v-24b0c5a6 {
 .scroll-wrapper .track.data-v-24b0c5a6 {
     background-color: #fff;
 }
+.p-text.data-v-24b0c5a6 {
+  font-family: PingFangHK-Medium;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 40rpx;
+  color: #333333;
+  text-align: justify;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+          flex: 1;
+}
+.p-price.data-v-24b0c5a6 {
+  margin-left: 20rpx;
+}
 

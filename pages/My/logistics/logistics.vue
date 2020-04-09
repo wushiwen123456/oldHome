@@ -6,9 +6,9 @@
 		  </view>
 		  <view class="product-info">
 			  <view class="p-title">
-			  	<text>{{item.productInfo.store_name}}</text>
+			  	<text class="p-text">{{item.productInfo.store_name}}</text>
 				<text class="p-price">
-					<text>¥ {{item.productInfo.attrInfo ? item.productInfo.attrInfo.price : item.productInfo.price}}</text>
+					<text class="">¥ {{item.productInfo.attrInfo ? item.productInfo.attrInfo.price : item.productInfo.price}}</text>
 				</text>
 			  </view>
 				<view class="p-other">
@@ -391,5 +391,27 @@ export default {
 			background-color: #fff;
 		}
 		
+	}
+	//多行文本省略
+	@mixin n-ellipsis($n) {
+			overflow: hidden;
+			display: -webkit-box;
+			-webkit-line-clamp: $n;
+			-webkit-box-orient: vertical;
+			text-overflow: ellipsis;
+			word-break: break-all;
+	} 
+	.p-text{
+		font-family: PingFangHK-Medium;
+		font-size: 28upx;
+		font-weight: 600;
+		line-height: 40upx;
+		color: #333333;
+		text-align: justify;
+		@include n-ellipsis(2);
+		flex: 1;
+	}
+	.p-price{
+		margin-left: 20upx;
 	}
 </style>

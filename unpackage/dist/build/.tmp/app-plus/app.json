@@ -60,7 +60,6 @@
     "pages/ShopDetails/affirm/success_pay",
     "pages/My/Enter/showInfo",
     "pages/Home/PublicMessage/invite/success",
-    "pages/ShopDetails/affirm/Integral_success",
     "pages/My/Mydata/mydata",
     "pages/My/Footprint/footprint",
     "pages/My/logistics/logistics",
@@ -73,7 +72,8 @@
     "pages/Home/Barter/BarterInfo",
     "pages/Home/Barter/issue",
     "pages/Home/texts/index/index",
-    "pages/Home/texts/preview/preview"
+    "pages/Home/texts/preview/preview",
+    "pages/My/Inform/refund/refund"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -121,7 +121,7 @@
     "autoclose": false
   },
   "appname": "老家商城",
-  "compilerVersion": "2.4.6",
+  "compilerVersion": "2.5.1",
   "usingComponents": {
     "cu-custom": "/colorui/components/cu-custom",
     "x-modal": "/components/x-modal/x-modal",

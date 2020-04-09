@@ -194,12 +194,12 @@
 			</view>
 		
 			<!-- 推荐商品 end-->
-			<view style="height: 74upx;color: #525253;" class="flex align-center justify-center">———— 商品详情 ————</view>
+			<view style="height: 74upx;color: #525253;" class="flex align-center justify-center"><text  v-if="detailData.storeInfo.description">———— 商品详情 ————</text></view>
 			<!-- 文本分割线 -->
 			
 			<!-- 商品介绍 -->
-			<view v-if="detailData.storeInfo">
-				<image :src="detailData.storeInfo.image" mode="widthFix" style="width: 100%;"></image>
+			<view  v-if="detailData.storeInfo.description">
+				<parser :html="detailData.storeInfo.description"></parser>
 			</view>
 			<!-- 商品介绍end -->
 			
@@ -332,7 +332,7 @@
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	import tuiCountdown from "@/components/countdown/countdown"
 	import tuiRate from "@/components/rate/rate"
-	
+	import parser from "@/components/jyf-Parser/index"
 	
 	// 导入网络模块
 	import {getPinkDetail} from '@/network/pink'
@@ -354,7 +354,8 @@
 			uniPopup,
 			tuiNumberbox,
 			tuiCountdown,
-			tuiRate
+			tuiRate,
+			parser
 		},
 		onLoad() {
 			that = this
@@ -567,11 +568,12 @@
 			//滑块的change
 			swiperChange(e){
 				this.swiperNum = e.target.current
-				// console.log(e.target.current)
 			},
 			//点击kefu
 			serviceClick(shopname){
-				let shopInfo = JSON.stringify(this.detailData.shop_info)
+				const obj = this.detailData.shop_info
+				let shopInfo = JSON.stringify(obj)
+				
 				uni.navigateTo({
 					url:'informtion/informtion?shopInfo=' + shopInfo
 				})
@@ -855,7 +857,7 @@
 			},
 			// 点击图片预览
 			swiperDetail(){
-				let arr = this.swiperList.slice(1,this.swiperList.length-1)
+				let arr = this.swiperList
 				arr = arr.map(x => x.url)
 				console.log(arr)
 				// #ifdef APP-PLUS

@@ -303,3 +303,28 @@ export function userRefund(page,limit,token){
 		}
 	})
 }
+
+// 个人消息列表
+export function userMessages(token){
+	return http({
+		url:replaceImage('http://jn.51kdd.com/ebapi/msg_api/notice'),
+		header:{
+			token
+		},
+		method:"GET"
+	})
+}
+
+// 个人消息详情
+export function userMessageDetail(token,type){
+	return http({
+		url:replaceImage('http://jn.51kdd.com/ebapi/msg_api/read_notice'),
+		data:{
+			type
+		},
+		header:{
+			token
+		},
+		method:"GET"
+	})
+}

@@ -12,6 +12,17 @@ import { collectProduct,unCollectProduct } from '@/network/detail'
 import { detailOrder } from '@/network/affirm'
 import {replaceImage} from '@/utils/dealUrl'
 
+// 消息接口
+import { chatList,chatData } from '@/network/getProfileData'
+
+// 发送消息方法
+import {test,send_message,get_service_message,removeChatMessages} from '@/network/sign.js'
+
+// 获取店铺信息
+import { getStoreInfo } from '@/network/detail'
+
+// 格式化时间工具
+import { formatDate } from '@/utils/dealData'
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
@@ -31,7 +42,9 @@ const store = new Vuex.Store({
 				"errMsg": "getLocation:ok",
 				"shoppingAddress":''
 			},
-			name:''
+			name:'',
+			userData:{},
+			localAvatar:''
 		},
 		// 退款商品信息
 		tProduct:[],
@@ -59,12 +72,23 @@ const store = new Vuex.Store({
 		// 公益信息存储
 		publicMessage:{},
 		skillTime:0,
-		richHtml:{}
+		richHtml:{},
+		userChatMessages:{},
+		lookSettled:true,//是否看过商品入驻
 	},
 	mutations:{
 		// 保存用户名
 		setUserName(state,name){
 			state.userInfo.name = name
+		},
+		// 设置用户属性
+		setUserData(state,obj){
+			state.userInfo.userData = obj
+		},
+		// 保存本地头像地址
+		setLocalAvatar(state,url){
+			console.log(url)
+			state.userInfo.localAvatar = url || ''
 		},
 		// 登录方法
 		login(state,token){
@@ -84,6 +108,8 @@ const store = new Vuex.Store({
 			state.userInfo.login = false
 			state.userInfo.token = ''
 			uni.removeStorageSync('token');
+			state.userInfo.userData = ''
+			state.lookSettled = true
 		},
 		// 设置用户默认收货地址
 		setShoppingAddress(state,payload){
@@ -121,6 +147,14 @@ const store = new Vuex.Store({
 		// 清空用户地址
 		emptyAddress(state){
 			state.address = {}
+		},
+		// 储存用户聊天记录
+		setUserChatMessages(state,payload){
+			state.userChatMessages = payload
+		},
+		// 删除用户于某个商家的聊天记录
+		removeSomeChatMessages(state,payload){
+			state.userChatMessages.splice(payload,1)
 		},
 		// 秒杀id存储
 		setSkillId(state,payload){
@@ -170,7 +204,7 @@ const store = new Vuex.Store({
 			state.pinkInfo = {}
 		},
 		// 保存评价商品详情信息
-		setOrderDetail(state,obj){
+		setOrderDetail(state,obj){	
 			state.orderDetail = {...obj}
 		},
 		setPublicMessage(state,obj){
@@ -179,6 +213,89 @@ const store = new Vuex.Store({
 		// 保存富文本信息
 		setRichHtml(state,obj){
 			state.richHtml = obj
+		},
+		// Scoket连接监听到消息后的处理
+		dealSocketMessage(state,res){
+			console.log(res)
+			let data,//判断是发送消息还是接收消息
+			token = state.userInfo.token,
+			messageListAll = state.userChatMessages,
+			uid = state.userInfo.userData.uid || '',
+			shop_info //判断是否存在商铺信息
+			if(res.dataList){
+				data = res.dataList
+			}else if(res.res){
+				data = JSON.parse(res.res.data)
+			}else{
+				data = JSON.parse(res.data)
+			}
+			shop_info = res.shop_info || ''
+			console.log(data,shop_info)
+			if(data.type == 'init'){
+				console.log('第一次初始化完成')
+				let mydata = {
+					client_id:data.client_id,
+					uid
+				}
+				test(mydata)
+			}else{
+				console.log('收到服务器内容：' + data);
+				const id = Number(data.shop_id),
+				index = messageListAll.length ? messageListAll.findIndex(x => x.storeId == id) : -1,
+				time1 = new Date(),
+				time = formatDate(time1,'yyyy-MM-dd hh:mm:ss')
+				const obj = {
+					content:data.msg,
+					time,
+					add_time:Math.round(time1.getTime()/1000),
+					cate:data.cate == 0 ? 0 : 1
+				}
+				console.log(obj)
+				// 如果缓存数据里有这个index，在原来的数据上添加
+				if(~index){
+					let curList = messageListAll[index]
+					curList.messageList.push(obj)
+					curList.lastData = obj
+					curList.newMessageNum ++
+				}else{
+					if(!uid){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('登录信息失效,请重新登录',{duration:'long'})
+						// #endif
+						uni.navigateTo({
+							url:"/pages/login/login.vue"
+						})
+						return
+					}
+					
+					if(!shop_info){
+						// 根据店铺id查找店铺详情
+						getStoreInfo(id,token).then(res => {
+							if(res.data.code == 200){
+								const user = res.data.data.shop_info
+								messageListAll.push({
+									lastData:obj,
+									messageList:[obj],
+									newMessageNum:1,
+									storeId:id,
+									user,
+									group_id:uid + '_' + id
+								})
+							}
+						}) 
+					}else{
+						messageListAll.push({
+							lastData:obj,
+							messageList:[obj],
+							newMessageNum:1,
+							storeId:id,
+							user:shop_info,
+							group_id:uid + '_' + id
+						})
+					}
+					
+				}
+			}
 		}
 	},
 	getters:{
@@ -188,6 +305,14 @@ const store = new Vuex.Store({
 			}else{
 				return false
 			}
+		},
+		// 所有未接受的消息
+		allUnabsorbed(state){
+			return state.userChatMessages.length ? state.userChatMessages.reduce((total,x) => total += x.newMessageNum,0) : 0
+		},
+		// 返回lookSettled
+		isLookSettled(state){
+			return state.lookSettled
 		}
 	},
 	actions:{
@@ -230,7 +355,7 @@ const store = new Vuex.Store({
 				})
 			})
 		},
-		// 根据经纬度(wgs)并且根据经纬度获取城市(h5+app)
+		// 根据经纬度(wgs)并且根据经纬度获取城市(h5plus)
 		getWarpweft() {
 			// #ifdef APP-PLUS
 			let seconds = 3,longitude,latitude,obj = {}
@@ -271,6 +396,65 @@ const store = new Vuex.Store({
 				}, 1000)
 			})
 			// #endif
+		},
+		// 获取用户所有聊天记录
+		getUserChatList(content,token){
+			return new Promise((resolve,reject) => {
+				if(!token){
+					// #ifdef APP-PLUS
+					plus.nativeUI.toast('登录已失效,请重新登录',{duration:'long'})
+					// #endif
+					uni.reLaunch({
+						url:'/pages/login/login.vue'
+					})
+					return
+				}
+				chatList(token).then(res => {
+					if(res.data.code == 200){
+						let list = res.data.data.shopGroup
+						const l_array = []
+						if(list){
+							const l_keys = Object.keys(list)
+							l_keys.forEach(x => {
+								l_array.push(list[x])
+							})
+						}
+						list = l_array
+						list = list.filter(x => x.user != null)
+						const netArr = []
+						if(list.length){
+							list.forEach((x,index) => {
+								 x.user.shop_logo = replaceImage(x.user.shop_logo)
+								 x.storeId = x.user.shop_id
+								x.isLoad = false
+								// 获取每个商铺的消息记录
+								chatData(token,x.group_id).then(res => {
+									if(res.data.code == 200){
+										let arr = res.data.data
+										const obj = {
+											storeId:x.storeId,
+											newMessageNum:0,//新消息的条数,默认0
+											messageList:arr,
+											user:x.user,
+											lastData:arr[arr.length-1],
+											group_id:x.group_id
+										}
+										netArr.push(obj)
+										if(netArr.length == list.length){
+											resolve(netArr)
+										}
+									}
+								})
+							})
+						}else{
+							resolve(netArr)
+						}
+						
+					}else{
+						reject('1')
+					}
+				})
+			})
 		}
 	}
 })

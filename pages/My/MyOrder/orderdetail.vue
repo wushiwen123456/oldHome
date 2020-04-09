@@ -17,6 +17,10 @@
 				<view class="text-lg margin-bottom-xs">卖家已发货</view>
 				<view class="text-sm">还剩4天3时自动确认</view>
 			</view>
+			<!-- 待评价 -->
+			<view v-if="pageType == 3" class="orderdetail-all-background orderdetail-background-two text-white">
+				<view class="text-lg margin-bottom-xs">待评价</view>
+			</view>
 			<!-- 交易成功 -->
 			<view v-if="pageType == 4" class="orderdetail-all-background orderdetail-background-three text-white">
 				<view class="text-lg margin-bottom-xs">交易成功</view>
@@ -77,7 +81,8 @@
 							<view class="flex-sub text-center">x{{detailData.total_num}}</view>
 						</view>
 						<view v-if="dealTuikuan(item)" @click.stop="tuikuan(item)" class="flex align-center justify-end margin-top margin-bottom">
-							<view class="tuikuan">退款</view>
+							<view class="tuikuan" style="margin-right: 20upx;">退款</view>
+							<view v-if="pageType == 3"  @click.stop="goPingJia(item)" class="tuikuan pingjia">去评价</view>
 						</view>
 					</view>
 				</view>
@@ -157,20 +162,19 @@
 </template>
 
 <script>
-	import { cancelOrder } from '@/network/affirm'
 	import { replaceImage } from '@/utils/dealUrl'
-	import { payorder } from '@/network/affirm'
+	import { payorder,cancelOrder } from '@/network/affirm'
 	
 	import uniPopup  from "@/components/uni-popup/uni-popup"
 	
 	// 导入工具类
 	import { formatDate } from '@/utils/dealData'
 	
-	
 	export default{
 		data(){
 			return{
 				pageType:1,//页面状态 0等待付款 1代发货 2已发货
+				show1:false,
 				detailData:{},
 				payFun:[
 					{
@@ -295,6 +299,22 @@
 					})
 				}
 			},
+			// 确认收货接口
+			goQueren(){
+				const order_id = this.detailData.order_id,token = this.token
+				affirmOrder(order_id,token).then(res => {
+					if(res.data.code == 200){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('已收货');	
+						// #endif
+						this.orderInfo.splice(this.currentClick,1)
+					}else{
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast(res.data.msg);
+						// #endif
+					}
+				})
+			},
 			// 复制订单
 			copyOrder(e){
 				// 如果是复制的订单
@@ -311,7 +331,13 @@
 				}
 				
 			},
-			
+			// 去评价
+			goPingJia(item){
+				this.$store.commit('setOrderDetail',item)
+				uni.navigateTo({
+					url:'evaluate'
+				})
+			},
 			// 立即付款
 			payNow(paytype){
 				payorder(this.detailData.unified_order,paytype,this.isToken)
@@ -327,7 +353,7 @@
 				if(item.combination_id || item.seckill_id || item.bargain_id){
 					return false
 				}else{
-					if(1 <= this.pageType && 3 >= this.pageType){
+					if(this.pageType == 1 || this.pageType == 3 || this.pageType == 4){
 						return true
 					}else{
 						return false
@@ -338,6 +364,7 @@
 			dealRes(res){
 				const data = res.data.data
 				this.pageType = data._status._type
+				console.log(this.pageType)
 				// 对商品图片进行处理
 				data.cartInfo.forEach(x => {
 					if(x.productInfo.attrInfo){
@@ -404,7 +431,21 @@
 			},
 			// 聊天
 			goChat(){
-				let shopInfo = JSON.stringify(this.detailData.shopInfo)
+				
+				const obj = this.detailData.shopInfo
+				
+				let shopInfo = {
+					expressageFen:obj.expressage_score,
+					produceFen:obj.product_score,
+					serviceFen:obj.service_score,
+					totalFen:obj.zong,
+					storeName:obj.shop_name,
+					storeLogo:obj.shop_logo,
+					storeId:obj.shop_id,
+					totalFen2:2
+				}
+				shopInfo = JSON.stringify(shopInfo)
+				console.log(shopInfo)
 				uni.navigateTo({
 					url:'/pages/ShopDetails/informtion/informtion?shopInfo=' + shopInfo
 				})
@@ -561,5 +602,9 @@
 			color: #CD3233;
 			font-weight: 700;
 		}
+	}
+	.pingjia{
+		border-color:#CD3233 !important;
+		color: #CD3233 !important;
 	}
 </style>

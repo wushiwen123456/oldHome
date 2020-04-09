@@ -1,28 +1,22 @@
 <template>
 	<view>
 		<!-- head -->
-		<view class="shopDetails-title">
-			<swiper :current="swiperNum" @change="swiperChange" class="screen-swiper" duration="500">
-				<swiper-item  v-for="(item,index) in swiperList" :key="index">
-					<image :src="item.url" mode="aspectFill"></image>
-				</swiper-item>
-			</swiper>
-		</view>
+		<swiper class="screen-swiper square-dot" :indicator-dots="true" :circular="true"
+		 :autoplay="true" interval="5000" duration="500">
+			<swiper-item v-for="(item,index) in swiperList" :key="index" @tap="lookDetail(item,index)">
+				<image :src="item" mode="aspectFill"></image>
+			</swiper-item> 
+		</swiper>
 		<view class="bg-white padding-left">
 			<view class="flex align-center">
-				<view class="text-red-my text-xxxl text-bold">￥159</view>
+				<view class="text-red-my text-xxxl text-bold">换物价格：{{productItem.price}}</view>
 			</view>
 			<view>
 				<view class="flex align-center margin-top-sm margin-bottom-sm">
-					<view class="flex-four text-three shopDetails-title-name">沃隆每日坚果750g混合装30包干果零食大礼包混合坚果小包装</view>
-					<view @tap="outloginSharClick" class="flex-sub flex align-center justify-center shopDetails-title-shar">
-						<view class="lg cuIcon-forward margin-right-xs"></view>
-						<view>转发</view>
-					</view>
+					<view class="flex-four text-three shopDetails-title-name">换物主题：{{productItem.title}}</view>
 				</view>
-				<view class="flex align-center justify-between padding-bottom-sm margin-right-sm text-jiujiujiu">
-					<view>快递:<text class="margin-left-sm">免运费</text></view>
-					<view>销量11266</view>
+				<view class="flex align-center margin-top-sm margin-bottom-sm">
+					<view class="flex-four text-three shopDetails-title-name">想换的物品：{{productItem.goods_name}}</view>
 				</view>
 			</view>
 		</view>
@@ -31,17 +25,12 @@
 		<!-- 选择 -->
 		<view @tap="outloginShopClick" class="bg-white margin-top-xs padding-bottom-sm">
 			<view class=" flex align-center justify-between shopDetails-baozhanng">
-				<view class="flex text-sm-erliu">
-					<view class="text-jiujiujiu ">选择</view>
-					<view class="margin-left-sm">选择  食品口味 </view>
+				<view class="flex item-center detail-category">
+					<text class="text-jiujiujiu margin-right">分类</text>
+					<text v-if="attrList.length">共有{{attrList.length}}种类别</text>
+					<text v-else >暂无类别</text>
 				</view>
 				<view class="lg text-jiujiujiu cuIcon-right"></view>
-			</view>
-			<view class="flex align-center shopDetails-select-image">
-				<view class="flex-yidw">
-					<image v-for="(vo,key) in selectimg" :key="key" class="shopDetails-image" :src="vo.img"></image>
-				</view>
-				<view class="flex-sub shopDetails-image-select">共有10中口味可选</view>
 			</view>
 		</view>
 		<!-- 选择 end -->
@@ -49,7 +38,7 @@
 		<!-- 推荐商品 end-->
 		<view style="height: 74upx;color: #525253;" class="flex align-center justify-center">———— 商品详情 ————</view>
 		<!-- 文本分割线 -->
-		
+		<parser v-if="productItem.content" :html="productItem.content"></parser>
 		<!-- 商品介绍 -->
 		<view class="articles-title-img" >
 			<view v-for="(vo,key) in atricleMain" :key="key" >
@@ -62,12 +51,13 @@
 			</view>
 		</view>
 		<!-- 商品介绍end -->
-		
-		<view style="height: 100upx;"></view>
-		
+		<!-- 占位div -->
+		<view style="height: 100upx;display: flex;justify-content: center;align-items: center;" class="text-gray">
+			{{productItem.content ? '' : '暂无详情'}}
+		</view>
 		<!-- 底部操作条 -->
 		<view class="cu-bar bg-white tabbar border shop shopDetails-bottom-all">
-			<view class="flex flex-sub align-center text-xs ">
+			<!-- <view class="flex flex-sub align-center text-xs ">
 				<view @tap="shopClick(1)" class="margin-left-lg flex flex-direction align-center justify-center">
 					<image class="shop-bottom-kefu" src="../../../static/shop.png"></image>
 					<view>店铺</view>
@@ -78,11 +68,9 @@
 				</view>
 				<view @tap="collectClick(1)" class="margin-left-lg flex flex-direction align-center justify-center">
 					<image class="shop-bottom-kefu" src="../../../static/collect.png"></image>
-					<!-- 已收藏 -->
-					<!-- <image src="../../static/collectClick.png"></image> -->
 					<view>收藏</view>
 				</view>
-			</view>
+			</view> -->
 			<view @tap="outloginShopClick"  class="flex flex-sub align-center justify-center barter-nowbuy">
 				<view>立即换物</view>
 			</view>
@@ -103,13 +91,14 @@
 		<uni-popup ref="popupcenter" type="center" >
 			<view class="margin">
 				<view>请留下您的联系方式，方便我们工作人员联系您</view>
+				<view class="gray">为了保护平台安全规范，请填写您的真实信息</view>
 				<view class="solid-bottom margin-top-sm">
 					<view class="flex align-center shopDetails-num">
 						<view>
-							<image src="../../../static/nameuser.png" class="barter-image"></image>
+							<!-- <image src="../../../static/nameuser.png" class="barter-image"></image> -->
 						</view>
 						<view class="margin-lr-sm">姓名</view>
-						<view>
+						<view style="flex: 1;">
 							<input v-model="nameuser" type="text" confirm-type="done" class="text-width text-sm-erliu" placeholder="请填写您的姓名" />
 						</view>
 					</view>
@@ -117,10 +106,10 @@
 				<view class="solid-bottom">
 					<view class="flex align-center shopDetails-num">
 						<view>
-							<image src="../../../static/phoneuser.png" class="barter-image"></image>
+							<!-- <image src="../../../static/phoneuser.png" class="barter-image"></image> -->
 						</view>
 						<view class="margin-lr-sm">手机号</view>
-						<view>
+						<view style="flex: 1;">
 							<input v-model="phoneuser" type="number" confirm-type="done" class="text-width text-sm-erliu" placeholder="请填写您的手机号" />
 						</view>
 					</view>
@@ -135,22 +124,24 @@
 			<view class="popupbottom-all">
 				<view class="flex justify-between solid-bottom">
 					<view class="flex align-end margin-bottom-lg ">
-						<image class="popupbottom-shop-img" src="../../static/demo1.png"></image>
+						<image class="popupbottom-shop-img" :src="swiperList[0]"></image>
 						<view class="margin-left-sm">
-							<view class="text-price text-red text-bold text-xl">50</view>
-							<view class="text-sm" style="color: #828282;">库存14455件</view>
-							<view class="text-sm">选择  食品口味</view>
+							<view class="text-price text-red text-bold text-xl">{{attrInfo.price}}</view>
+							<view class="text-sm text-cut" style="width: 320upx;" v-if="attrList.length">选择:  {{attrInfo.name}}</view>
+							<view class="text-sm" v-else>暂无种类可选</view>
 						</view>
 					</view>
 					<view @tap="closePopupsShopClick"  class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos"></view>
 				</view>
 				<view class="padding-bottom-sm solid-bottom">
-					<view class=" margin-top-lg margin-bottom">食品口味</view>
+					<view class=" margin-top-lg margin-bottom">种类</view>
 					<view class="flex flex-wrap">
-						<block v-for="(vo,key) in list" :key="key">
-							<view @tap="selectShopClick(vo.type,key)" :class="[vo.type?'popupbottom-shop-type-select':'']" class="popupbottom-shop-type-all">{{vo.title}}</view>
+						<block v-for="(vo,key) in attrList" :key="key">
+							<view @tap="selectShopClick(vo,key)" :class="[vo.used?'popupbottom-shop-type-select':'']" class="popupbottom-shop-type-all">
+								名称：{{vo.name}}  规格：{{vo.num}}
+							</view>
 						</block>
-					</view>
+					</view>	
 				</view>
 				<view class="flex align-center justify-between solid-bottom shopDetails-num">
 					<view>换物数量</view>
@@ -163,20 +154,28 @@
 				</view>
 			</view>
 		</uni-popup>
-		
+		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
 	</view>
 </template>
 
 <script>
 	import tuiNumberbox from "@/components/numberbox/numberbox"
 	import uniPopup  from "@/components/uni-popup/uni-popup"
+	import parser from "@/components/jyf-Parser/index"
 	
 	// 导入分享方法
 	import share from "@/common/share.js";
+	
+	// 导入网络请求方法
+	import {getDetailData,sendApply} from '@/network/yiwu'
+	
+	// 导入工具类
+	import { replaceImage } from '@/utils/dealUrl'
 	export default{
 		components: {
 			uniPopup,
-			tuiNumberbox
+			tuiNumberbox,
+			parser
 		},
 		data(){
 			return{
@@ -184,28 +183,6 @@
 				payimgType:true,//图片或者视频
 				swiperNum:1,//当前所在滑块
 				videoUrl:'',
-				swiperList: [{
-					id: 0,
-					url: '../../../static/demo2.png'
-				}, {
-					id: 1,
-					url: '../../../static/demo2.png',
-				}, {
-					id: 2,
-					url: '../../../static/demo2.png'
-				}, {
-					id: 3,
-					url: '../../../static/demo2.png'
-				}],
-				selectimg:[{
-					img:'../../static/demo10.png'
-				},{
-					img:'../../static/demo11.png'
-				},{
-					img:'../../static/demo12.png'
-				},{
-					img:'../../static/demo13.png'
-				}],
 				shareList:[{
 					img:'../../static/weixn.png',
 					name:'微信好友'
@@ -228,16 +205,70 @@
 				}],
 				value:1,//步进器
 				nameuser:'',//姓名
-				phoneuser:'',//手机号
+				phoneuser:'',//手机号,
+				productItem:{},
+				token:'',
+				swiperList:[],
+				attrList:[],
+				currentAttr:-1
+			}
+		},
+		onLoad(e) {
+			const id = e.id
+			this.token = this.$store.getters.isToken
+			// 请求数据
+			this.getDetailData(id)
+		},
+		onReady() {
+			this.$refs.loading.open()
+		},
+		computed:{
+			attrInfo(){
+				if(this.attrList.length){
+					const obj = this.attrList.find(x => x.used)
+					if(obj){
+						return obj
+					}else{
+						return {
+							price:this.productItem.price || '',
+							name:''
+						}
+					}
+				}else{
+					return {
+						price:this.productItem.price || '',
+						name:''
+					}
+				}
 			}
 		},
 		methods:{
+			// 发送请求网络数据
+			getDetailData(id){
+				getDetailData(id,this.token).then(res => {
+					this.$refs.loading.close()
+					if(res.data.code == 200){
+						let obj = res.data.data	
+						this.swiperList = obj.images.map(x => replaceImage(x))
+						if(obj.info.length){
+							obj.info.forEach(x => {
+								x.used = false
+							})
+						}
+						this.attrList = obj.info || []
+						this.productItem = obj
+					}
+				})
+			},
 			//选择商品属性
-			selectShopClick(type,key){
-				if(type){
-					this.list[key].type = false
+			selectShopClick(vo,key){
+				if(vo.used){
+					vo.used = false
 				}else{
-					this.list[key].type = true
+					this.attrList.forEach(x => {
+						this.$set(x,'used',false)
+					})
+					vo.used = true
 				}
 			},
 			//滑块的change
@@ -257,6 +288,20 @@
 			//立即购买
 			nowBuyClick(){
 				var that = this
+				if(this.attrList.length){
+					if(!this.attrList.some(x => x.used)){
+						uni.showToast({
+							title:'请至少选择一个商品类别哦',
+							icon:'none'
+						})
+						return 
+					}
+				}
+				
+				
+				
+				
+				
 				that.closePopupsShopClick()
 				setTimeout(function(){
 					that.centerpopup()
@@ -264,7 +309,41 @@
 			},
 			//提交信息
 			confirmClick(){
-				this.centerpopupclose()
+				var regName =/^[\u4e00-\u9fa5]{2,4}$/;
+				if(!regName.test(this.nameuser)){
+					uni.showToast({
+						title:'请认真填写姓名哦',
+						icon:'none'
+					})
+					return
+				}
+				if(!(/^1[3456789]\d{9}$/.test(this.phoneuser))){
+					uni.showToast({
+						title:'请输入正确的手机号',
+						icon:'none'
+					})
+					return
+				}
+				const obj = {
+					name:this.nameuser,
+					phone:this.phoneuser,
+					b_id:this.productItem.id
+				}
+				const token = this.token
+				// 发送请求
+				sendApply(obj,token).then((res) => {
+					if(res.data.code == 200){
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast(res.data.msg,{duration:'long'})
+						// #endif
+						uni.navigateBack()
+					}else{
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast(res.data.msg,{duration:'long'})
+						// #endif
+					}
+				})
+				
 			},
 			//点击收藏
 			collectClick(id){
@@ -377,6 +456,14 @@
 			closePopupsShopClick(){
 				this.$refs.popupbottom.close()
 			},
+			lookDetail(item,index){
+				let arr = [];
+				arr.push(item);
+				uni.previewImage({
+					current: item,
+					urls: arr
+				})
+			}
 		}
 	}
 </script>
@@ -552,6 +639,7 @@
 		bottom: 0;
 		width: 100%;
 		z-index: 99;
+		height: 80upx;
 	}
 	.shop-bottom-kefu{
 		width: 50upx;
@@ -643,5 +731,8 @@
 		border-radius:46px;
 		color: #FFFFFF;
 		font-size: 36upx;
+	}
+	.detail-category{
+		flex: 1;
 	}
 </style>

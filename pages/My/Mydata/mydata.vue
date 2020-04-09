@@ -20,13 +20,13 @@
 					<view  @tap="sexnvClick">女</view>
 				</view>
 			</view>
-			<view @tap="shopTypeClick" class="flex align-center justify-between margin-lr mydata-title-all">
+<!-- 			<view @tap="shopTypeClick" class="flex align-center justify-between margin-lr mydata-title-all">
 				<view class="flex-twice text-wuer text-lg">生日</view>
 				<view class="flex align-center justify-between flex-six">
 					<input class="text-jiujiujiu text-df" disabled="true" placeholder="选择出生日期" v-model="birth"  confirm-type="done"/>
 					<view class="lg text-gray cuIcon-right"></view>
 				</view>
-			</view>
+			</view> -->
 			<view class="flex align-center justify-between margin-lr mydata-title-all">
 				<view class="flex-twice text-wuer text-lg">手机号</view>
 				<view class="flex align-center justify-between flex-six">
@@ -61,6 +61,12 @@
 	import{upload,edit_user,user_integral_remove}from '@/network/sign.js'
 	import wPicker from "@/components/w-picker/w-picker.vue";
 	import avatar from "@/components/yq-avatar/yq-avatar.vue";
+	
+	//保存头像到本地
+	import { saveAvatar } from '@/utils/storage'
+	// 头像字符串替换方法
+	import { replaceImage } from '@/utils/dealUrl'
+	
 	export default{
 		components:{
 			wPicker,
@@ -77,17 +83,22 @@
 				avatar:'',//传给后台图片路径
 				status:0 ,//判断图片传输状态 0:未发送 1：正在上传 2：上传完成
 				isModel:true,
-				messageInfo:{}
+				messageInfo:{},
+				token:''
 			}
 		},
 		onLoad(){
-			this.messageInfo = uni.getStorageSync('Message_key');
-			const obj = this.messageInfo
+			this.messageInfo = this.$store.state.userInfo.userData;
+			
+			const obj = {...this.messageInfo}
+			const avatar = this.$store.state.userInfo.localAvatar || obj.avatar
+			console.log(avatar)
 			this.nickname = obj.nickname
 			this.sextype = obj.sex
-			this.urls[1] = obj.avatar
+			this.urls[1] = avatar
 			this.phone = obj.account
 			this.birth = obj.birthday || ''
+			this.token = this.$store.getters.isToken
 		},
 		onNavigationBarButtonTap(){
 			if(this.status == 1){
@@ -107,38 +118,60 @@
 				data = {
 					avatar:this.avatar,
 					nickname:this.nickname,
-					sex:this.sextype,
-					birthday:this.birth
+					sex:this.sextype
 				}
 			}else{
 				data = {
 					nickname:this.nickname,
-					sex:this.sextype,
-					birthday:this.birth
+					sex:this.sextype
 				}
 			}
+			console.log(data)
 			uni.showLoading({
 				title:'保存中...'
 			})
-			edit_user(data).then(res =>{
+			edit_user(this.token,data).then(res =>{
 					// this.nickname = this.messageInfo.nickname
 					// this.sextype = this.messageInfo.sex
 					// this.urls[1] = this.messageInfo.avatar
 					// this.phone = this.messageInfo.account
 					// this.birth = this.messageInfo.birthday || ''
-					const obj = this.messageInfo
-					obj.nickname = this.nickname
-					obj.sex = this.sextype
-					obj.avatar = this.urls[1]
-					obj.account = this.phone
-					obj.birthday = this.birth ||''
-					// 把信息储存到缓存里
-					uni.setStorageSync('Message_key',obj)
-					uni.hideLoading()
-					// #ifdef APP-PLUS
-					plus.nativeUI.toast('保存成功',{duration:'long'})
-					// #endif
-					uni.navigateBack()
+					const data2 = this.messageInfo
+					data2.nickname = data.nickname
+					data2.sex = data.sex
+					if(data.avatar){
+						const img = replaceImage(data.avatar)
+						data2.avatar = img
+						// 本地保存图片
+						saveAvatar(img).then(res => {
+							// 存入vuex中
+							this.$store.commit('setLocalAvatar',res)
+							// 把信息储存到缓存里
+							uni.setStorageSync('Message_key',data2)
+							// 个人信息存储vuex
+							this.$store.commit('setUserData',data2)
+							uni.hideLoading()
+							// #ifdef APP-PLUS
+							plus.nativeUI.toast('保存成功',{duration:'long'})
+							// #endif
+							uni.navigateBack()
+						})
+					}else{
+						// 把信息储存到缓存里
+						uni.setStorageSync('Message_key',data2)
+						// 个人信息存储vuex
+						this.$store.commit('setUserData',data2)
+						uni.hideLoading()
+						// #ifdef APP-PLUS
+						plus.nativeUI.toast('保存成功',{duration:'long'})
+						// #endif
+						uni.navigateBack()
+					}
+					
+					
+					
+
+					
 			})
 		},
 		methods:{
@@ -181,7 +214,7 @@
 				this.status = 1
 				uni.showLoading({title:'上传中...'})
 				let data = rsp.path
-				upload(data).then(res =>{
+				upload(this.token,data,true).then(res =>{
 					this.avatar = res.url
 					this.isModel = true
 					uni.hideLoading()

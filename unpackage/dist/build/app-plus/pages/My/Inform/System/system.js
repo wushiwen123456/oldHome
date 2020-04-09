@@ -1,2 +1,0 @@
-setCssToHead([".",[1],"nodata{ padding-top: ",[0,200],"; }\n.",[1],"nodata wx-image{ width: 100%; }\n.",[1],"system-all{ height: ",[0,144],"; }\n.",[1],"system-left-image wx-image{ width:",[0,84],"; height:",[0,84],"; }\n.",[1],"text-color{ color: #838383; }\n.",[1],"text-max-width{ max-width: ",[0,560],"; }\n",],undefined,{path:"./pages/My/Inform/System/system.wxss"})();
-document.dispatchEvent(new CustomEvent("generateFuncReady", { detail: { generateFunc: $gwx('./pages/My/Inform/System/system.wxml') } }));
