@@ -95,7 +95,8 @@
 				},
 				token:'',
 				hasNext:true,
-				myPrice:''
+				myPrice:'',
+				isLoadImage:false
 			};
 		},
 		onLoad() {
@@ -103,7 +104,10 @@
 			this.token = this.$store.getters.isToken
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.isLoadImage == false){
+				this.$refs.loading.open()
+			}
+			
 		},
 		methods:{
 			// 进入提现
@@ -128,6 +132,7 @@
 				const token = this.token
 				userBalance(pageNum,pageSize,token).then(res => {
 					this.$refs.loading.close()
+					this.isLoadImage = true
 					if(res.data.code == 200){
 						const data = res.data.data
 						this.myPrice = data.userBill

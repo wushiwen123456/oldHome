@@ -1,8 +1,0 @@
-{
-  "navigationBarTitleText": "二维码名片",
-  "scrollIndicator": "none",
-  "bounce": "none",
-  "usingComponents": {
-    "tki-qrcode": "/components/tki-qrcode/tki-qrcode"
-  }
-}

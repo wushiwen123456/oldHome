@@ -1,8 +1,0 @@
-{
-  "navigationBarBackgroundColor": "#FFFFFF",
-  "navigationBarTitleText": "公益信息",
-  "usingComponents": {
-    "tui-collapse": "/components/tui-collapse/tui-collapse",
-    "tui-list-cell": "/components/list-cell/list-cell"
-  }
-}

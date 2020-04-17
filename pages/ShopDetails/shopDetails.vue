@@ -388,7 +388,6 @@
 		onLoad(option) {
 			if(!!option.id){
 				this.$store.commit('keepShopId',option.id)
-				console.log(this.$store.state.shopId)
 				this._getDetailData(option.id)
 			}else{
 				uni.switchTab({
@@ -436,11 +435,12 @@
 				.then(res => {
 					this.$refs.loading.close() 
 					this.hasData = true
+					console.log(res)
 					if(res.data.code != 200){
 						// #ifdef APP-PLUS
 						plus.nativeUI.toast('数据错误，请重试')
 						// #endif
-						uni.navigateBack()
+						// uni.navigateBack()
 						return
 					}
 					

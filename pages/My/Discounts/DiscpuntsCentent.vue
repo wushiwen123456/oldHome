@@ -63,7 +63,8 @@
 				}],
 				list2:[],
 				page:1,
-				token:''
+				token:'',
+				isLoadImage:false
 			}
 		},
 		onShow() {
@@ -78,7 +79,9 @@
 			
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.isLoadImage){
+				this.$refs.loading.open()
+			}
 		},
 		methods:{
 			// 处理时间轴
@@ -98,6 +101,7 @@
 				getDiscounts(page,token)
 					.then(res => {
 						this.$refs.loading.close()
+						this.isLoadImage = true
 						if(res.data.code == 200){
 							const obj = res.data.data
 							const keys = Object.keys(obj)

@@ -1,9 +1,0 @@
-{
-  "navigationBarBackgroundColor": "#FFFFFF",
-  "navigationBarTitleText": "评论详情",
-  "scrollIndicator": "none",
-  "usingComponents": {
-    "x-loading": "/components/loding/w-loading",
-    "uni-popup": "/components/uni-popup/uni-popup"
-  }
-}

@@ -120,29 +120,75 @@
 					pwd:that.password
 				}
 
-				login(data).then(res => {
+				login(data)
+				.catch(res => {
+					that.msg = res.data ? res.data.msg : '登陆失败'
+					that.show1 = true
+					that.isRotate = false
+				})
+				.then(res => {
+					console.log(res)
 					if(res.data.code == 200){
 						const token = res.data.data.token,
 						date = new Date().getTime()
 						// 将用户信息同步存储到缓存
-						const data = {
-								token:token,
-								username:that.phone,
-								password:that.password,
-								saveTime:date
+						// const data = {
+						// 		token:token,
+						// 		username:that.phone,
+						// 		password:that.password,
+						// 		saveTime:date
+						// }
+						// console.log(data)
+						
+						// 将登录信息保存格式
+						const userInfo = {}
+						userInfo.userData = {
+							username:that.phone,
+							password:that.password
 						}
-						console.log(data)
-						uni.setStorageSync('userData',data)
+						userInfo.saveTime = date
+						
+						// 判断缓存列表中有没有这个账号数据
+						const userInfoList = uni.getStorageSync('userInfoList') || []
+						const dataIndex = userInfoList.findIndex(x => {
+							return x == that.phone
+						})
+						console.log(dataIndex)
+						// 如果有则使用缓存的数据，如果没有则存入缓存
+						if(~dataIndex){	
+							let userInfo = uni.getStorageSync(that.phone)
+							// 个人数据存入vuex
+							that.$store.commit('setUserData',userInfo.Message_key)
+						}else{
+							// 个人数据存入缓存
+							uni.setStorage({
+								key:that.phone,
+								data:userInfo,
+								success:() => {
+									console.log('新建个人缓存数据成功')
+								}
+							})
+							// 缓存列表更新
+							userInfoList.push(that.phone)
+							uni.setStorage({
+								key:'userInfoList',
+								data:userInfoList,
+								success:() => {
+									console.log('缓存列表更新.....')
+								}
+							})
+							
+						}
+						
 						// 将token存储到vuex中
-						
-						
-						
-						this.$store.commit('login',token)
+						that.$store.commit('login',token)
+
 						// 读取聊天记录
-						this.getUserChatMessages(token)
+						that.getUserChatMessages(token)
 						
 						// 获取用户个人信息，且存入缓存
-						this.getProfileData(token)
+						// this.getProfileData(token)
+						
 						// #ifdef APP-PLUS
 						plus.nativeUI.toast('登录成功',{duration:'long'})
 						// #endif
@@ -150,14 +196,10 @@
 							url:'../Home/home'
 						})
 					}else{
-						this.msg = res.data.msg
-						this.show1 = true
+						that.msg = res.data.msg
+						that.show1 = true
 					}
-					this.isRotate = false
-				}).catch(res => {
-					this.msg = res.data.msg
-					this.show1 = true
-					this.isRotate = false
+					that.isRotate = false
 				})
 				
 			},

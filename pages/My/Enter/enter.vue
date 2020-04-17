@@ -197,7 +197,8 @@
 				idCardOneType:0,
 				idBeiType:0,
 				businessLicenseType:0,
-				trademarkType:0
+				trademarkType:0,
+				loadingImage:false
 			}
 		},
 		onLoad() {
@@ -227,7 +228,9 @@
 			
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.loadingImage == false){
+				this.$refs.loading.open()
+			}
 		},
 		onBackPress(){
 			if(!this.shade){
@@ -243,6 +246,7 @@
 			isStatus(token){
 				isStatus(token).then(res => {
 					this.$refs.loading.close()
+					this.loadingImage = true
 					const status  = res.data.data.status
 					if(status == '未申请'){
 						this.isSubmit = false

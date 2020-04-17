@@ -94,14 +94,17 @@
 						tip: '暂无相关数据'
 					}
 				},
-				hasNext:true
+				hasNext:true,
+				isLoadImage:false
 			}
 		},
 		onLoad(e) {
 			this.province = e.province || ''
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.isLoadImage == false){
+				this.$refs.loading.open()
+			}
 		},
 		methods:{
 			// 获取省份
@@ -194,7 +197,9 @@
 					is_hot:1,
 					province:this.province
 				}).then(res => {
+					
 					this.$refs.loading.close()
+					this.isLoadImage = true
 					if(res.data.code == 200){
 						let obj	= res.data.data
 						if(obj.length){

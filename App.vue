@@ -25,14 +25,22 @@ import Vue from 'vue'
 			}
 		},
 		onLaunch(){
-			const userData = uni.getStorageSync('userData')
-			if(userData){
-				// 获取上次一保存token的时间
-				const saveTime = userData.saveTime,
+			// 获取本地用户缓存列表
+			const userInfoList = uni.getStorageSync('userInfoList')
+			
+			// 判断本地缓存是否有数据
+			if(userInfoList.length){
+				let userInfo = uni.getStorageSync(userInfoList[userInfoList.length - 1])
+				console.log(userInfo)
+				// 获取本地最后一个用户的缓存
+				// let userInfo = allUserInfo[userKeys[userKeys.length - 1]]
+				// 获取上次一保存时间
+				const saveTime = userInfo.saveTime,
 				dealTime = computedTime(saveTime)//计算上次保存的时间
 				
 				// 没有超过7天
 				if(dealTime){
+					const userData = userInfo.userData
 					// 执行登录方法
 					let data = {
 						phone:userData.username,
@@ -44,31 +52,34 @@ import Vue from 'vue'
 							// 刷新储存信息token
 							const token = res.data.data.token,
 							date = new Date().getTime()
-							uni.setStorage({
-								key:"userData",
-								data:{
-									token:token,
-									username:data.phone,
-									password:data.pwd,
-									saveTime:date
-								},
-							})
+							// uni.setStorage({
+							// 	key:"userData",
+							// 	data:{
+							// 		token:token,
+							// 		username:data.phone,
+							// 		password:data.pwd,
+							// 		saveTime:date
+							// 	},
+							// })
+							userInfo.saveTime = date
 							// 将token存储到vuex中
 							this.$store.commit('login',token)
-							
-							// 读取个人信息
-							this.saveProfile(token)
+
+							// 读取缓存中的个人信息，并存入vuex
+							// this.saveProfile(token,userInfo)
+							// 个人数据存入vuex
+							this.$store.commit('setUserData',userInfo.Message_key || {})
 							// 读取聊天记录
-							this.getUserChatMessages(token)
-							
+							this.getUserChatMessages(token)		
+							console.log(this.$store.state)
 						}else{
 							// #ifdef APP-PLUS
-							plus.nativeUI.toast('很久没来啦，从新登录下吧~',{duration:'long'})
+							plus.nativeUI.toast('连接服务器失败',{duration:'long'})
 							// #endif
 							console.log('异步登录失败，请重新登陆')
-							uni.reLaunch({
-								url:'pages/login/login'
-							})
+							// uni.reLaunch({
+							// 	url:'pages/login/login'
+							// })
 						}
 					})
 				}else{
@@ -77,10 +88,10 @@ import Vue from 'vue'
 					plus.nativeUI.toast('登录已失效，请重新登录',{duration:'long'})
 					// #endif
 					console.log('缓存时间已超时，请登录')
-					// 清理用户缓存
-					uni.removeStorage({
-						key:'Message_key'
-					})
+					// // 清理用户缓存
+					// uni.removeStorage({
+					// 	key:'userInfo'
+					// })
 					uni.reLaunch({
 						url:'pages/login/login'
 					})
@@ -88,12 +99,11 @@ import Vue from 'vue'
 				
 				
 				
-			}	
-			else{
+			}else{
 				// 清理用户缓存
-				uni.removeStorage({
-					key:'Message_key'
-				})
+				// uni.removeStorage({
+				// 	key:'Message_key'
+				// })
 				uni.reLaunch({
 					url:'pages/login/login'
 				})
@@ -225,24 +235,33 @@ import Vue from 'vue'
 			getVersion(){
 				getVersion()
 			},
-			
+			/*
+				待修改
+				userInfo{
+					userData:{}//用户账号数据
+					message_key:{}//用户信息数据
+					avatarUser:{}//用户头像数据
+				}
+			*/
 			// 获取用户个人信息，存储到vuex中
-			saveProfile(token){
+			saveProfile(token,userInfo){
 				getProfileData(token).then(res => {
 					if(res.data.code == 200){
 						const data = res.data.data
 						data.avatar = replaceImage(data.avatar)
-						// 存入缓存
-						uni.setStorage({
-							key:'Message_key',
-							data,
-							success:(res) => {
-								console.log('个人信息写入缓存成功')
-							}
-						})
+						// // 存入缓存
+						// uni.setStorage({
+						// 	key:'Message_key',
+						// 	data,
+						// 	success:(res) => {
+						// 		console.log('个人信息写入缓存成功')
+						// 	}
+						// })
+						// const obj = UserInfo
 						
 						// 获取本地头像文件缓存
-						const localAvatar = uni.getStorageSync('integrlUrl')
+						// const localAvatar = uni.getStorageSync('integrlUrl')
+						const localAvatar = userInfo.Message_key.localAvatar
 						// 根据缓存路径读取本地文件，判断是否有这个文件
 						if(localAvatar){
 							uni.getSavedFileInfo({
@@ -260,6 +279,7 @@ import Vue from 'vue'
 									saveAvatar(data.avatar).then(res => {
 										// 存入vuex中
 										this.$store.commit('setLocalAvatar',res)
+										data.localAvatar = res
 									}).catch(err => {
 										console.log('本地头像保存失败')
 									})
@@ -271,11 +291,15 @@ import Vue from 'vue'
 							saveAvatar(data.avatar).then(res => {
 								// 存入vuex中
 								this.$store.commit('setLocalAvatar',res)
+								// 存入缓存对象中
+								userInfo.Message_key.localAvatar = res
 							}).catch(err => {
 								console.log('本地头像保存失败')
 							})
 							//  #endif
 						}
+						// 刷新缓存中的用户数据
+						userInfo.Message_key = {...data}
 						
 						// 个人数据存入vuex
 						this.$store.commit('setUserData',data)

@@ -38,7 +38,7 @@
 			 data-value="2em"></i>
 			<i :class="'iconfont icon-722bianjiqi_duanqianju ' + (formats.marginTop ? 'ql-active' : '')" data-name="marginTop"
 			 data-value="20px"></i>
-			<i :class="'iconfont icon-723bianjiqi_duanhouju ' + (formats.micon-previewarginBottom ? 'ql-active' : '')" data-name="marginBottom"
+			<i :class="'iconfont icon-723bianjiqi_duanhouju ' + (formats['micon-previewarginBottom'] ? 'ql-active' : '')" data-name="marginBottom"
 			 data-value="20px"></i>
 			<i class="iconfont icon-clearedformat" @tap="removeFormat"></i>
 			<i :class="'iconfont icon-font ' + (formats.fontFamily ? 'ql-active' : '')" data-name="fontFamily" data-value="Pacifico"></i>
@@ -104,12 +104,15 @@
 				isIOS: false,
 				html:{},//历史输入内容
 				isSave:false,
-				imgList:[]
+				imgList:[],
+				token:''
 			};
 		},
 		onLoad() {
 			_self = this;
 			this.html = this.$store.state.richHtml
+			this.token = this.$store.getters.isToken
+			console.log(this.token)
 		},
 		onBackPress(e) {
 			if(!this.show && !this.isSave){
@@ -242,8 +245,9 @@
 						uni.showLoading({
 							mask:true
 						})
+						console.log(res)
 						// 发送上传图片请求
-						upload(res.tempFilePaths[0],true).then(res2 => {
+						upload(that.token,res.tempFilePaths[0],true).then(res2 => {
 							uni.hideLoading()
 							if(res2.url){
 								console.log(res2.url)

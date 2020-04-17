@@ -1,9 +1,0 @@
-{
-  "scrollIndicator": "none",
-  "titleNView": false,
-  "bounce": "none",
-  "usingComponents": {
-    "m-search": "/components/mehaotian-search-revision/mehaotian-search-revision",
-    "tui-icon": "/components/icon/icon"
-  }
-}

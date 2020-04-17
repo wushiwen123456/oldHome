@@ -1,9 +1,0 @@
-{
-  "navigationBarBackgroundColor": "#FFFFFF",
-  "navigationBarTitleText": "物流通知",
-  "scrollIndicator": "none",
-  "bounce": "none",
-  "usingComponents": {
-    "x-loading": "/components/loding/w-loading"
-  }
-}

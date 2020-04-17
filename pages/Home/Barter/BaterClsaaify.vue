@@ -279,7 +279,8 @@
 			},
 			getJingwei(){
 				// 获取当前城市信息
-				this.$store.dispatch('getWarpweft').then(res => {
+				this.$store.dispatch('getWarpweft')
+				.then(res => {
 					const obj = res 
 					this.cityNetwork = obj
 					if(this.cityName == '获取中...'){
@@ -304,11 +305,13 @@
 						this.getList(1,10,false,'')
 					}
 				}).catch(err => {
+					console.log(err)
 					if(err == 0){
 						// #ifdef APP-PLUS
 						plus.nativeUI.toast('获取位置信息失败，请检查您的网络和定位是否开启',{duration:'long'})
 						// #endif
 					}
+					
 					
 				})
 			},

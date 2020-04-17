@@ -5,29 +5,29 @@
 			<view  class="bg-white  margin-left margin-right my-one-all">
 				<view class="flex align-end justify-between margin-left-lg">
 					<view class="flex align-center" @click="mySet">
-						<image class="my-head-image" :src="localAvatar || userInfo.avatar"></image>
-						<view class="text-xl text-bold margin-left-sm nicket text-cut">{{userInfo.nickname}}</view>
+						<image class="my-head-image" :src="userData.avatar"></image>
+						<view class="text-xl text-bold margin-left-sm nicket text-cut">{{userData.nickname}}</view>
 					</view>
 					<view @click="goQiandao" class="my-one-jifen flex align-center justify-center">
 						<image src="../../static/jifenw.png"></image>
-						<view class="margin-left-xs">红包{{userInfo.red_packet}}</view>
+						<view class="margin-left-xs">红包{{userData.red_packet}}</view>
 					</view>
 				</view>
 				<view class="flex align-center justify-around margin-top">
 					<view @tap="collectClick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">{{userInfo.product_collect}}</view>
+						<view class="margin-bottom-xs text-lg">{{userData.product_collect}}</view>
 						<view class="text-sm">商品收藏</view>
 					</view>
 					<view @tap="attrntionClick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">{{userInfo.shop_collect}}</view>
+						<view class="margin-bottom-xs text-lg">{{userData.shop_collect}}</view>
 						<view class="text-sm">店铺收藏</view>
 					</view>
 					<view @tap="integralShopCick" class="flex flex-direction align-center justify-center">
-						<view class="margin-bottom-xs text-lg">{{userInfo.integral}}</view>
+						<view class="margin-bottom-xs text-lg">{{userData.integral}}</view>
 						<view class="text-sm">积分</view>
 					</view>
 					<view @tap="footprintClick" class="flex flex-direction align-center justify-center" @click="my_zuji">
-						<view class="margin-bottom-xs text-lg">{{userInfo.visit}}</view>
+						<view class="margin-bottom-xs text-lg">{{userData.visit}}</view>
 						<view class="text-sm">我的足迹</view>
 					</view>
 				</view>
@@ -127,7 +127,7 @@
 	import { getProfileData,saveFiles } from '@/network/getProfileData'
 	
 	// 导入vuex
-	import { mapGetters } from 'vuex'
+	import { mapGetters,mapState } from 'vuex'
 	// 导入工具类
 	import { replaceImage } from '@/utils/dealUrl'
 	
@@ -156,9 +156,7 @@
 				uid:'',
 				red_packet:'',
 				show1:false,
-				isLoading:false,
-				userInfo:{},
-				localAvatar:''
+				isLoading:false
 			}
 		},
 		onShow() {
@@ -167,29 +165,10 @@
 			}else{
 				this.mytrue = true
 				// 从vuex 中读取用户数据
-				const userData =  this.$store.state.userInfo.userData
-				console.log(userData)
+				
 				// 从vuex中读取用户本地头像
-				const localAvatr = this.$store.state.userInfo.localAvatar
-				// 判断是否有用户信息
-				if(Object.keys(userData).length){
-					this.userInfo = userData
-				}else{
-					setTimeout(() => {
-						const userData =  this.$store.state.userInfo.userData
-						this.userInfo = userData
-					},1000)
-				}
-				// #ifdef APP-PLUS
-				// 判断是否有用户本地头像
-				if(localAvatr){
-					this.localAvatar = this.$store.state.userInfo.localAvatar
-					console.log(this.localAvatar)
-				}else{
-					
-				}
-				// #endif
-				this.getProfileData(userData)
+				// const localAvatr = this.$store.state.userInfo.localAvatar
+				this.getProfileData()
 			}
 		},
 		// #ifndef MP
@@ -228,47 +207,79 @@
 				getProfileData(token).then(res => {
 					if(res.data.code == 200){
 						const obj = res.data.data
-						console.log(obj)
+						// 获取网络头像
 						obj.avatar = replaceImage(obj.avatar)
-						let status = true
-						if(Object.keys(userData).length != 0){
-							const keys = Object.keys(userData)
-							keys.forEach((x,index) => {
-								if(userData[keys[index]] != obj[keys[index]]){
-									status = false
-								}
-							})
-						}else{
-							status = false
-						}
-						if(!status){
-							this.userInfo = obj
-							// 存储缓存
-							uni.setStorage({
-								key: 'Message_key',
-								data: obj,
-								success: function () {
-									console.log('个人信息写入缓存成功');
-								}
-							})
-							// 判断用户头像是否相同
-							const a_status = this.dealUserAvatar(userData,obj)
-							
-							// 如果不相同，则把新的头像保存到本地，并且存到vuex中
-							if(!a_status){
-								// #ifdef APP-PLUS
-								saveAvatar(obj.avatar).then(res => {
-									// 存入vuex中
-									this.$store.commit('setLocalAvatar',res)
+						
+						// // 获取本地缓存的用户信息
+						// uni.getStorageSync()
+						
+						
+						// 更新vuex中的数据，并且异步存入缓存
+						this.$store.commit('setUserData',obj)
+
+						// 读取缓存
+						uni.getStorage({
+							key:obj.account,
+							success:(res) => {
+								console.log('获取缓存成功')
+								const data = res.data
+								console.log(data)
+								data.Message_key = obj
+								// 存入缓存
+								uni.setStorage({
+									key:obj.account,
+									data:data,
+									success:() =>{
+										console.log('本地缓存更新成功')
+									} 
 								})
-								// #endif
+							},
+							fail:(err) => {
+								console.log(err)
 							}
+						})
+						
+						
+						
+						// let status = true
+						// if(Object.keys(userData).length != 0){
+						// 	const keys = Object.keys(userData)
+						// 	keys.forEach((x,index) => {
+						// 		if(userData[keys[index]] != obj[keys[index]]){
+						// 			status = false
+						// 		}
+						// 	})
+						// }else{
+						// 	status = false
+						// }
+						// if(!status){
+						// 	this.userInfo = obj
+						// 	// 存储缓存
+						// 	uni.setStorage({
+						// 		key: 'Message_key',
+						// 		data: obj,
+						// 		success: function () {
+						// 			console.log('个人信息写入缓存成功');
+						// 		}
+						// 	})
+						// 	// 判断用户头像是否相同
+						// 	const a_status = this.dealUserAvatar(userData,obj)
 							
-							// 个人信息存储vuex
-							this.$store.commit('setUserData',obj)
-						}else{
-							console.log('用户信息相同')
-						}
+						// 	// 如果不相同，则把新的头像保存到本地，并且存到vuex中
+						// 	if(!a_status){
+						// 		// #ifdef APP-PLUS
+						// 		saveAvatar(obj.avatar).then(res => {
+						// 			// 存入vuex中
+						// 			this.$store.commit('setLocalAvatar',res)
+						// 		})
+						// 		// #endif
+						// 	}
+							
+						// 	// 个人信息存储vuex
+						// 	this.$store.commit('setUserData',obj)
+						// }else{
+						// 	console.log('用户信息相同')
+						// }
 					}
 				})
 			},
@@ -543,7 +554,8 @@
 			}
 		},
 		computed:{
-			...mapGetters(['isToken'])
+			...mapGetters(['isToken']),
+			...mapState(['userData']),
 			
 		}
 		

@@ -1,9 +1,0 @@
-{
-  "navigationBarBackgroundColor": "#FFFFFF",
-  "navigationBarTitleText": "商品收藏",
-  "scrollIndicator": "none",
-  "bounce": "none",
-  "usingComponents": {
-    "x-loading": "/components/loding/w-loading"
-  }
-}

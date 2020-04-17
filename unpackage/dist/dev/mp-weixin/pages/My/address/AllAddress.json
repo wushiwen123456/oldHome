@@ -1,7 +1,0 @@
-{
-  "navigationBarBackgroundColor": "#FFFFFF",
-  "navigationBarTitleText": "我的地址",
-  "usingComponents": {
-    "modal": "/components/x-modal/x-modal"
-  }
-}

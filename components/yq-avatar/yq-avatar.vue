@@ -11,7 +11,7 @@
 					<view @click="fClose"  hover-class="hover" :style="{width: btnWidth}"><text>关闭</text></view>
 					<view @click="fRotate"  hover-class="hover" :style="{width: btnWidth, display: btnDsp}"><text>旋转</text></view>
 					<view @click="fPreview" hover-class="hover" :style="{width: btnWidth}"><text>预览</text></view>
-					<view @click="fUpload"  hover-class="hover" :style="{width: btnWidth}"><text>上传</text></view>
+					<view @click="fUpload"  hover-class="hover" :style="{width: btnWidth}"><text>确定</text></view>
 				</view>
 				<view class="clr-wrapper" v-else>
 					<slider class="my-slider" @change="fColorChange"
@@ -67,6 +67,7 @@
 			inner: '',
 			quality: '',
 			index: '',
+			bgImage: '',
 		},
 		created() {
 			this.ctxCanvas = uni.createCanvasContext('avatar-canvas', this);
@@ -116,7 +117,8 @@
 				// #endif
 				// #ifdef APP-PLUS
 				if(this.platform === 'android') {
-					this.windowHeight = sysInfo.screenHeight + sysInfo.statusBarHeight;
+					//this.windowHeight = sysInfo.screenHeight + sysInfo.statusBarHeight;
+					this.windowHeight = sysInfo.screenHeight + this.moreHeight;
 					this.cvsStyleHeight = this.windowHeight - tabHeight + 'px';
 				} else {
 					this.windowHeight = sysInfo.windowHeight + this.moreHeight;
@@ -125,6 +127,11 @@
 				// #endif
 				// #ifdef MP
 				this.windowHeight = sysInfo.windowHeight + this.moreHeight;
+				this.cvsStyleHeight = this.windowHeight - tabHeight - 2 + 'px';
+				// #endif
+			
+				// #ifdef MP-ALIPAY
+				this.windowHeight = sysInfo.screenHeight - sysInfo.statusBarHeight - sysInfo.titleBarHeight;
 				this.cvsStyleHeight = this.windowHeight - tabHeight - 2 + 'px';
 				// #endif
 				this.pxRatio = this.windowWidth/750;
@@ -219,7 +226,8 @@
 					}
 				})
 			},
-			fUpload() {
+			fUpload(fn,index) {
+				console.log(index)
 				if(this.fUploading)	return;
 				this.fUploading = true;
 				setTimeout(()=>{ this.fUploading = false; }, 1000)
@@ -232,18 +240,40 @@
 					expWidth = this.exportWidth || width,
 					expHeight = this.exportHeight || height;
 					
-				// #ifdef H5
-				x *= this.pixelRatio;
-				y *= this.pixelRatio;
-				expWidth = width;
-				expHeight = height;
-				// #endif
-					
-				uni.showLoading({ mask: true });
 				this.styleDisplay = 'none';
 				this.styleTop = '-10000px';
 				this.hasSel = false;
 				this.fHideImg();
+			// #ifdef MP-ALIPAY
+			this.ctxCanvas.toTempFilePath({
+				x: x,
+				y: y,
+				width: width,
+				height: height,
+				destWidth: expWidth,
+				destHeight: expHeight,
+				fileType: 'png',
+				quality: this.qlty,
+				success: (r)=>{
+					r = r.apFilePath;
+					if(index == 1){
+						fn(r)
+					}else{
+						this.$emit("upload", {avatar: this.imgSrc, path: r, index: this.indx, data: this.rtn});
+					}
+				},
+				fail: (res)=>{
+					uni.showToast({
+						title: "error1",
+						duration: 2000,
+					})
+				},
+				complete: () => {
+					this.noBar || uni.showTabBar();
+				}
+			});
+			// #endif
+			// #ifndef MP-ALIPAY
 				uni.canvasToTempFilePath({
 					x: x,
 					y: y,
@@ -295,7 +325,12 @@
 						})
 						// #endif
 						// #ifndef H5
-						this.$emit("upload", {avatar: this.imgSrc, path: r, index: this.indx, data: this.rtn});
+						if(index == 1){
+							fn(r)
+						}else{
+							this.$emit("upload", {avatar: this.imgSrc, path: r, index: this.indx, data: this.rtn});
+							
+						}
 						// #endif
 					},
 					fail: (res)=>{
@@ -305,10 +340,15 @@
 						})
 					},
 					complete: () => {
-						uni.hideLoading();
+						if(index != 1){
+							uni.hideLoading()
+						}else{
+							
+						}
 						this.noBar || uni.showTabBar();
 					}
 				}, this);
+			// #endif
 			},
 			fPrvUpload() {
 				if(this.fPrvUploading)	return;
@@ -325,19 +365,39 @@
 					expWidth = this.exportWidth || prvWidth,
 					expHeight = this.exportHeight || prvHeight;
 					
-				// #ifdef H5
-				prvX *= this.pixelRatio;
-				prvY *= this.pixelRatio;
-				expWidth = prvWidth;
-				expHeight = prvHeight;
-				// #endif
-					
 				uni.showLoading({ mask: true });
 				
 				this.styleDisplay = 'none';
 				this.styleTop = '-10000px';
 				this.hasSel = false;
 				this.fHideImg();
+				// #ifdef MP-ALIPAY
+				this.ctxCanvasPrv.toTempFilePath({
+					x: prvX,
+					y: prvY,
+					width: prvWidth,
+					height: prvHeight,
+					destWidth: expWidth,
+					destHeight: expHeight,
+					fileType: 'png',
+					quality: this.qlty,
+					success: (r)=>{
+						r = r.apFilePath;
+						this.$emit("upload", {avatar: this.imgSrc, path: r, index: this.indx, data: this.rtn});
+					},
+					fail: ()=>{
+						uni.showToast({
+							title: "error_prv",
+							duration: 2000,
+						})
+					},
+					complete: () => {
+						uni.hideLoading();
+						this.noBar || uni.showTabBar();
+					}
+				});
+				// #endif
+				// #ifndef MP-ALIPAY
 				uni.canvasToTempFilePath({
 					x: prvX,
 					y: prvY,
@@ -403,6 +463,7 @@
 						this.noBar || uni.showTabBar();
 					}
 				}, this);
+				// #endif
 			},
 			fDrawInit(ini=false) {
 				let allWidth = this.windowWidth,
@@ -494,12 +555,7 @@
 				ctxCanvasOper.setLineWidth(3);
 				ctxCanvasOper.setStrokeStyle('grey');
 				ctxCanvasOper.setGlobalAlpha(0.4);
-				ctxCanvasOper.setFillStyle('black');
 				ctxCanvasOper.strokeRect( left, top, width, height );
-				ctxCanvasOper.fillRect(0, 0, this.windowWidth, top);
-				ctxCanvasOper.fillRect(0, top, left, height);
-				ctxCanvasOper.fillRect(0, top+height, this.windowWidth, this.windowHeight-height-top-tabHeight);
-				ctxCanvasOper.fillRect(left+width, top,this.windowWidth-width-left, height);
 				ctxCanvasOper.setStrokeStyle('red');
 				ctxCanvasOper.moveTo(left+20, top);ctxCanvasOper.lineTo(left, top);ctxCanvasOper.lineTo(left, top+20);
 				ctxCanvasOper.moveTo(left+width-20, top);ctxCanvasOper.lineTo(left+width, top);ctxCanvasOper.lineTo(left+width, top+20);
@@ -516,24 +572,46 @@
 						// #ifndef H5
 						this.styleTop = '0';
 						// #endif
-						ctxCanvas.setFillStyle('black');
-						this.fDrawImage();
+						this.fDrawImage(true);
 					}
 				});
 				
 				this.$emit("avtinit");
 			},
-			fDrawImage() {
+			fDrawImage(ini=false) {
 				let tm_now = Date.now();
 				if(tm_now - this.drawTm < 20) return;
 				this.drawTm = tm_now;
-				let ctxCanvas = this.ctxCanvas;
-				ctxCanvas.fillRect(0, 0, this.windowWidth, this.windowHeight-tabHeight);
+				let ctxCanvas = this.ctxCanvas; 
+				
 				ctxCanvas.translate(this.posWidth+this.useWidth/2, this.posHeight+this.useHeight/2);
+				
+				if(this.bgImage) {
+					ctxCanvas.drawImage(this.bgImage, -this.posWidth-this.useWidth/2, -this.posHeight-this.useHeight/2,this.windowWidth, this.windowHeight-tabHeight);
+				} else {
+					ctxCanvas.fillRect(-this.posWidth-this.useWidth/2, -this.posHeight-this.useHeight/2, this.windowWidth, this.windowHeight-tabHeight);
+				}
 				ctxCanvas.scale(this.scaleSize, this.scaleSize);
 				ctxCanvas.rotate(this.rotateDeg * Math.PI/180);
 				ctxCanvas.drawImage(this.imgPath, -this.useWidth/2, -this.useHeight/2, this.useWidth, this.useHeight);
-				ctxCanvas.draw(false);
+				
+				// #ifndef MP-ALIPAY
+				if(ini){
+					setTimeout(()=>{
+						ctxCanvas.draw(true,()=>{
+							this.fDrawImage();
+						});
+					}, 20);
+				} else {
+					ctxCanvas.draw(false);
+				}
+				// #endif
+				// #ifdef MP-ALIPAY
+				ctxCanvas.draw(true);
+				ctxCanvas.rotate(-this.rotateDeg * Math.PI/180);
+				ctxCanvas.scale(1/this.scaleSize, 1/this.scaleSize);
+				ctxCanvas.translate(-this.posWidth-this.useWidth/2, -this.posHeight-this.useHeight/2);
+				// #endif
 			},
 			fHideImg() {
 				this.prvImg = '';
@@ -548,7 +626,6 @@
 				this.hasSel = false;
 				this.fHideImg();
 				this.noBar || uni.showTabBar();
-				this.$emit('closeImg')
 			},
 			fPreview() {
 				if(this.fPreviewing) return;
@@ -560,14 +637,62 @@
 					y = parseInt(style.top),
 					width = parseInt(style.width),
 					height = parseInt(style.height);
-					
-				// #ifdef H5
-				x *= this.pixelRatio;
-				y *= this.pixelRatio;
-				// #endif
 				
 				uni.showLoading({ mask: true });
 				
+				// #ifdef MP-ALIPAY
+				this.ctxCanvas.toTempFilePath({
+					x: x,
+					y: y,
+					width: width,
+					height: height,
+					fileType: 'png',
+					quality: this.qlty,
+					success: (r)=>{
+						this.prvImgTmp = r = r.apFilePath;
+						
+						let ctxCanvasPrv = this.ctxCanvasPrv,
+							prvX = this.windowWidth,
+							prvY = parseInt(this.cvsStyleHeight),
+							prvWidth = parseInt(this.selStyle.width),
+							prvHeight = parseInt(this.selStyle.height),
+							useWidth = prvX - 40,
+							useHeight = prvY - 80,
+							radio = useWidth/prvWidth,
+							rHeight = prvHeight*radio;
+							if(rHeight < useHeight) {
+								prvWidth = useWidth;
+								prvHeight = rHeight;
+							} else {
+								radio = useHeight/prvHeight;
+								prvWidth *= radio;
+								prvHeight = useHeight;
+							}
+						ctxCanvasPrv.setFillStyle('black');
+						ctxCanvasPrv.fillRect(0, 0, prvX, prvY);
+						// ctxCanvasPrv.drawImage(this.bgImage, 0, 0, prvX, prvY); 预览显示背景图
+						this.prvX = prvX = (prvX-prvWidth)/2;
+						this.prvY = prvY = (prvY-prvHeight)/2;
+						this.prvWidth = prvWidth;
+						this.prvHeight = prvHeight;
+						ctxCanvasPrv.drawImage(r, prvX, prvY, prvWidth, prvHeight);
+						ctxCanvasPrv.draw(false);
+						
+						this.showOper = false;
+						this.prvTop = '0';
+					},
+					fail: ()=>{
+						uni.showToast({
+							title: "error2",
+							duration: 2000,
+						})
+					}, 
+					complete: () => {
+						uni.hideLoading();
+					}
+				});
+				// #endif
+				// #ifndef MP-ALIPAY
 				uni.canvasToTempFilePath({
 					x: x,
 					y: y,
@@ -598,6 +723,7 @@
 							}
 						ctxCanvasPrv.setFillStyle('black');
 						ctxCanvasPrv.fillRect(0, 0, prvX, prvY);
+						// ctxCanvasPrv.drawImage(this.bgImage, 0, 0, prvX, prvY); 预览显示背景图
 						this.prvX = prvX = (prvX-prvWidth)/2;
 						this.prvY = prvY = (prvY-prvHeight)/2;
 						this.prvWidth = prvWidth;
@@ -628,6 +754,7 @@
 						uni.hideLoading();
 					}
 				}, this);
+				// #endif
 			},
 			fChooseImg(index=undefined, params=undefined, data=undefined) {
 				if(params) {
@@ -677,14 +804,6 @@
 				this.fSelect();
 			},
 			fRotate() {
-				// #ifdef APP-PLUS
-				if(this.platform === 'android') {
-					if(this.fRotateing) return;
-					this.fRotateing = true;
-					setTimeout(()=>{ this.fRotateing = false; }, 500);
-				}
-				// #endif
-				
 				// if(this.letRotate) {
 					this.rotateDeg += 90 - this.rotateDeg%90;
 					this.fDrawImage();
@@ -809,12 +928,21 @@
 						prvY = this.prvY,
 						prvWidth = this.prvWidth,
 						prvHeight = this.prvHeight;
-					// #ifdef APP-PLUS||H5
-					prvX *= this.pixelRatio;
-					prvY *= this.pixelRatio;
-					prvWidth *= this.pixelRatio;
-					prvHeight *= this.pixelRatio;
+					// #ifdef MP-ALIPAY
+					this.ctxCanvasPrv.getImageData({
+						x: prvX,
+						y: prvY,
+						width: prvWidth,
+						height: prvHeight,
+						success(res) {
+							resolve(res.data);
+						},
+						fail(err) {
+							reject(err);
+						}
+					}, this);
 					// #endif
+					// #ifndef MP-ALIPAY
 					uni.canvasGetImageData({
 						canvasId: 'prv-canvas',
 						x: prvX,
@@ -828,6 +956,7 @@
 							reject(err);
 						}
 					}, this);
+					// #endif
 				});
 			},
 			async fColorChange(e) {
@@ -835,7 +964,7 @@
 				if(tm_now - this.prvTm < 100) return;
 				this.prvTm = tm_now;
 				
-				uni.showLoading({ mask: true });
+				// uni.showLoading({ mask: true });
 				
 				if( !this.prvImgData ) {
 					if( !(this.prvImgData = await this.fGetImgData().catch((res)=>{
@@ -939,24 +1068,16 @@
 					prvWidth = this.prvWidth,
 					prvHeight = this.prvHeight;
 					
-				this.ctxCanvasPrv.setFillStyle('black');
-				this.ctxCanvasPrv.fillRect(prvX, prvY, prvWidth, prvHeight);
-				this.ctxCanvasPrv.draw(true);
+				this.ctxCanvasPrv.draw(false);
 				
-				// #ifdef APP-PLUS||H5
-				prvX *= this.pixelRatio;
-				prvY *= this.pixelRatio;
-				prvWidth *= this.pixelRatio;
-				prvHeight *= this.pixelRatio;
-				// #endif
-				uni.canvasPutImageData({
-					canvasId: 'prv-canvas',
+				// #ifdef MP-ALIPAY
+				this.ctxCanvasPrv.putImageData({
 					x: prvX,
 					y: prvY,
 					width: prvWidth,
 					height: prvHeight,
 					data: target,
-					fail() {
+					fail(e) {
 						uni.showToast({
 							title: 'error_put',
 							duration: 2000
@@ -966,6 +1087,26 @@
 						uni.hideLoading();
 					}
 				}, this);
+				// #endif
+				// #ifndef MP-ALIPAY
+				uni.canvasPutImageData({
+					canvasId: 'prv-canvas',
+					x: prvX,
+					y: prvY,
+					width: prvWidth,
+					height: prvHeight,
+					data: target,
+					fail(e) {
+						uni.showToast({
+							title: 'error_put',
+							duration: 2000
+						})
+					},
+					complete() {
+						uni.hideLoading();
+					}
+				}, this);
+				// #endif
 			},
 			btop(base64) {
 				return new Promise(function(resolve, reject) {

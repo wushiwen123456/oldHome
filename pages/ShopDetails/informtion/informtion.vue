@@ -8,7 +8,7 @@
 							<rich-text class="content shadow" :nodes="vo.content"></rich-text>
 						<!-- </view> -->
 					</view>
-					<image class="cu-avatar radius" mode="aspectFill" :src="localAvatar || message.avatar"></image>
+					<image class="cu-avatar radius" mode="aspectFill" :src="userData.avatar"></image>
 					<view class="date">{{photoList(vo.add_time)}}</view>
 				</view>
 				<view  v-if="vo.cate == 1" class="cu-item">
@@ -35,10 +35,19 @@
 </template>
 
 <script>
+	// 获取个人信息
+	import { getProfileData } from '@/network/getProfileData'
+	
 	import {test,send_message,get_service_message} from '@/network/sign.js'
 	import { formatDate } from '@/utils/dealData'
 	// 导入长连接方法
 	import { openWebScoket } from '@/utils/chat'
+	
+	// 导入vuex
+	import { mapGetters,mapState } from 'vuex'
+	
+	// 导入工具类
+	import { replaceImage } from '@/utils/dealUrl'
 	export default {
 		data() {
 			return {
@@ -65,6 +74,8 @@
 		},
 		
 		computed: {
+			...mapState(['userData']),
+			...mapGetters(['isToken']),
 			photoList() {
 				return function(start_time){
 					let num = ''
@@ -111,6 +122,11 @@
 			}
 		},
 		onLoad(e){
+			if(!this.userData.avatar){
+				// 没有用户信息,去获取用户信息
+				console.log('没有用户信息,去获取用户信息')
+				this.getProfileData()
+			}
 			if(e.indet){
 				console.log('是从消息列表进来的')
 				this.openWebScoket = false
@@ -120,10 +136,7 @@
 			}
 			var that = this		
 			that.shopInfo = JSON.parse(e.shopInfo),//店铺信息
-			that.message = this.$store.state.userInfo.userData//个人信息
-			// 从vuex中读取用户本地头像
-			that.localAvatar = this.$store.state.userInfo.localAvatar//用户本地头像
-			console.log(that.localAvatar)
+
 			// 获取vuex中的数据
 			this.messageall = this.$store.state.userChatMessages
 			this.messageList = this.messageall.find(x => x.storeId == that.shopInfo.shop_id)
@@ -137,6 +150,47 @@
 
 		},
 		methods: {
+			// 获取个人信息
+			getProfileData(){
+				getProfileData(this.isToken).then(res => {
+					if(res.data.code == 200){
+						const obj = res.data.data
+						// 获取网络头像
+						obj.avatar = replaceImage(obj.avatar)
+						console.log(obj)
+						
+						// 将信息存入vuex中
+						this.$store.commit('setUserData',obj)
+						
+						
+						// 读取缓存
+						uni.getStorage({
+							key:obj.account,
+							success:(res) => {
+								console.log('获取缓存成功')
+								const data = res.data
+								console.log(data)
+								data.Message_key = obj
+								// 存入缓存
+								uni.setStorage({
+									key:obj.account,
+									data:data,
+									success:() =>{
+										console.log('本地缓存更新成功')
+									} 
+								})
+							},
+							fail:(err) => {
+								console.log(err)
+							}
+						})
+						
+						
+					}else{
+						plus.nativeUI.toast('获取信息失败')
+					}
+				})
+			},
 			// 时间转换
 			padLeftZero (str) {
 			  return ('00' + str).substr(str.toString().length);
@@ -216,6 +270,7 @@
 					});
 					uni.onSocketError(res => {	
 						console.log('WebSocket连接失败,请检查')
+						plus.nativeUI.toast('服务器连接失败，请重试')
 					})
 					uni.onSocketMessage(res => {				
 						this.$store.commit('dealSocketMessage',{

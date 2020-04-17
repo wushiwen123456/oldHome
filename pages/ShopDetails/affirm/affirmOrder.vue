@@ -75,13 +75,13 @@
 			
 			<view>
 				<view class="cu-form-group" v-if="isShowCard">
-					<view>可用红包抵用0.1元</view>
+					<view>可用红包抵用{{payPaper}}元</view>
 					<switch @change="SwitchA" :class="switchA?'checked':''" :checked="switchA?true:false"></switch>
 				</view>
-				<view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message" @click="shareFirend">
+				<!-- <view class="dis-flex flex-item-cent flex-jus-space affirmOrder-message" @click="shareFirend">
 					<view>朋友代付{{comId}}</view>
 					<view class="lg cuIcon-right margin-left-sm"></view>
-				</view>
+				</view> -->
 			</view>
 			<!-- 底部合计 -->
 			<view class="affirmOrder-bottom">
@@ -112,7 +112,7 @@
 					<view class="margin-bottom-sm"><text>选择优惠券</text></view>
 					<view v-if="curDiscountList" v-for="(item,index) in curDiscountList" :key="index" class="flex align-center justify-between shareShow-all">
 						<view></view>
-						<view class="dscountTitle"><text >优惠券</text><text>{{item.coupon_title}}</text></view>
+						<view class="dscountTitle"><text>{{item.coupon_title}}</text><text class="margin-left">金额{{item.coupon_price}}元 满{{item.use_min_price}}元可用</text></view>
 						<view style="font-size: 40upx;"  :class="[item.used?'lg cuIcon-roundcheckfill text-red':'lg cuIcon-round']" @tap="disCountClick(item,index)"></view>
 					</view>
 					
@@ -177,7 +177,8 @@
 				pinkInfo:{},
 				zfb:{},
 				isLoad:false,
-				switchA:false
+				switchA:false,
+				payPaper:''
 			}
 		},
 		onReady() {
@@ -295,6 +296,7 @@
 							this.t_price = res.data.data.price
 						})
 						this.cartInfo = obj
+						this.payPaper = res.data.data.money
 						// 判断是普通商品购买还是拼团
 						this.isPink()
 						

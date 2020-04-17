@@ -88,7 +88,7 @@
 				}],//秒杀商品列表
 				loadingPlan:80,
 				skllTime:0,//秒杀时间
-				
+				loadImage:false
 			}
 		},
 		onLoad: function() {
@@ -104,13 +104,16 @@
 			this.getSecKillData()
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.loadImage == false){
+				this.$refs.loading.open()
+			}
 		},
 		methods: {
 			// 加载秒杀数据
 			secKillData(id,pages){
 				secKillData(id,pages).then(res => {
 					this.$refs.loading.close()
+					this.loadImage = true
 					if(res.data.code == 200){
 						const num =  res.data.data.backtime.i*60 + res.data.data.backtime.h*3600 + res.data.data.backtime.s *1
 						if(num){
@@ -202,6 +205,10 @@
 </script>
 
 <style>
+	body,.container{
+		width: 100%;
+		height: 100%;
+	}
 	/*tabbar start*/
 	::-webkit-scrollbar {
 		width: 0;

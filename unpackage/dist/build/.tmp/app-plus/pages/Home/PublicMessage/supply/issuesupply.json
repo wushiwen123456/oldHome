@@ -1,9 +1,0 @@
-{
-  "navigationBarBackgroundColor": "#FFFFFF",
-  "navigationBarTitleText": "发布",
-  "scrollIndicator": "none",
-  "usingComponents": {
-    "x-loading": "/components/loding/w-loading",
-    "w-picker": "/components/w-picker/w-picker"
-  }
-}

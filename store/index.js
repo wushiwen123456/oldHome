@@ -27,6 +27,7 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
 	state:{
+		userData:{},
 		// 用户信息
 		userInfo:{
 			login:false,
@@ -83,7 +84,10 @@ const store = new Vuex.Store({
 		},
 		// 设置用户属性
 		setUserData(state,obj){
-			state.userInfo.userData = obj
+			state.userData = obj
+			// state.userInfo.userData.localAvatar = obj.localAvatar || ''
+			// Vue.set(state.userInfo,'userData',obj)
+			// Vue.set(state.userInfo.userData,'localAvatar',obj.localAvatar || '')
 		},
 		// 保存本地头像地址
 		setLocalAvatar(state,url){
@@ -390,7 +394,7 @@ const store = new Vuex.Store({
 									}
 					            },
 								fail:() => {
-									reject(0)
+									if(seconds == 0) reject(0)
 								}
 					        })
 				}, 1000)

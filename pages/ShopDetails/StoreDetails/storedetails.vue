@@ -139,6 +139,7 @@
 		},
 		data(){
 			return{
+				loadingImage:false,
 				statusBarHeight:0,//状态栏高度
 				loadingimg:true,//login加载
 				loadingType:1,//login状态
@@ -202,13 +203,16 @@
 			that.getStoreInfo(that.storeId,that.isToken)
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.loadingImage == false){
+				this.$refs.loading.open()
+			}
 		},
 		methods:{
 			// 获取信息
 			getStoreInfo(id,token){
 				getStoreInfo(id,token).then(res => {
 					this.$refs.loading.close()
+					this.loadingImage = true
 					if(res.data.code == 200){
 						this.isCollectIng = res.data.data.user_collect
 						this.storeInfo = res.data.data

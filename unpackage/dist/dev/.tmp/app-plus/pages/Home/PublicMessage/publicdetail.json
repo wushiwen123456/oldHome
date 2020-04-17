@@ -1,8 +1,0 @@
-{
-  "navigationBarBackgroundColor": "#FFFFFF",
-  "navigationBarTitleText": "信息详情",
-  "scrollIndicator": "none",
-  "usingComponents": {
-    "x-loading": "/components/loding/w-loading"
-  }
-}

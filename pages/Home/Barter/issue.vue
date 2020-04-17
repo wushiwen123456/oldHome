@@ -235,7 +235,9 @@
 		methods:{
 			//保存
 			save(){
+				
 				const that = this
+				const token = that.token
 				 if(!that.inputInfo.title){
 					 // #ifdef APP-PLUS
 					 plus.nativeUI.toast('请填写商品标题',{duration:'long',verticalAlign:'center'})
@@ -278,7 +280,7 @@
 				 })
 				 // 图片上传至服务器
 				 that.imgList.forEach(x =>{
-					upload(x,true).then(res => {
+					upload(token,x,true).then(res => {
 						that.updataImgList.push(res.url)
 						console.log(that.updataImgList)
 						console.log(that.imgList)
@@ -307,7 +309,7 @@
 								content:Object.keys(that.$store.state.richHtml).length ? that.$store.state.richHtml : ''
 							}
 							console.log(obj)
-							const token = that.token
+							
 							yi_publish(obj,token).then(res => {
 								uni.hideLoading()
 								if(res.data.code == 200){

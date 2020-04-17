@@ -56,7 +56,8 @@
 				isShowAnimate:false ,//签到动画
 				addMoney:0.1,
 				isCheck:true,
-				token:''
+				token:'',
+				imageLoad:false
 			}
 		},
 		onLoad() {
@@ -71,7 +72,10 @@
 			that.yearClick()
 		},
 		onReady() {
+			if(this.imageLoad == false){
+				
 			this.$refs.loading.open()
+			}
 		},
 		computed:{
 			bottomheight:function(){
@@ -96,6 +100,7 @@
 				}
 				sign_index(this.token,false).then(res =>{
 					this.$refs.loading.close()
+					this.imageLoad = true
 					that.time = res.sign_num
 					let money = res.money
 					that.money  = Number(money).toFixed(2)

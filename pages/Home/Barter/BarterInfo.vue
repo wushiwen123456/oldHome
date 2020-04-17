@@ -38,9 +38,11 @@
 		<!-- 推荐商品 end-->
 		<view style="height: 74upx;color: #525253;" class="flex align-center justify-center">———— 商品详情 ————</view>
 		<!-- 文本分割线 -->
-		<parser v-if="productItem.content" :html="productItem.content"></parser>
+		<view class="parse_box"  v-if="productItem.content">
+			<parser :html="productItem.content"></parser>
+		</view>
 		<!-- 商品介绍 -->
-		<view class="articles-title-img" >
+		<view class="articles-title-img" >  
 			<view v-for="(vo,key) in atricleMain" :key="key" >
 				<view class="article-textarea" >
 					<textarea class="article-textarea-textarea" maxlength="-1" v-if="vo.type == 'textarea'" :value="vo.value" auto-height style="width: 100%;" disabled=true></textarea>
@@ -179,6 +181,7 @@
 		},
 		data(){
 			return{
+				hasData:false,
 				atricleMain:'',//文章主要内容
 				payimgType:true,//图片或者视频
 				swiperNum:1,//当前所在滑块
@@ -220,7 +223,9 @@
 			this.getDetailData(id)
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.hasData == false){
+				this.$refs.loading.open()
+			}
 		},
 		computed:{
 			attrInfo(){
@@ -247,6 +252,7 @@
 			getDetailData(id){
 				getDetailData(id,this.token).then(res => {
 					this.$refs.loading.close()
+					this.hasData = true
 					if(res.data.code == 200){
 						let obj = res.data.data	
 						this.swiperList = obj.images.map(x => replaceImage(x))
@@ -734,5 +740,9 @@
 	}
 	.detail-category{
 		flex: 1;
+	}
+	.parse_box{
+		box-sizing: border-box;
+		padding: 0 20upx;
 	}
 </style>
