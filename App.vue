@@ -17,7 +17,13 @@ import { replaceImage } from '@/utils/dealUrl'
 //保存头像到本地
 import { saveAvatar } from '@/utils/storage'
 
+ // 导入长连接方法
+import { openWebScoket } from '@/utils/chat'
+
 import Vue from 'vue'
+
+var socketTask = null
+var launched=false
 	export default {
 		data(){
 			return {
@@ -27,17 +33,14 @@ import Vue from 'vue'
 		onLaunch(){
 			// 获取本地用户缓存列表
 			const userInfoList = uni.getStorageSync('userInfoList')
-			
 			// 判断本地缓存是否有数据
 			if(userInfoList.length){
 				let userInfo = uni.getStorageSync(userInfoList[userInfoList.length - 1])
-				console.log(userInfo)
 				// 获取本地最后一个用户的缓存
 				// let userInfo = allUserInfo[userKeys[userKeys.length - 1]]
 				// 获取上次一保存时间
 				const saveTime = userInfo.saveTime,
 				dealTime = computedTime(saveTime)//计算上次保存的时间
-				
 				// 没有超过7天
 				if(dealTime){
 					const userData = userInfo.userData
@@ -52,34 +55,28 @@ import Vue from 'vue'
 							// 刷新储存信息token
 							const token = res.data.data.token,
 							date = new Date().getTime()
-							// uni.setStorage({
-							// 	key:"userData",
-							// 	data:{
-							// 		token:token,
-							// 		username:data.phone,
-							// 		password:data.pwd,
-							// 		saveTime:date
-							// 	},
-							// })
 							userInfo.saveTime = date
 							// 将token存储到vuex中
 							this.$store.commit('login',token)
 
-							// 读取缓存中的个人信息，并存入vuex
-							// this.saveProfile(token,userInfo)
 							// 个人数据存入vuex
 							this.$store.commit('setUserData',userInfo.Message_key || {})
+							
+							// 刷新缓存
+							uni.setStorage({
+								key:data.phone,
+								data:userInfo,
+								success:() => {
+									console.log('刷新缓存成功')
+								}
+							})
 							// 读取聊天记录
-							this.getUserChatMessages(token)		
-							console.log(this.$store.state)
+							this.getUserChatMessages(token,data.phone)		
 						}else{
 							// #ifdef APP-PLUS
 							plus.nativeUI.toast('连接服务器失败',{duration:'long'})
 							// #endif
 							console.log('异步登录失败，请重新登陆')
-							// uni.reLaunch({
-							// 	url:'pages/login/login'
-							// })
 						}
 					})
 				}else{
@@ -87,7 +84,7 @@ import Vue from 'vue'
 					// #ifdef APP-PLUS
 					plus.nativeUI.toast('登录已失效，请重新登录',{duration:'long'})
 					// #endif
-					console.log('缓存时间已超时，请登录')
+					console.log('缓存时间已超时，请登录')	
 					// // 清理用户缓存
 					// uni.removeStorage({
 					// 	key:'userInfo'
@@ -100,19 +97,19 @@ import Vue from 'vue'
 				
 				
 			}else{
-				// 清理用户缓存
-				// uni.removeStorage({
-				// 	key:'Message_key'
-				// })
 				uni.reLaunch({
 					url:'pages/login/login'
-				})
+				})	
 			}
 			// 获取版本号
 			this.getVersion()
 			// 商铺消息监听
 			this.monitorMessages()
-			
+			// 开启webSocket
+			launched = true
+			setTimeout(() => {
+				this.openSocket()
+			},300)
 			// colorUI相关
 			uni.getSystemInfo({
 				success: function(e) {
@@ -218,9 +215,6 @@ import Vue from 'vue'
 			
 			
 		},
-		onHide: function() {
-			console.log('App Hide')
-		},
 		onShow() {
 			 // #ifdef APP-PLUS
 			 var args= plus.runtime.arguments;
@@ -229,6 +223,19 @@ import Vue from 'vue'
 			 		console.log(args)
 			     } 
 			// #endif
+			uni.hideLoading()
+			if(launched){
+				launched = false
+			}else{
+				this.openSocket()
+			}
+		},
+		onHide(){
+			socketTask.close({
+				success:() => {
+					console.log('socket关闭成功')
+				}
+			})
 		},
 		methods: {
 			//版本信息
@@ -308,16 +315,15 @@ import Vue from 'vue'
 				})
 			},
 			
-			// 获取用户聊天记录
-			getUserChatMessages(token){
+			/* 获取用户的聊天记录
+				@param {String} token 用户唯一标识
+				@param {String} key 用户名(手机号)
+			 */
+			getUserChatMessages(token,key){
 				this.$store.dispatch('getUserChatList',token)
 				.then(res => {
-					// 将数据和缓存中的数据进行对比,返回结果数组
-					const resArr = charCompare(res)
 					// 将数据存储到vuex中
-					this.$store.commit('setUserChatMessages',resArr)
-					console.log('获取聊天记录成功，返回合并后的聊天记录')
-					console.log(this.$store.state.userChatMessages)
+					this.$store.commit('setUserChatMessages',res)
 				})
 				.catch(err => {
 					switch (err) {
@@ -325,16 +331,44 @@ import Vue from 'vue'
 							// 连接服务器失败
 							noNetWork()
 							break
-					}
+					}	
 				})
 			},
 			
-			// 监听Scoket消息
+			// 监听Socket消息
 			monitorMessages(){
 				console.log('开始监听消息')
 				uni.$on('getMessage' , (res)=> {
-					console.log('消息监听成功，已发送至vuex存储')
 					this.$store.commit('dealSocketMessage',res)
+				})
+			},
+			// 开启webScoket服务
+			openSocket(){
+				socketTask = uni.connectSocket({
+				    url: 'ws://49.234.24.76:9502', //仅为示例，并非真实接口地址。
+				    success: (e)=> {
+						console.log('连接已打开')
+					}
+				})
+				// socketTask.onMessage(() => {
+				// 	uni.$emit('getMessage',res)	
+				// })
+				// SocketTask.onError((e) => {
+				// 	// 监听到连接错误
+				// 	console.log(e)
+				// 	// 尝试重新开启webSocket
+				// })
+				socketTask.onOpen((res) => {
+					console.log('webSocket打开成功！')
+					console.log(res)
+					socketTask.onMessage((res) => {
+						console.log('收到服务器内容')
+						console.log(res)
+						uni.$emit('getMessage',res)	
+					})
+				})
+				socketTask.onError((e) => {
+					console.log(e)
 				})
 			}
 					

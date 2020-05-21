@@ -62,6 +62,7 @@
 			return {
 				MyevaluateList:'',
 				productId:'',//商品id
+				isLoadingNetwork:false
 			}
 		},
 		onLoad(e) {	
@@ -70,7 +71,9 @@
 			
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(!this.isLoadingNetwork){
+				this.$refs.loading.open()
+			}
 		},
 		methods: {
 			// 放大图片
@@ -81,6 +84,7 @@
 			commentlist(){
 				productCommont(this.productId).then( res =>{
 					this.$refs.loading.close()
+					this.isLoadingNetwork = true
 					if(res.data.code == 200){
 					let list = res.data.data
 					this.dealRes(list)

@@ -88,9 +88,6 @@
 				limit:10
 			},token)
 		},
-		onReady() {
-			this.$refs.loading.open()
-		},
 		methods:{
 			callPhone(phone){
 				console.log('已拨打电话')

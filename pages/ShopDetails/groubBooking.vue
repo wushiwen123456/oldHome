@@ -153,7 +153,7 @@
 					</view>
 					<view @tap="shopClick(1)" class="select-store">进入店铺</view>
 				</view>
-				<view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
+				<!-- <view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
 					<view class="flex align-center flex-sub ">
 						<view>商品评分</view>
 						<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.product_score}}</view>
@@ -169,7 +169,7 @@
 						<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.service_score}}</view>
 						<view class="shop-pingfen" >平</view>
 					</view>
-				</view>
+				</view> -->
 			</view>
 			<!-- 店铺介绍 end -->
 			
@@ -418,9 +418,6 @@
 		onUnload() {
 			uni.$off('videoDetail')
 		},
-		onReady() {
-			this.$refs.loading.open()
-		},
 		methods:{
 			// 立即参团
 			showAllTuan(){
@@ -429,7 +426,6 @@
 			getPinkDetail(id,token){
 				getPinkDetail(id,token)
 					.then(res => {
-						this.$refs.loading.close()
 						if(res.data.code == 200){
 							const data = res.data.data
 							
@@ -571,11 +567,10 @@
 			},
 			//点击kefu
 			serviceClick(shopname){
-				const obj = this.detailData.shop_info
-				let shopInfo = JSON.stringify(obj)
+				const id = this.detailData.shop_info.shop_id
 				
 				uni.navigateTo({
-					url:'informtion/informtion?shopInfo=' + shopInfo
+					url:'informtion/informtion?id=' + id
 				})
 			},
 			//步进起数值修改
@@ -859,10 +854,10 @@
 			swiperDetail(){
 				let arr = this.swiperList
 				arr = arr.map(x => x.url)
-				console.log(arr)
-				// #ifdef APP-PLUS
-				plus.nativeUI.previewImage(arr)
-				// #endif
+				uni.previewImage({
+					urls:arr,
+					indicator:'none',
+				})
 			},
 			// 拼团分享界面
 			sharkPink(item){

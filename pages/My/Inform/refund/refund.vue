@@ -48,13 +48,9 @@
 			const token = this.$store.getters.isToken
 			this.getList(token)
 		},
-		onReady() {
-			this.$refs.loading.open()
-		},
 		methods:{
 			getList(token){
 				userMessageDetail(token,3).then(res => {
-					this.$refs.loading.close()
 					// id: 2
 					// uid: 2
 					// type: 3

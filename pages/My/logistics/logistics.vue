@@ -164,15 +164,11 @@ export default {
 		this.queryLogistics(id)	
 	}
   },
-  onReady() {
-	this.$refs.loading.open()
-  },
   
   methods:{
 	  // 网络加载方法
 	  queryLogistics(id){
 		  queryLogistics(id,this.token).then(res =>{
-				this.$refs.loading.close()
 			  if(res.data.code == 200){
 				  let data = res.data.data
 				  // 处理商品图片数据\

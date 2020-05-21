@@ -68,7 +68,7 @@
 				sizeCalcState:false
 			}
 		},
-		onLoad: function(options) {
+		onLoad(options) {
 			 this.province = options.name
 			uni.setNavigationBarTitle({
 			    title: options.name
@@ -79,6 +79,12 @@
 			this.getCitys(options.id)	
 			// 默认加载第一页数据
 			// this.getDetailData(options.name,this.tabbar[this.currentTab].label,this.currentArea.label)
+		},
+		onBackPress(e) {
+			uni.navigateTo({
+				url:'native'
+			})
+			return true
 		},
 		methods: {
 			// 获取城市
@@ -104,7 +110,8 @@
 			},
 			// 点击县标签
 			xianClick(vo,key){
-				const province = this.province
+				let province = this.province
+				// province = province.replace(/(['省''市'('自治区')'馆'])/g,'')
 				uni.redirectTo({
 					url:`native?province=${province}`
 				})

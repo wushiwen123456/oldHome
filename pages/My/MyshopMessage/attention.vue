@@ -87,14 +87,10 @@
 				})
 			}
 		},
-		onReady() {
-			this.$refs.loading.open()
-		},
 		methods:{
 			getCollectStore(page,token){
 				getCollectStore(page,token)
 					.then(res => {
-						this.$refs.loading.close()
 						if(res.data.code == 200){
 							if(res.data.data.length){
 								this.hasData = true

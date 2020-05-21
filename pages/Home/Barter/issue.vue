@@ -180,7 +180,7 @@
 					{
 						label:'规格9',
 						value:0
-					}				
+					}
 				],//选择列表
 				editItems:[
 					{
@@ -210,7 +210,7 @@
 				address2:[],
 				token:''
 			}
-		},
+		}, 
 		onLoad(e) {
 			if(e.list){
 				this.doChoose1List(e.list)

@@ -34,7 +34,8 @@
 				style:{
 					height:''
 				},
-				list:[]
+				list:[],
+				_isLogin:false
 			}
 		},
 		onLoad() {
@@ -45,7 +46,10 @@
 			this.getList(token)
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this._isLogin == false){
+				this.$refs.loading.open()
+			}
+			
 		},
 		methods:{
 			getList(token){
@@ -62,6 +66,7 @@
 					send_time: 0
 					 */
 					this.$refs.loading.close()
+					this._isLogin = false
 					if(res.data.code == 200){
 						const list = res.data.data
 						if(list.length){

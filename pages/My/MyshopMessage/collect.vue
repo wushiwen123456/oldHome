@@ -45,9 +45,6 @@
 			this.getWindowSize();
 			this.profileCollect(this.pages,this.isToken)
 		},
-		onReady() {
-			this.$refs.loading.open()
-		},
 		methods: {
 			// 取消收藏
 			unCollect(vo,index){
@@ -66,7 +63,6 @@
 				profileCollect(page,token)
 					.then(res => {
 						if(res.data.code == 200){
-							this.$refs.loading.close()
 							if(res.data.data.length){
 								this.hasData = true
 							}

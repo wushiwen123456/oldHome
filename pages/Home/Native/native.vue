@@ -5,7 +5,7 @@
 		<view class="bg-white grid margin-bottom-xs text-center col-4">
 			<view @tap="nativeClick(vo,key)" class="native-image-all" v-for="(vo,key) in titleList" :key="key">
 				<image :src="vo.image"></image>
-				<view>{{vo.label}}</view>
+				<view>{{vo.label.replace(/(['省''市'('自治区')'馆'])/g,'')}}馆</view>
 			</view>
 		</view>
 		<!-- 列表 -->
@@ -33,7 +33,7 @@
 			<view class="padding">
 				<view class="grid text-center col-4 native-address-all" >
 					<view class="margin-top-sm" v-for="(vo,keyTop) in topList" :key="keyTop">
-						<view @click="keyTopClick(vo,keyTop)" :class="{'navtive-select':keyTop == currentIndex}" class="native-address flex align-center justify-center">{{vo.label}}</view>
+						<view @click="keyTopClick(vo,keyTop)" :class="{'navtive-select':keyTop == currentIndex}" class="native-address flex align-center justify-center">{{vo.label.replace(/(['省''市'('自治区')'馆'])/g,'')}}馆</view>
 					</view>
 				</view>
 			</view>
@@ -101,6 +101,18 @@
 		onLoad(e) {
 			this.province = e.province || ''
 		},
+		onBackPress() {
+			uni.switchTab({
+				url:'../home'
+			})
+		},
+		onShow() {
+			if(this.province){
+				uni.setNavigationBarTitle({
+					title:'老家特产' + this.province
+				})
+			}
+		},
 		onReady() {
 			if(this.isLoadImage == false){
 				this.$refs.loading.open()
@@ -109,30 +121,19 @@
 		methods:{
 			// 获取省份
 			getProvince(province){
-					
 						const titleArr = []
 						const othersArr = []
-						province.forEach(x => {
-							let label = x.label
-							label = label.replace(/(['省''市'('自治区')'馆'])/g,'')+'馆'
-
-							// if(x.label == '河南馆' || x.label == '上海馆' || x.label == '陕西馆'){
-							// 	switch(x.label)
-							// 	titleArr.push(x)
-							// }else{
-							// 	othersArr.push(x)
-							// }
-							
-							switch (label){
-								case '河南馆':
+						province.forEach(x => {						
+							switch (x.label){
+								case '河南省':
 									x.image = '/static/nativea.png'
 									titleArr.push(x)
 									break
-								case '上海馆':
+								case '上海市':
 									x.image = '/static/nativeb.png'
 									titleArr.push(x)
 									break
-								case '陕西馆':
+								case '陕西省':
 									x.image = '/static/nativec.png'
 									titleArr.push(x)
 									break
@@ -142,13 +143,15 @@
 							}
 							
 						})
-						titleArr.push({
-							image:'/static/natived.png',
-							label:'其他'
-						})
-						console.log(titleArr)
+						titleArr.push(
+							{
+								image:'/static/natived.png',
+								label:'其他',
+							}
+						)
+						console.log(province)
 						this.titleList = titleArr
-						this.topList = othersArr
+						this.topList = province
 					
 			},
 			detalHotitem(item){
@@ -166,17 +169,18 @@
 			// 头部列表点击跳转
 			keyTopClick(vo,keyTop){
 				this.currentIndex = keyTop
-				uni.navigateTo({
+				uni.redirectTo({
 					url:'address?id=' + vo.value + '&name=' + vo.label
 				})
 			},
 			// 点击热门列表跳转
 			nativeClick(vo,key){
+				console.log(vo)
 				if(key==3){
 					this.outloginSharClick()
 					return
 				}
-				uni.navigateTo({
+				uni.redirectTo({
 					url:'address?id=' + vo.value + '&name=' + vo.label
 				})
 			},

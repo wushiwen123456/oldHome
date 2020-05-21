@@ -14,8 +14,9 @@
 							<view class="text-lg margin-bottom-xs discpuntsCentent-main-money">满{{item.use_min_price}}可用</view>
 							<view class="text-sm discpuntsCentent-main-money">{{dealData(item)}}</view>
 						</view>
-						<view v-if="item.is_use" class="flex-sub discpuntsCentent-button discpuntsCentent-button-coloe" @click="goUse(item,index,vo)">立即使用</view>
-						<view v-else @click="goLing(item,index,vo)" class="flex-sub discpuntsCentent-button discpuntsCentent-button-border discpuntsCentent-main-money">立即领取</view>
+						<view v-if="disountStatus(item) == 0" class="flex-sub discpuntsCentent-button discpuntsCentent-button-coloe" @click="goUse(item,index,vo)">立即使用</view>
+						<view v-if="disountStatus(item) == 1" @click="goLing(item,index,vo)" class="flex-sub discpuntsCentent-button discpuntsCentent-button-border discpuntsCentent-main-money">立即领取</view>
+						<view v-if="disountStatus(item) == 2" @click="goLing(item,index,vo)" class="flex-sub discpuntsCentent-button discpuntsCentent-button-border discpuntsCentent-main-money">已抢光</view>
 					</view>
 				</view>
 			</view>
@@ -83,9 +84,17 @@
 				this.$refs.loading.open()
 			}
 		},
+		computed:{
+			disountStatus(){
+				return (item) =>{
+					if(item.is_use) return 0
+				}
+			}
+		},
 		methods:{
 			// 处理时间轴
 			dealData(item){
+				console.log(item)
 					if(item.end_time == '不限时'){
 						return '不限时'
 					}else{

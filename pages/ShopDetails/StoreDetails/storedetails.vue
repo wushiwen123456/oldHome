@@ -2,7 +2,10 @@
 	<view>
 		<view :style="{ 'height': statusBarHeight + 'px'}"></view>
 		<view class="storedetails-title-background">
-			<view class="flex align-center storedetails-title">
+			<view class="flex align-center storedetails-title padding-top" style="font-size: 50upx;">
+				<view class="lg text-white text-xsl cuIcon-back back-button" @tap="goBack">
+					
+				</view>
 				<view class="flex align-center bg-white text-width storedetails-title-search">
 					<view style="font-size: 40upx;" class="lg text-gray cuIcon-search padding-left padding-right-xs"></view>
 					<input class="text-df" placeholder="搜索本店商品" v-model="searchP" @confirm="searchClick" />
@@ -13,15 +16,15 @@
 					<image class="shop-introduce-img" :src="dealImage" ></image>
 					<view class="margin-left-sm flex flex-direction justify-center">
 						<view class="shop-detal-name text-lg text-white text-bold">{{storeInfo.shop_info ? storeInfo.shop_info.shop_name : ''}}</view>
-						<view class="flex align-center text-xs shop-experience" v-if="storeInfo.shop_info">
+<!-- 						<view class="flex align-center text-xs shop-experience" v-if="storeInfo.shop_info">
 							<tui-rate :current="storeInfo.shop_info.zong*1 || 0" normal="#ccc" active="#FF5400" :size="10"></tui-rate>
-						</view>
+						</view> -->
 						<!-- <view style="color: #FEFEFE;" class="text-sm">粉丝数量{{storeInfo.shop_fans}}万</view> -->
 					</view>
 				</view>
-				<view class="flex align-center text-white storedetails-title-right">
+				<view class="flex align-center text-white storedetails-title-right"  @tap="collectStore">
 					<view class="lg margin-left-xs margin-right-xs" :class="[isCollectIng ? 'cuIcon-favorfill' : 'cuIcon-favor']"></view>
-					<view @tap="collectStore">{{collected}}</view>
+					<view>{{collected}}</view>
 				</view>
 			</view>
 		</view>
@@ -58,20 +61,6 @@
 				</view>
 			</view>
 		</view>	
-		<!-- 导航栏 end -->
-			<!-- <view v-if="currentTab == 0" class="text-lg text-wuer margin-top text-bold">热销商品</view> -->
-			<!-- <view v-if="currentTab == 1" class="text-lg text-wuer margin-top text-bold flex align-center justify-around">
-				<view @tap="syndClick" :class="[shopselect == 0 ?'storedtails-icon-shop':'']">综合</view>
-				<view @tap="salesClick" :class="[shopselect == 1 ?'storedtails-icon-shop':'']">销量</view>
-				<view @tap="priceClick" :class="[shopselect == 2 ?'storedtails-icon-shop':'']" class="flex align-center">
-					<view>价格</view>
-					<view>
-						<view :class="[shopselect == 2 && priceType?'storedtails-icon-shop':'']" class="lg text-gray cuIcon-triangleupfill storedtails-icon-heagin"></view>
-						<view :class="[shopselect == 2 && !priceType?'storedtails-icon-shop':'']" class="lg text-gray cuIcon-triangledownfill storedtails-icon-heagin"></view>
-					</view>
-				</view>
-			</view> -->
-			<!--list-->
 		<mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption" :top="475">
 			<view class="tui-product-list padding-left-sm padding-right-sm">
 				<view class="tui-product-container">
@@ -139,7 +128,6 @@
 		},
 		data(){
 			return{
-				loadingImage:false,
 				statusBarHeight:0,//状态栏高度
 				loadingimg:true,//login加载
 				loadingType:1,//login状态
@@ -181,7 +169,8 @@
 					}
 				},
 				hasNext:true,
-				searchP:''
+				searchP:'',
+				_isLogin:false
 			}
 		},
 		onLoad(option) {
@@ -203,7 +192,7 @@
 			that.getStoreInfo(that.storeId,that.isToken)
 		},
 		onReady() {
-			if(this.loadingImage == false){
+			if(this._isLogin == false){
 				this.$refs.loading.open()
 			}
 		},
@@ -212,7 +201,7 @@
 			getStoreInfo(id,token){
 				getStoreInfo(id,token).then(res => {
 					this.$refs.loading.close()
-					this.loadingImage = true
+					this._isLogin = true
 					if(res.data.code == 200){
 						this.isCollectIng = res.data.data.user_collect
 						this.storeInfo = res.data.data
@@ -300,6 +289,7 @@
 			searchClick(){
 				const mescroll = this.$refs.mescroll.mescroll
 				mescroll.resetUpScroll()
+				// console.log('获取搜索框确认事件')
 			},
 			// 进入详情页
 			detail(item){
@@ -377,7 +367,9 @@
 				let pageSize = mescroll.size; // 页长, 默认每页10条
 				this.dealClick(pageNum,pageSize,mescroll)
 			},
-			
+			goBack(){
+				uni.navigateBack()
+			}
 		},
 		computed:{
 			...mapGetters(['isToken']),
@@ -405,7 +397,7 @@
 		height: 88upx;
 	}
 	.storedetails-title-search{
-		margin: 0 100upx;
+		width: 520upx;
 		height: 60upx;
 		border-radius: 10upx;
 	}
@@ -562,5 +554,10 @@
 		background:rgba(205,50,51,1);
 		border-radius:16upx;
 		font-size: 20upx;
+	}
+	.back-button{
+		padding: 10upx;
+		margin-left: 20upx;
+		margin-right: 50upx;
 	}
 </style>

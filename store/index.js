@@ -74,7 +74,7 @@ const store = new Vuex.Store({
 		publicMessage:{},
 		skillTime:0,
 		richHtml:{},
-		userChatMessages:{},
+		userChatMessages:[],
 		lookSettled:true,//是否看过商品入驻
 	},
 	mutations:{
@@ -220,11 +220,10 @@ const store = new Vuex.Store({
 		},
 		// Scoket连接监听到消息后的处理
 		dealSocketMessage(state,res){
-			console.log(res)
 			let data,//判断是发送消息还是接收消息
 			token = state.userInfo.token,
 			messageListAll = state.userChatMessages,
-			uid = state.userInfo.userData.uid || '',
+			uid = state.userData.uid || '',
 			shop_info //判断是否存在商铺信息
 			if(res.dataList){
 				data = res.dataList
@@ -234,7 +233,6 @@ const store = new Vuex.Store({
 				data = JSON.parse(res.data)
 			}
 			shop_info = res.shop_info || ''
-			console.log(data,shop_info)
 			if(data.type == 'init'){
 				console.log('第一次初始化完成')
 				let mydata = {
@@ -243,7 +241,6 @@ const store = new Vuex.Store({
 				}
 				test(mydata)
 			}else{
-				console.log('收到服务器内容：' + data);
 				const id = Number(data.shop_id),
 				index = messageListAll.length ? messageListAll.findIndex(x => x.storeId == id) : -1,
 				time1 = new Date(),
@@ -254,7 +251,6 @@ const store = new Vuex.Store({
 					add_time:Math.round(time1.getTime()/1000),
 					cate:data.cate == 0 ? 0 : 1
 				}
-				console.log(obj)
 				// 如果缓存数据里有这个index，在原来的数据上添加
 				if(~index){
 					let curList = messageListAll[index]
@@ -415,6 +411,7 @@ const store = new Vuex.Store({
 				}
 				chatList(token).then(res => {
 					if(res.data.code == 200){
+						
 						let list = res.data.data.shopGroup
 						const l_array = []
 						if(list){
@@ -427,6 +424,7 @@ const store = new Vuex.Store({
 						list = list.filter(x => x.user != null)
 						const netArr = []
 						if(list.length){
+							console.log(list)
 							list.forEach((x,index) => {
 								 x.user.shop_logo = replaceImage(x.user.shop_logo)
 								 x.storeId = x.user.shop_id

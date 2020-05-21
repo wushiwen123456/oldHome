@@ -76,7 +76,8 @@
 				},
 				token:'',
 				text:'',
-				hasNext:true
+				hasNext:true,
+				isLoadingImage:false
 			}
 		},
 		onLoad() {
@@ -87,9 +88,6 @@
 					url:'../../login/login'
 				})
 			}
-		},
-		onReady() {
-			this.$refs.loading.open()
 		},
 		// 监听搜索框确认
 		onNavigationBarSearchInputConfirmed(e){
@@ -126,7 +124,6 @@
 				const token = this.token,seach = this.text
 				this.text = ''
 				getNewsList(pageNum,pageSize,seach,token).then(res => {
-					this.$refs.loading.close()
 					if(res.data.code == 200){
 						const obj = res.data.data
 						if(obj.newsList.length){

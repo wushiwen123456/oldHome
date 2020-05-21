@@ -126,14 +126,17 @@
 	// 获取个人信息
 	import { getProfileData,saveFiles } from '@/network/getProfileData'
 	
+	// 获取新消息提醒
+	import {userMessages} from '@/network/getProfileData'
+	
 	// 导入vuex
 	import { mapGetters,mapState } from 'vuex'
+	
 	// 导入工具类
 	import { replaceImage } from '@/utils/dealUrl'
 	
 	// 导入公共类
 	import { HOST } from '@/common/const'
-	
 	
 	//保存头像到本地
 	import { saveAvatar } from '@/utils/storage'
@@ -156,7 +159,8 @@
 				uid:'',
 				red_packet:'',
 				show1:false,
-				isLoading:false
+				isLoading:false,
+				showRed:true
 			}
 		},
 		onShow() {
@@ -164,11 +168,11 @@
 				this.mytrue = false
 			}else{
 				this.mytrue = true
-				// 从vuex 中读取用户数据
-				
-				// 从vuex中读取用户本地头像
-				// const localAvatr = this.$store.state.userInfo.localAvatar
+				// 刷新用户数据
 				this.getProfileData()
+				// 读取消息
+				this.userMessages(this.isToken)
+				console.log(this.showRed)
 			}
 		},
 		// #ifndef MP
@@ -179,15 +183,6 @@
 			}
 			const index = e.index
 			if(index == 0){
-				// 去掉小红点
-				// #ifdef APP-PLUS
-				const pages = getCurrentPages()
-				const page = pages[pages.length - 1]
-				const currentWebView = page.$getAppWebview()
-				currentWebView.hideTitleNViewButtonRedDot({
-					index
-				})
-				// #endif
 				//消息
 				uni.navigateTo({
 					url:'Inform/inform'
@@ -200,7 +195,51 @@
 			}
 		},
 		// #endif
+		// #ifdef APP-PLUS
+		watch:{
+			showRed(newValue,oldValue){
+				console.log(newValue)
+				const pages = getCurrentPages()
+				const page = pages[pages.length - 1]
+				const currentWebView = page.$getAppWebview()
+				if(newValue){
+					// 隐藏navBar小红点
+					this.showTabbar(currentWebView)
+				}else{
+					// 显示navBar小红点
+					this.hideTabbar(currentWebView)
+				}
+			}
+		},
+		// #endif
 		methods:{
+			// 隐藏小红点
+			showTabbar(currentWebView){
+				console.log(currentWebView)
+				currentWebView.showTitleNViewButtonRedDot({
+					index:0
+				})
+			},
+			// 显示小红点
+			hideTabbar(currentWebView){
+				console.log(currentWebView)
+				currentWebView.hideTitleNViewButtonRedDot({
+					index:0
+				})
+			},
+			// 新消息提醒
+			userMessages(token){
+				userMessages(token).then(res => {
+					if(res.data.code == 200){
+						const data = res.data.data
+						if(data.orderNotice == 0 && data.payRefunNotice == 0 && data.shopNotice == false && data.systemNotice == 0 && this.allUnabsorbed == 0){
+							this.showRed = false
+						}else{
+							this.showRed = true
+						}
+					}
+				})
+			},
 			// 登录网络方法
 			getProfileData(userData){
 				const token = this.isToken
@@ -221,9 +260,7 @@
 						uni.getStorage({
 							key:obj.account,
 							success:(res) => {
-								console.log('获取缓存成功')
 								const data = res.data
-								console.log(data)
 								data.Message_key = obj
 								// 存入缓存
 								uni.setStorage({
@@ -238,48 +275,6 @@
 								console.log(err)
 							}
 						})
-						
-						
-						
-						// let status = true
-						// if(Object.keys(userData).length != 0){
-						// 	const keys = Object.keys(userData)
-						// 	keys.forEach((x,index) => {
-						// 		if(userData[keys[index]] != obj[keys[index]]){
-						// 			status = false
-						// 		}
-						// 	})
-						// }else{
-						// 	status = false
-						// }
-						// if(!status){
-						// 	this.userInfo = obj
-						// 	// 存储缓存
-						// 	uni.setStorage({
-						// 		key: 'Message_key',
-						// 		data: obj,
-						// 		success: function () {
-						// 			console.log('个人信息写入缓存成功');
-						// 		}
-						// 	})
-						// 	// 判断用户头像是否相同
-						// 	const a_status = this.dealUserAvatar(userData,obj)
-							
-						// 	// 如果不相同，则把新的头像保存到本地，并且存到vuex中
-						// 	if(!a_status){
-						// 		// #ifdef APP-PLUS
-						// 		saveAvatar(obj.avatar).then(res => {
-						// 			// 存入vuex中
-						// 			this.$store.commit('setLocalAvatar',res)
-						// 		})
-						// 		// #endif
-						// 	}
-							
-						// 	// 个人信息存储vuex
-						// 	this.$store.commit('setUserData',obj)
-						// }else{
-						// 	console.log('用户信息相同')
-						// }
 					}
 				})
 			},
@@ -554,7 +549,7 @@
 			}
 		},
 		computed:{
-			...mapGetters(['isToken']),
+			...mapGetters(['isToken','isLookSettled','allUnabsorbed']),
 			...mapState(['userData']),
 			
 		}

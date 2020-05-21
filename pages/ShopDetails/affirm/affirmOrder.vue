@@ -178,11 +178,14 @@
 				zfb:{},
 				isLoad:false,
 				switchA:false,
-				payPaper:''
+				payPaper:'',
+				isLoadingImage:false,
 			}
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.isLoadingImage == false){
+				this.$refs.loading.open()
+			}
 		},
 		onShow() {
 			if(this.isLoad){
@@ -285,6 +288,7 @@
 				getAffirmInfo(cartId,token)
 				.then(res => {
 					this.$refs.loading.close()
+					this.isLoadingImage = true
 					if(res.data.code == 200){
 						let obj = res.data.data.cartInfo
 						obj.forEach((item,index) => {
@@ -338,6 +342,7 @@
 			},
 			SwitchA(e){
 				this.switchA = e.detail.value
+				
 			},
 			//优惠券全不选
 			getDiscountClick(){
@@ -628,7 +633,7 @@
 			},
 			doPink(unified_order,price){
 				
-				// 保存订单id
+			// 保存订单id
 				this.$store.commit('setOrderKey',unified_order)
 				uni.redirectTo({
 					url:`../../PayOrder/payOrderMessage/payorderMessage?price=${price}`
@@ -650,14 +655,19 @@
 			},
 			//总价 
 			totalPrice(){
-				if(this.t_price){
+				if(this.t_price){				
 					// 根据是否有优惠信息计算总价格
 					if(this.disCountList.length){
-						return this.disCountList.reduce((c,d) => {
-							return c-d.filter(x => x.used).reduce((a,x) => a*1 + x.coupon_price*1,0)
-						},this.t_price).toFixed(2) + '元'
+						return this.switchA ? 
+							(this.disCountList.reduce((c,d) => {
+								return c-d.filter(x => x.used).reduce((a,x) => a*1 + x.coupon_price*1,0)
+							},this.t_price)* 1 - this.payPaper).toFixed(2) + '元'
+						 : 
+							 this.disCountList.reduce((c,d) => {
+								return c-d.filter(x => x.used).reduce((a,x) => a*1 + x.coupon_price*1,0)
+							},this.t_price).toFixed(2) + '元'
 					}else{
-						return this.t_price.toFixed(2) + '元'
+						return this.switchA ?  (this.t_price * 1 - this.payPaper).toFixed(2) + '元' : this.t_price.toFixed(2) + '元'
 					}
 				}
 			},

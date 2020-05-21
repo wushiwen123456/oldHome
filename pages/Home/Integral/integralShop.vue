@@ -92,7 +92,12 @@
 			}
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.isLoadingNetwork === false){
+				this.$refs.loading.open()
+			}
+		},
+		onShow() {
+			this.getUserIntegral(this.token)
 		},
 		data(){
 			return{
@@ -101,6 +106,7 @@
 				loadingType:1,//login状态
 				totalIntegral:'' ,//个人总积分
 				productList: [],
+				isLoadingNetwork:false,
 			}
 		},
 		methods:{
@@ -132,6 +138,7 @@
 					shop_id:0
 				}).then(res => {
 					this.$refs.loading.close()
+					this.isLoadingNetwork = true
 					if(res.data.code == 200){
 						const list = res.data.data
 						list.forEach(x => {

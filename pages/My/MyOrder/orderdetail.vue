@@ -157,7 +157,7 @@
 			
 			
 		</view>
-		<x-loading text="加载中.." mask="true" click="true" ref="loading"></x-loading>
+		<x-modal v-model="show2" title='提示' text='是否删除订单' @confirm="removeOrder" />
 	</view>
 </template>
 
@@ -174,7 +174,7 @@
 		data(){
 			return{
 				pageType:1,//页面状态 0等待付款 1代发货 2已发货
-				show1:false,
+				show2:false,
 				detailData:{},
 				payFun:[
 					{
@@ -191,10 +191,7 @@
 				payMethod:''
 			}
 		},
-		onLoad(e) {
-
-		},
-		onShow() {
+		onLoad() {
 			const id = this.$store.state.orderKey
 			,token = this.$store.getters.isToken
 			if(!id){
@@ -212,7 +209,6 @@
 			else{
 				 this.$store.dispatch('detailOrder')
 				 	.then(res => {
-						this.$refs.loading.close()
 				 		if(res.data.code == 200){
 							this.dealRes(res)
 						}else{
@@ -225,10 +221,6 @@
 			
 			
 		},
-		onReady() {
-			console.log(this.$refs.loading)
-			this.$refs.loading.open()
-		},
 		methods:{
 			// 立即支付
 			rightClick(){
@@ -237,9 +229,6 @@
 			// 选择支付方式
 			closePopupsSharClick(e){
 				this.payMethod = e.detail.value
-			},
-			cacelBackMoney(){
-				
 			},
 			// 查看物流
 			lookWuliu(){
@@ -290,7 +279,41 @@
 							
 						})
 					}else if(this.payMethod == 'zfb'){
-						// payorder(this.detailData.unified_order,'zfb',this.$store.getters.isToken)
+						payorder(this.detailData.unified_order,'alipay',this.$store.getters.isToken).then(res => {
+							if(res.data.code == 200){
+								const obj = res.data.data
+								// 发起微信支付
+								uni.requestPayment({
+									provider:"alipay",
+									orderInfo:obj,
+									success:(res)=> {
+										console.log(res)
+										if(this.detailData.combination_id  || this.detailData.pink_id){
+											uni.redirectTo({
+												url:'../../PayOrder/payOrderMessage/payorderMessage'
+											})
+										}else{
+											this.$store.commit('setOrderKey',this.detailData.unified_order)
+											const obj = {
+												real_name:this.detailData.real_name,
+												phone:this.detailData.user_phone,
+												detail:this.detailData.user_address
+											}
+											this.$store.commit('setShoppingAddress',obj)
+											uni.redirectTo({
+												url:`../../ShopDetails/affirm/success_pay?price=${price}`
+											})
+										}
+									},
+									fail:err => {
+										uni.showToast({
+											title:'支付失败,请检查您的网络...'
+										})
+									}
+								})
+							}
+						})
+						// console.log('----------')
 					}
 				}else{
 					uni.showToast({
@@ -364,7 +387,6 @@
 			dealRes(res){
 				const data = res.data.data
 				this.pageType = data._status._type
-				console.log(this.pageType)
 				// 对商品图片进行处理
 				data.cartInfo.forEach(x => {
 					if(x.productInfo.attrInfo){
@@ -375,29 +397,6 @@
 					
 				})
 				this.detailData = data
-			},
-			// 取消订单
-			cancelOrder(){
-				uni.showModal({
-					title:'是否取消订单',
-					content:'',
-					success:(res)=> {
-						if(res.confirm){
-							cancelOrder(this.detailData.order_id,this.$store.getters.isToken)
-								.then(res => {
-									if(res.data.code == 200){
-										uni.showToast({
-											title:'取消订单成功',
-											icon:'none'
-										})
-										uni.navigateTo({
-											url:'myorderss'
-										})
-									}
-								})
-						}
-					}
-				})
 			},
 			// 退款退货
 			tuikuan(item){
@@ -433,27 +432,27 @@
 			goChat(){
 				
 				const obj = this.detailData.shopInfo
-				
-				let shopInfo = {
-					expressageFen:obj.expressage_score,
-					produceFen:obj.product_score,
-					serviceFen:obj.service_score,
-					totalFen:obj.zong,
-					storeName:obj.shop_name,
-					storeLogo:obj.shop_logo,
-					storeId:obj.shop_id,
-					totalFen2:2
-				}
-				shopInfo = JSON.stringify(shopInfo)
-				console.log(shopInfo)
 				uni.navigateTo({
-					url:'/pages/ShopDetails/informtion/informtion?shopInfo=' + shopInfo
+					url:'/pages/ShopDetails/informtion/informtion?id=' + obj.shop_id
 				})
 			},
 			//取消订单
 			renfundClick(){
-				this.cancelOrder()
-			},	
+				this.show2 = true
+			},
+			// 删除订单
+			removeOrder(){
+				cancelOrder(this.detailData.order_id,this.$store.getters.isToken)
+					.then(res => {
+						if(res.data.code == 200){
+							uni.showToast({
+								title:'取消订单成功',
+								icon:'none'
+							})
+							uni.navigateBack()
+						}
+				})
+			},
 			goWuliu(){
 				const id = this.detailData.order_id
 				uni.navigateTo({

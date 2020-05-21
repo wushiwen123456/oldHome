@@ -84,7 +84,6 @@
 			const id = this.$store.state.orderKey
 			if(id){
 				this.$store.dispatch('detailOrder').then(res =>{
-								 this.$refs.loading.close()
 								 if(res.data.code == 200){
 									this.dealUrl(res)
 								 }else{
@@ -104,9 +103,6 @@
 				orderId:'',
 				detailData:{}
 			}
-		},
-		onReady() {
-			this.$refs.loading.open()
 		},
 		methods:{
 			// 处理数据

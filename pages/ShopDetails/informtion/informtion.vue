@@ -12,7 +12,7 @@
 					<view class="date">{{photoList(vo.add_time)}}</view>
 				</view>
 				<view  v-if="vo.cate == 1" class="cu-item">
-					<image class="cu-avatar radius" :src="shopInfo.shop_logo"></image>
+					<image class="cu-avatar radius" :src="shopInfo.shop_info ? shopInfo.shop_info.shop_logo : ''"></image>
 					<view class="main">
 						<rich-text class="content shadow" :nodes="vo.content"></rich-text>
 					</view>
@@ -37,7 +37,8 @@
 <script>
 	// 获取个人信息
 	import { getProfileData } from '@/network/getProfileData'
-	
+	// 获取店铺信息
+	import { getStoreInfo } from '@/network/detail'
 	import {test,send_message,get_service_message} from '@/network/sign.js'
 	import { formatDate } from '@/utils/dealData'
 	// 导入长连接方法
@@ -53,10 +54,7 @@
 			return {
 				InputBottom: 0,
 				send:'',//发送的信息
-				message:null,//个人信息
-				shopInfo:null,//店铺信息
-				messageall:[],//所有聊天记录 storeId：店铺id  messageList:[]
-				messageList:[],//与打开店铺有关的聊天记录
+				shopInfo:{},//店铺信息
 				type:1,//0 缓存 存在与该店铺的聊天记录  1 不存在
 				typepage:-1,//存在的聊天记录下标
 				// 聊天页面时时滚动样式
@@ -69,12 +67,16 @@
 				scrollTop:0,
 				isShowScroll:true,
 				openWebScoket:true,
-				localAvatar:''
+				localAvatar:'',
+				storeId:''
 			};
 		},
-		
+		onUnload() {
+			// 清除小红点
+			this.clearRed()
+		},
 		computed: {
-			...mapState(['userData']),
+			...mapState(['userData','userChatMessages']),
 			...mapGetters(['isToken']),
 			photoList() {
 				return function(start_time){
@@ -93,63 +95,65 @@
 					}
 					return num
 				}
-			}
-		},
-		onUnload(){
-			if(this.openWebScoket){
-				uni.closeSocket({
-					success: () => {
-						console.log('Socket退出成功')
-						
-					}
-				}) 
-			}
-			// 将当前聊天对象的小红点消除
-			if(this.messageList){
-				this.messageList.newMessageNum = 0
-			}
-			console.log(this.messageall)
-			// 将聊天数据存储到缓存
-			uni.setStorage({
-				key:'messageall_key',
-				data:this.messageall,
-				success:() => {
-					console.log('存储聊天记录成功')
-				}
-			})
-			if(this.openWebScoket){
-				uni.$off('refreshList')
+			},
+			messageList(){
+				return this.userChatMessages.length != 0 ? this.userChatMessages.find( item =>  item.storeId == this.storeId) : []
 			}
 		},
 		onLoad(e){
+			var that = this
 			if(!this.userData.avatar){
 				// 没有用户信息,去获取用户信息
 				console.log('没有用户信息,去获取用户信息')
 				this.getProfileData()
 			}
-			if(e.indet){
-				console.log('是从消息列表进来的')
-				this.openWebScoket = false
-			}else{
-				console.log('不是从消息列表进来的')
-				this.openWebScoket = true
-			}
-			var that = this		
-			that.shopInfo = JSON.parse(e.shopInfo),//店铺信息
-
-			// 获取vuex中的数据
-			this.messageall = this.$store.state.userChatMessages
-			this.messageList = this.messageall.find(x => x.storeId == that.shopInfo.shop_id)
-			const res = uni.getSystemInfoSync();   //获取手机可使用窗口高度
+			this.storeId = e.id
+			 //获取手机可使用窗口高度
+			const res = uni.getSystemInfoSync(); 
 			that.style.pageHeight = res.windowHeight;
 			that.style.contentViewHeight = res.windowHeight - uni.getSystemInfoSync().screenWidth/750* (100) - 50;	
-			that.isOpenWebScoket()
+			// 获取店铺信息
+			this.getStoreDetail()
 		},
 		onReady() {
-			this.scrollToBottom()
-
+			this.$nextTick(() => {
+				this.scrollToBottom()
+			})
+		},
+		watch:{
+			messageList:{
+				handler(newName,oldName){
+					this.$nextTick(() => {
+						this.scrollToBottom()
+					})
+				},
+				deep:true,
+				
+			}
 		},
 		methods: {
+			clearRed(){
+				if(this.messageList){
+					this.messageList.newMessageNum = 0
+				}
+			},
+			// 获取店铺信息
+			getStoreDetail(){
+				getStoreInfo(this.storeId,this.isToken).then(res => {
+					if(res.data.code == 200){
+						let data = res.data.data
+						data.shop_info.shop_logo = replaceImage(data.shop_info.shop_logo)
+						this.shopInfo = data
+						console.log(this.shopInfo)					
+					}else{
+						uni.showToast({
+							title:'店铺信息读取失败',
+							icon:'none'
+						})
+					}
+					
+				})
+			},
 			// 获取个人信息
 			getProfileData(){
 				getProfileData(this.isToken).then(res => {
@@ -162,7 +166,7 @@
 						// 将信息存入vuex中
 						this.$store.commit('setUserData',obj)
 						
-						
+						console.log(obj)
 						// 读取缓存
 						uni.getStorage({
 							key:obj.account,
@@ -203,14 +207,14 @@
 				this.send = ''
 				let data = {
 					message:send,
-					uid:that.message.uid,
-					shop_id:that.shopInfo.shop_id,
+					uid:that.userData.uid,
+					shop_id:that.shopInfo.shop_info.shop_id,
 				}
 				var timestamp = Math.round(new Date().getTime()/1000).toString();
 				
 				let dataList = {
 						msg:send,
-						shop_id:that.shopInfo.shop_id,
+						shop_id:data.shop_id,
 						cate:0
 				}			
 				// 发送至vuex中存储
@@ -220,10 +224,6 @@
 				})
 				send_message(data)
 				that.$nextTick(() =>{
-					that.scrollToBottom()
-					if(!this.messageList){
-						this.messageList = this.messageall.find(x => x.storeId == that.shopInfo.shop_id)
-					}
 					that.scrollToBottom()
 				})
 			},
@@ -261,31 +261,6 @@
 				this.$nextTick(() => {
 					this.scrollToBottom()
 				})
-			},
-			isOpenWebScoket(){
-				if(this.openWebScoket){
-					openWebScoket()
-					uni.onSocketOpen(function (res) {
-						console.log('WebSocket连接已打开！');
-					});
-					uni.onSocketError(res => {	
-						console.log('WebSocket连接失败,请检查')
-						plus.nativeUI.toast('服务器连接失败，请重试')
-					})
-					uni.onSocketMessage(res => {				
-						this.$store.commit('dealSocketMessage',{
-							res,
-							shop_info:this.shopInfo
-						})
-						this.$nextTick(() => {
-							if(!this.messageList){
-								this.messageList = this.messageall.find(x => x.storeId == this.shopInfo.shop_id)
-							}
-							console.log(this.messageList)
-							this.scrollToBottom()
-						})
-					});
-				}
 			}
 		}
 	}

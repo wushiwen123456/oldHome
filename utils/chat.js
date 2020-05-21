@@ -21,14 +21,15 @@ function noNetWork(){
 
 
 // 服务器和本地数据进行对比替换
-function charCompare(netArr){
-	const locArr = uni.getStorageSync('messageall_key')
-	console.log('本地缓存为:' + locArr)
+function charCompare(netArr,key){
+	console.log(key)
+	const locArr = uni.getStorageSync('messageall_key' + key)
+	console.log('本地缓存为:')
+	console.log(locArr)
 	let resArr = []
 	if(netArr.length){
 		netArr.forEach((x,index) => {
 			const firstTime = x.messageList[0].add_time
-			console.log('网络记录第一条时间为' + firstTime)
 			// 声明结果数组,新消息数组
 			let messageList = [],nextArr = []
 			if(locArr){
@@ -36,9 +37,6 @@ function charCompare(netArr){
 				let locArrCur = locArr[index] ? locArr[index].messageList : [],
 				// 获取本地数据和第一条网络数据时间相同的索引值
 				crossIndex = locArrCur.findIndex(y => Math.abs(y.add_time-firstTime) <= 10)
-				console.log(firstTime)
-				console.log(crossIndex)
-				console.log(locArrCur)
 				messageList = ~crossIndex ? locArrCur.slice(0,crossIndex).concat(x.messageList) : locArrCur.length ? locArrCur.concat(x.messageList) : x.messageList
 				nextArr = locArrCur.length ? messageList.slice(locArrCur.length-1,messageList.length-1) : x.messageList
 				
@@ -67,9 +65,15 @@ function charCompare(netArr){
  * 
  */
 function openWebScoket(){
-	console.log('------')
+	console.log('准备设置开启webScoket')
 	uni.connectSocket({
 		url: 'ws://49.234.24.76:9502'
+	})
+	uni.onSocketOpen(function (res) {
+		console.log('WebSocket连接已打开！');
+	});
+	uni.onSocketError(res => {	
+		console.log('WebSocket连接失败,请检查')
 	})
 }
 

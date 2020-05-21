@@ -15,7 +15,7 @@
 						<view class="text-wuer text-lg">卖家已发货</view>
 						<view  class="text-color text-sm">{{dealTime(item.add_time)}}</view>
 					</view>
-					<view class="text-color text-df text-max-width text-cut">您购买的宝贝已在路上，请注意签收</view>
+					<view class="text-color text-df text-max-width text-cut">您购买的宝贝已在路上,请注意签收</view>
 				</view>
 			</view>
 			
@@ -42,7 +42,8 @@
 				style:{
 					height:''
 				},
-				logList:[]
+				logList:[],
+				_isLogin:false
 			}
 		},
 		onLoad() {
@@ -53,18 +54,21 @@
 			this.getList(token)
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this._isLogin == false){
+				this.$refs.loading.open()
+			}
 		},
 		methods:{
 			// 根据网络请求数据
 			getList(token){
 				userMessageDetail(token,1).then(res => {
 					this.$refs.loading.close()
+					this._isLogin = true
 					if(res.data.code == 200){
 						if(res.data.data.length){
 							this.Nodata = true
-							this.logList = res.data.data
 						}
+						this.logList = res.data.data
 					}
 					//  {id: 7, uid: 17, type: 2, link_id: "2020010811104110005", title: "你的商品已发货,请等待查收", money: "0.00",…}
 					// id: 7

@@ -2,7 +2,7 @@
 	<view class="content" :style="{height:height + 'px'}">
 		<view>
 			<tui-tabs :tabs="tabs2" :currentTab="currentTab"  class="tui-tab" selectedColor="#CD3233" sliderBgColor="#CD3233"  @change="change"></tui-tabs>
-			<mescroll-uni ref='mescroll' @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption" :top="79">
+			<mescroll-uni ref="mescroll" @down="downCallback" @up="upCallback"  :up="upOption" :down="downOption" :top="79">
 			<view>
 				<view v-for="(vo,key) in orderInfo" :key="key" class="bg-white margin-top-sm">
 					<view class="flex align-center padding-left padding-right padding-top-sm padding-bottom-sm s-content">
@@ -147,8 +147,7 @@
 				hasNext:true
 			}
 		},
-		onLoad(e) {
-			
+		onLoad(e) {		
 			const view = uni.getSystemInfoSync()
 			this.style.height = view.windowHeight;
 			var that = this
@@ -170,7 +169,11 @@
 		onReady() {
 		},
 		onShow() {
-
+			this.$nextTick(() => {
+				this.orderInfo = []
+				const mescroll = this.$refs.mescroll.mescroll
+				mescroll.resetUpScroll()
+			})
 		},
 		methods:{
 			// 查看详情

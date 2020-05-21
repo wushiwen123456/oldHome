@@ -110,21 +110,12 @@
 			const view = uni.getSystemInfoSync()
 			this.style.height = view.windowHeight;
 		},
-		onReady() {
-			this.$refs.loading.open()
-		},
 		onShow() {
 			if(!this.isToken){
 				this.loginBtn = true
-				this.$nextTick(() => {
-					this.$refs.loading.close()
-				})
 				return
 			}else{
 				this.loginBtn = false
-			}
-			if(this.$refs.loading){
-				this.$refs.loading.open()
 			}
 				this.getCartData()
 				this.isManage = true
@@ -218,7 +209,6 @@
 			getCartData(){
 				getShopCartData(this.isToken).then(res => {
 					if(res.data.code == 200){
-						this.$refs.loading.close()
 						const obj =	res.data.data.group
 						const arr = []
 						if(obj != undefined){

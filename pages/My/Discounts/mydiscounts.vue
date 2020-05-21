@@ -40,7 +40,7 @@
 										<view class="margin-left-xl text-jiujiujiu text-sm">{{dealData(vo._add_time,vo._end_time)}}</view>
 									</view>
 								</view>
-								<view class="mydiscounts-main-bottom" @tap="goUse(item)">立即使用</view>
+								<view v-if="" class="mydiscounts-main-bottom" @tap="goUse(item)">立即使用</view>
 							</view>
 						</view>
 					</view>

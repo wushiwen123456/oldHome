@@ -414,9 +414,10 @@
 						this[item] = res.tempFilePaths[0]
 						console.log(item)
 						this[item+'Type'] = 1
-						upload(res.tempFilePaths[0]).then(res => {
+						upload(this.token,res.tempFilePaths[0]).then(res => {
 							this.Obj[item] = res.url
-						this[item+'Type'] = 2
+							this[item+'Type'] = 2
+							console.log(this[item])
 						})
 					}
 				})

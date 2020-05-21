@@ -62,7 +62,10 @@
 	import tuiListCell from "@/components/list-cell/list-cell"
 	
 	// 数据获取
-	import { pubsicGood,pubDetailData } from '@/network/Home'
+	import { pubsicGood,pubDetailData,read_notice } from '@/network/Home'
+	
+	// 图片替换方法
+	import { replaceImage } from '@/utils/dealUrl'
 	export default{
 		components: {
 			tuiCollapse,
@@ -125,11 +128,14 @@
 				},],
 				cateList:[],
 				jingdu:'',
-				weidu:''
+				weidu:'',
+				_isloading:false
 			}
 			
 		},
 		onLoad(){
+			// 获取公益信息上方分类
+			this.read_notice()
 			if(this.$store.getters.isToken){
 				this.token = this.$store.getters.isToken
 				// 调用接口和获取当前地理位置
@@ -139,9 +145,6 @@
 					// #ifdef APP-PLUS
 					plus.nativeUI.toast('获取地理位置失败',{duration:'long'})
 					// #endif
-					if(this.$refs.loading){
-						this.$refs.loading.close()
-					}
 					uni.navigateBack()
 				})
 
@@ -162,10 +165,23 @@
 				})
 			}
 		},
-		onReady() {
-			this.$refs.loading.open()
-		},
 		methods:{
+			read_notice(){
+				read_notice().then(res => {
+					if(res.data.code == 200 ){
+						let list = res.data.data
+						console.log(list)
+						this.publicList = list.map(x => {
+							return {
+								image:x.pic,
+								name:x.cate_name,
+								phone:x.phone
+							}
+						})
+						console.log(this.publicList)
+					}
+				})
+			},
 			goGongqiu(){
 				uni.navigateTo({
 					url:'supply/supply'
@@ -182,9 +198,16 @@
 			},
 			// 拨打电话
 			goPhone(vo){
-				uni.makePhoneCall({
-					phoneNumber:vo.phone
-				})
+				if(vo.phone != null){
+					uni.makePhoneCall({
+						phoneNumber:vo.phone
+					})
+				}else{
+					uni.showToast({
+						title:'找不到电话了~',
+						icon:'none'
+					})
+				}
 			},
 			// 根据经度纬度确定位置
 			dealWps(address){
@@ -202,9 +225,10 @@
 			pubsicGood(location,token){
 				pubsicGood(location,token).then(res => {
 					this.$refs.loading.close()
+					this._isloading = true
 					if(res.data.code == 200){
 						const list = res.data.data
-						this.dataList = list.map(x => {
+						this.dataList = list.filter(x => x.is_show == 1).map(x => {
 							return {
 								name:x.cate_name,
 								image:x.pic || '',
@@ -212,6 +236,7 @@
 								disabled:false
 							}
 						})
+						console.log(this.dataList)
 																		
 					}
 				})

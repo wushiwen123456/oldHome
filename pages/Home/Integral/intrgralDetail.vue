@@ -45,15 +45,11 @@
 				totalIntegral:0
 			}
 		},
-		onReady() {
-			this.$refs.loading.open()
-		},
 		methods:{
 			// 获取积分信息
 			userIntegral(token){
 				userIntegral(token)
 				.then(res => {
-					this.$refs.loading.close()
 					if(res.data.code == 200){
 						this.list = res.data.data.list
 						this.totalIntegral = res.data.data.userBill

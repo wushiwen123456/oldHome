@@ -5,7 +5,7 @@
 			<view v-for="(vo,key) in getListData" :key="key" class="flex align-center justify-between enter-margin-all">
 				<view class="flex align-center">
 					<view class="enter-left-image">
-						<image :src="vo.shop_logo"></image>
+						<image src="../../../../static/bottomh.png"></image>
 					</view>
 					<view class="margin-left-sm">
 						<view class="flex align-center margin-bottom-xs">
@@ -44,6 +44,7 @@
 				style:{
 					height:''
 				},
+				isLoading:false
 			}
 		},
 		onLoad() {
@@ -54,7 +55,9 @@
 			this.getList(token)
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.isLoading == false){
+				this.$refs.loading.open()
+			}
 		},
 		methods:{
 			//进店逛逛
@@ -67,6 +70,7 @@
 			getList(token){
 				userMessageDetail(token,4).then(res => {
 					this.$refs.loading.close()
+					this.isLoading = true
 					// shop_id: 1
 					// shop_name: "河南客多多官方旗舰店"
 					// shop_logo: "http://jn.51kdd.com//public/uploads/attach/2019/12/05/5de908aa317d6.png"
@@ -77,6 +81,12 @@
 							x.shop_logo = replaceImage(x.shop_logo)
 						})
 						this.getListData = arr
+						if(this.getListData.length == 0){
+							this.Nodata = true
+						}
+						
+					}else{
+						this.Nodata = true
 					}
 				})
 			},

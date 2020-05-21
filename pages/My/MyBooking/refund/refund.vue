@@ -50,9 +50,6 @@
 		onLoad() {
 			this.token = this.$store.getters.isToken		
 		},
-		onReady() {
-			this.$refs.loading.open()
-		},
 		components:{
 			MescrollUni
 		},
@@ -87,7 +84,6 @@
 			userRefund(pageNum,pageSize,mescroll){
 				const token = this.token
 				userRefund(pageNum,pageSize,token).then(res => {
-					this.$refs.loading.close()
 					if(res.data.code == 200){
 						let list = res.data.data
 						if(list.length){

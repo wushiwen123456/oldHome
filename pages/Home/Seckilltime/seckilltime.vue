@@ -103,17 +103,10 @@
 			// 获取秒杀时间列表和商品列表
 			this.getSecKillData()
 		},
-		onReady() {
-			if(this.loadImage == false){
-				this.$refs.loading.open()
-			}
-		},
 		methods: {
 			// 加载秒杀数据
 			secKillData(id,pages){
 				secKillData(id,pages).then(res => {
-					this.$refs.loading.close()
-					this.loadImage = true
 					if(res.data.code == 200){
 						const num =  res.data.data.backtime.i*60 + res.data.data.backtime.h*3600 + res.data.data.backtime.s *1
 						if(num){
@@ -125,7 +118,7 @@
 						list.forEach(x => {
 							x.image = replaceImage(x.image)
 						})
-						this.timeSeckillList = list
+						this.timeSeckillList = list 
 					}
 				})
 			},
@@ -140,13 +133,14 @@
 						this.tabbar.forEach(x => {
 							this.$set(x,'pages',1)
 						})
-						
-						// 守下加载第一页数据
-						const id = this.tabbar[0] ? this.tabbar[0].id : ''
-						const pages = this.tabbar[0].pages ? this.tabbar[0].pages : ''
-						console.log(id,pages)
-						// 先加载秒杀第一页数据
-						this.secKillData(this.tabbar[0].id,this.tabbar[0].pages)
+						if(this.tabbar.length){
+							// 守下加载第一页数据
+							const id = this.tabbar[0] ? this.tabbar[0].id : ''
+							const pages = this.tabbar[0].pages ? this.tabbar[0].pages : ''
+							console.log(id,pages)
+							// 先加载秒杀第一页数据
+							this.secKillData(this.tabbar[0].id,this.tabbar[0].pages)
+						}
 					}
 				})
 			},

@@ -99,8 +99,10 @@
 					// #ifdef APP-PLUS
 					var w = plus.nativeUI.showWaiting("等待中...");
 					// #endif
+					const token = this.$store.getters.isToken
+					console.log(token)
 					this.files.forEach((x,index) => {
-						upload(x,true).then(res => {
+						upload(token,x,true).then(res => {
 							
 							obj.pics.push(res.url)
 							if(obj.pics.length == this.files.length){
@@ -109,8 +111,8 @@
 									if(res.data.code == 200){
 										// #ifdef APP-PLUS
 										plus.nativeUI.toast('评论成功');
-										// #endif
 										uni.navigateBack()
+										// #endif
 									}else{
 										// #ifdef APP-PLUS
 										plus.nativeUI.toast(res.data.msg);

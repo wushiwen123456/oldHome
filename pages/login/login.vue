@@ -130,16 +130,7 @@
 					console.log(res)
 					if(res.data.code == 200){
 						const token = res.data.data.token,
-						date = new Date().getTime()
-						// 将用户信息同步存储到缓存
-						// const data = {
-						// 		token:token,
-						// 		username:that.phone,
-						// 		password:that.password,
-						// 		saveTime:date
-						// }
-						// console.log(data)
-						
+						date = new Date().getTime()						
 						// 将登录信息保存格式
 						const userInfo = {}
 						userInfo.userData = {
@@ -156,9 +147,30 @@
 						console.log(dataIndex)
 						// 如果有则使用缓存的数据，如果没有则存入缓存
 						if(~dataIndex){	
-							let userInfo = uni.getStorageSync(that.phone)
+							let userInfoStorage = uni.getStorageSync(that.phone)
 							// 个人数据存入vuex
-							that.$store.commit('setUserData',userInfo.Message_key)
+							that.$store.commit('setUserData',userInfoStorage.Message_key || {})
+							userInfoStorage.userData = userInfo.userData
+							userInfoStorage.saveTime = userInfo.saveTime
+							// 刷新缓存数据
+							uni.setStorage({
+								key:that.phone,
+								data:userInfoStorage,
+								success:() => {
+									console.log('刷新缓存成功')
+								}
+							})
+							// 刷新缓存列表
+							userInfoList.push(userInfoList.splice(dataIndex,1)[0]) 
+							console.log(userInfoList)
+							uni.setStorage({
+								key:'userInfoList',
+								data:userInfoList,
+								success:() => {
+									console.log('刷新缓存成功')
+								}
+							})
+							
 						}else{
 							// 个人数据存入缓存
 							uni.setStorage({

@@ -57,7 +57,7 @@
 			</view>
 			<button @tap="submitOrderClick" >立即兑换</button>
 		</view>
-		<uni-popup ref="popups" type="center" >
+		<uni-popup ref="popups" type="center" :maskClick="false">
 			<view class="popups-center text-center">
 				<view style="font-size: 100upx;" class=" padding cuIcon-roundcheckfill text-green"></view>
 				<view class="text-wuer text-lg text-bold margin-bottom-xl">兑换成功</view>
@@ -235,6 +235,7 @@
 				obj.mark = this.mark || ''
 				obj.key = this.orderId
 				obj.payType = 'integral'
+				// 获取用户积分
 				
 				uni.showModal({
 					title:'确定要提交订单么',
@@ -367,7 +368,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 0 30upx;
-		z-index: 998;
+		z-index: 8;
 	}
 	.affirmOrder-bottom button{
 		width: 236upx;

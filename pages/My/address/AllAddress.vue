@@ -81,9 +81,6 @@
 				})
 			}
 		},
-		onReady() {
-			this.$refs.loading.open()
-		},
 		computed:{
 			...mapGetters(['isToken']),
 			nodata(){
@@ -95,7 +92,6 @@
 			userAddressList(token){
 				getProfileAllAddress(token)
 					.then(res => {
-						this.$refs.loading.close()
 						if(res.data.code == 200){
 							this.addressList = res.data.data			
 							this.currentIndex = this.addressList.every(x => {

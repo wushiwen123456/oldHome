@@ -39,7 +39,7 @@
 
 <script>
 	import uniPopup  from "@/components/uni-popup/uni-popup"
-	import {getVersion} from '@/js_sdk/version_check'
+	// import {getVersion} from '@/js_sdk/version_check'
 	export default{
 		components: {
 			uniPopup,
@@ -73,7 +73,10 @@
 			},
 			//检查更新
 			versionsClick(){
-				getVersion(true)
+				// getVersion(true)
+				uni.navigateTo({
+					url:'version/version'
+				})
 			},
 			//登录弹出
 			outloginSharClick(){

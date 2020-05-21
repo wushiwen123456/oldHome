@@ -140,7 +140,7 @@
 						</view>
 						<view @tap="shopClick(1)" class="select-dianpu">进入店铺</view>
 					</view>
-					<view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
+					<!-- <view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
 						<view class="flex align-center flex-sub ">
 							<view>商品评分</view>
 							<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.product_score}}</view>
@@ -156,7 +156,7 @@
 							<view class="padding-left-xs padding-right-xs">{{detailData.shop_info.service_score}}</view>
 							<view class="shop-pingfen" >平</view>
 						</view>
-					</view>
+					</view> -->
 				</view>
 				<!-- 店铺介绍 end -->
 				
@@ -265,12 +265,15 @@
 				<uni-popup ref="popupbottom" type="bottom" >
 					<view class="popupbottom-all">
 						<view class="flex justify-between solid-bottom">
-							<view class="flex align-end margin-bottom-lg ">
+							<view class="flex margin-bottom-lg ">
 								<image class="popupbottom-shop-img" v-if="detailData.storeInfo" @click="openImage"  :src="uniqueType ? uniqueType.image : detailData.storeInfo.image "></image>
-								<view class="margin-left-sm">
+								<view class="margin-left-sm flex flex-direction justify-between">
+									<view class="margin-bottom">
+										{{detailData.storeInfo ?  detailData.storeInfo.info : ''}}
+									</view>
 									<view class="text-price text-red text-bold text-xl">{{uniqueType ? uniqueType.price : detailData.storeInfo.price }}</view>
 									<view class="text-sm" style="color: #828282;">库存{{uniqueType ? uniqueType.stock : detailData.storeInfo.stock }}件</view>
-									<view class="text-sm user-choose">选择{{isUserChoosed ? isUserChoosed : ''}}</view>
+									<view v-if="isUserChoosed" class="text-sm user-choose">选择{{isUserChoosed ? isUserChoosed : ''}}</view>
 								</view>
 							</view>
 							<view class="lg text-gray cuIcon-roundclose shopDetails-bottom-popups-clos" @click="chooseClose"></view>
@@ -366,7 +369,9 @@
 			}
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(!this.isLoadingNetwork){
+				this.$refs.loading.open()
+			}
 		},
 		data(){
 			return{
@@ -411,7 +416,8 @@
 				autoplay:false,
 				uniqueIndex:0,
 				procuctObj:{},
-				commont:{}
+				commont:{},
+				isLoadingNetwork:false
 			}
 		},
 		onBackPress() {
@@ -430,6 +436,7 @@
 				getDetailSkill(id,token)
 					.then(res => {
 						this.$refs.loading.close()
+						this.isLoadingNetwork = true
 						if(res.data.code == 200){
 							const data = res.data.data
 							
@@ -551,11 +558,9 @@
 			},
 			//点击kefu
 			serviceClick(shopname){
-				const obj = this.detailData.shop_info
-				let shopInfo = JSON.stringify(obj)
-				
+				const id = this.detailData.shop_info.shop_id
 				uni.navigateTo({
-					url:'informtion/informtion?shopInfo=' + shopInfo
+					url:'informtion/informtion?id=' + id
 				})
 			},
 			// 进入评论详情
@@ -574,12 +579,14 @@
 				// uni.navigateTo({
 				// 	url:'affirm/affirmOrder'
 				// })
-				if(!this.uniqueType){
-					uni.showToast({
-						title:'请选择商品属性',
-						icon:'none'
-					})
-					return 
+				if(this.isUserChoosed){
+					if(!this.uniqueType){
+						uni.showToast({
+							title:'请选择商品属性',
+							icon:'none'
+						})
+						return
+					}
 				}
 				const data = this.detailData
 				const obj = {
@@ -615,10 +622,10 @@
 			swiperDetail(){
 				let arr = this.swiperList
 				arr = arr.map(x => x.url)
-				console.log(arr)
-				// #ifdef APP-PLUS
-				plus.nativeUI.previewImage(arr)
-				// #endif
+				uni.previewImage({
+					urls:arr,
+					indicator:'none',
+				})
 			},
 			//点击收藏
 			collectClick(){

@@ -658,12 +658,9 @@
 			"style": {
 				"navigationBarBackgroundColor":"#FFFFFF",
 				"navigationBarTitleText": "店铺详情",
-				"titlePenetrate":"YES",
+				"navigationStyle":"custom",
 				"app-plus":{
 					"scrollIndicator":"none",//不显示滚动条
-					"titleNView": {
-						"type": "transparent"//透明渐变导航栏
-					},
 					"bounce":"none"
 				}
 			}
@@ -1000,6 +997,26 @@
 				}
 			}
         }
+        ,{
+            "path" : "pages/My/Seeting/version/version",
+            "style" : {
+				"navigationBarBackgroundColor":"#FFFFFF",
+				"navigationBarTitleText": "版本号"
+			}
+        },
+		{
+			"path": "pages/Updata/updata",//更新页
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					"scrollIndicator":"none",//不显示滚动条
+					"animationType": "fade-in",
+					"background": "transparent",
+					"backgroundColor": "rgba(0,0,0,0)",
+					"popGesture": "none"
+				}
+			}
+		}
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

@@ -46,7 +46,7 @@
 						<view v-for="(keyword,index) in oldKeywordList" @tap="doSearch2(keyword)" :key="index">{{keyword}}</view>
 					</view>
 				</view>
-				<view class="keyword-block">
+<!-- 				<view class="keyword-block">
 					<view class="keyword-list-header">
 						<view>热门搜索</view>
 						<view>
@@ -59,7 +59,7 @@
 					<view class="hide-hot-tis" v-else>
 						<view>当前搜热门搜索已隐藏</view>
 					</view>
-				</view>
+				</view> -->
 				<view class="keyword-block">
 					<view class="keyword-list-header">
 						<view>热门分类</view>

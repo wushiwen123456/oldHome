@@ -9,7 +9,10 @@
 						<view class="text-df text-jiujiujiu">搜索商品</view>
 					</view>
 				</view>
-				<image @tap="goMessage" class="home-title-message-img" src="../../static/homeMeesage.png" ></image>
+				<view class="redRodbox">
+					<image @tap="goMessage" class="home-title-message-img" src="../../static/homeMeesage.png" ></image>
+					<view v-if="showRed" class="redRod"></view>
+				</view>
 			</view>
 		</view>
 		
@@ -42,7 +45,7 @@
 			interval="5000" 
 			v-if="isShowIndex"
 			duration="500">
-				<swiper-item @click="swiperShow(index)" v-for="(item,index) in swiperList" :key="index">
+				<swiper-item @click="swiperShow(item)" v-for="(item,index) in swiperList" :key="index">
 					<image :src="item.pic" mode="aspectFill"></image>
 				</swiper-item>
 		</swiper>
@@ -73,7 +76,7 @@
 			<image class="home-new-image" src="../../static/newimg.png"></image>
 			<swiper vertical autoplay circular interval="3000" class="tui-swiper margin-right">
 				<swiper-item @click="goNews(item)" v-for="(item,index) in newsList" :key="item.id" class="tui-swiper-item">
-					<view class="tui-news-item" @tap='detail(item.url)'>{{item.info}}</view>
+					<view class="tui-news-item">{{item.info}}</view>
 				</swiper-item>
 			</swiper>
 		</view>
@@ -162,7 +165,7 @@
 <script>
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
 	import QSTabs from '@/components/QS-tabs/QS-tabs.vue';
-	
+	import {userMessages} from '@/network/getProfileData'
 	
 	// 网络处理
 	import { getHomeData,getDetailData } from '@/network/Home'
@@ -179,6 +182,8 @@
 	
 	// 弹出层
 	import uniPopup  from "@/components/uni-popup/uni-popup"
+	
+	import {mapGetters} from 'vuex'
 	export default{
 		components: {
 			QSTabs,
@@ -253,7 +258,8 @@
 				},
 				isLoading2:false,
 				isRemoveQian:false ,//是否删除红包
-				loadingOnce:false
+				loadingOnce:false,
+				showRed:false
 			}
 		},
 		onLoad(){
@@ -264,6 +270,16 @@
 			if(!this.loadingOnce){
 				this.$refs.loading.open()
 			}
+		},
+		onShow() {
+			// this.userMessages()
+			if(this.isToken){
+				this.userMessages(this.isToken)
+			}
+			console.log(this.showRed)
+		},
+		computed:{
+			...mapGetters(['isToken','isLookSettled','allUnabsorbed'])
 		},
 		methods:{			
 			// 搜索事件
@@ -332,6 +348,19 @@
 			qian(){
 				uni.navigateTo({
 					url:'qiandao'
+				})
+			},
+			userMessages(token){
+				userMessages(token).then(res => {
+					if(res.data.code == 200){
+						const data = res.data.data
+						console.log(data)
+						if(data.orderNotice == 0 && data.payRefunNotice == 0 && data.shopNotice == false && data.systemNotice == 0 && this.allUnabsorbed == 0){
+							this.showRed = false
+						}else{
+							this.showRed = true
+						}
+					}
 				})
 			},
 			// 其余tab八宫格监听点击
@@ -407,14 +436,6 @@
 					mescroll.endErr()
 				})
 			},
-			
-			// 跳转到新闻详情页，路径暂时有问题
-			detail(url){
-				url = `../..${url}`
-				uni.navigateTo({
-					url:url
-				})
-			},
 			// 加载更多分类
 			moreDetail(){
 				// this.$refs.popup.open()
@@ -442,18 +463,21 @@
 			},
 			// 查看新闻
 			goNews(item){
-				const id = item.id
+				const id = item.url
 				uni.navigateTo({
-					url:'Government/government'
+					url:`Government/articless?id=${id}`
 				})
 			},
 			// 轮播图展示
-			swiperShow(index){
-				let arr = this.swiperList
-				arr = arr.map(x => x.pic)
-				// #ifdef APP-PLUS
-				plus.nativeUI.previewImage(arr,index)
-				// #endif
+			swiperShow(item){
+				// let arr = this.swiperList
+				// arr = arr.map(x => x.pic)
+				// // #ifdef APP-PLUS
+				// plus.nativeUI.previewImage(arr,index)
+				// // #endif
+				uni.navigateTo({
+					url:`../ShopDetails/shopDetails?id=${item.url}`
+				})
 			},
 			goMessage(){
 				uni.navigateTo({
@@ -668,10 +692,12 @@
 	}
 	.home-search-all{
 		width: 80%;
-		margin: 0 auto;
+		margin-left: 30upx;
 	}
 	.home-search-all-one{
 		width: 100%;
+		box-sizing: border-box;
+		padding: 0 20upx;
 	}
 	.popModel{
 		position: fixed;
@@ -685,5 +711,17 @@
 		right: 0;
 		top: 0;
 		font-size: 20upx;
+	}
+	.redRodbox{
+		position: relative;
+	}
+	.redRod{
+		position: absolute;
+		width: 20upx;
+		height: 20upx;
+		border-radius: 50%;
+		right: 0;
+		top: 0;
+		background-color: red;
 	}
 </style>

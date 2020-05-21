@@ -17,6 +17,7 @@
 
 <script>
 	import tkiQrcode from '@/components/tki-qrcode/tki-qrcode'
+	import {mapState} from 'vuex'
 	export default {
 		components:{
 			tkiQrcode
@@ -38,21 +39,14 @@
 		},
 		onLoad() {
 			// 从缓存中读取信息
-			
-			const info = uni.getStorageSync('Message_key')
-			console.log(info)
-			const integrlUrl = this.$store.state.userInfo.localAvatar
-			if(info && integrlUrl){
-				this.info = info
-				this.icon = integrlUrl
-				this.color = this.info.sex == 1 ? '#0081ff' : '#e03997'
-				this.val = `http://jn.51kdd.com/index.html#/?spread_uid=${info.uid}`
-			}else{
-				// #ifdef APP-PLUS
-				plus.nativeUI.toast('信息生成失败',{duration:'long'})
-				// #endif
-			}	
-			console.log(this.val)
+			console.log(this.userData)
+			this.info = this.userData
+			this.icon = this.userData.avatar
+			this.color = this.userData.sex == 1 ? '#0081ff' : '#e03997'
+			this.val = `http://jn.51kdd.com/index.html#/?spread_uid=${this.userData.uid}`
+		},
+		computed:{
+			...mapState(['userData'])
 		},
 		methods:{
 			// 生成二维码

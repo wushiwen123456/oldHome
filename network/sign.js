@@ -1,3 +1,4 @@
+
 var http = 'http://jn.51kdd.com/'
 
 // 引入ajax
@@ -7,6 +8,8 @@ import {replaceImage} from '@/utils/dealUrl'
 
 // 引入计算时间方法
 import  { getTimeUntilNow } from '@/utils/dealData'
+
+import utils from '@/utils/utils.filter'
 
 /**
  * 签到页面所需数据
@@ -83,7 +86,6 @@ return new Promise(function(resolve,reject) {
 
 // 上传图片接口
 export function upload(token,_url,show = false)  {
-	console.log(_url)
 	return new Promise(function(resolve,reject) {
 		const url = http +'ebapi/public_api/upload'
 		console.log(token)
@@ -359,19 +361,12 @@ export function user_visit(token,data,loading) {
 				'content-type': 'application/x-www-form-urlencoded' ,//自定义请求头信息
 				'token': token
 			},
-			data:data,
 			success: res => {
 				if(res.data.code == 200){
 					let data = res.data.data
 					data.forEach(function(item){
-						var date = new Date(item.add_time * 1000);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
-						// var Y = date.getFullYear() + '年';
-						// var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '月';
-						// var D = date.getDate() + '日 ';
-						// var h = date.getHours() + ':';
-						// var m = date.getMinutes();
-						// item.add_time = Y + M + D + h + m ;
-						item.add_time = getTimeUntilNow(item.add_time)
+						var mss = new Date(item.add_time*1000).getTime() //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+						item.add_time = utils.friendlyDate(mss)
 						item.popu = false
 						item.info.image = replaceImage(item.info.image)
 					})

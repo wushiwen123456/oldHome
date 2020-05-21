@@ -47,23 +47,27 @@
 		data(){
 			return{
 				html:{}	,
-				contentHeight:0
+				contentHeight:0,
+				isLoadImage:false
 			}
 		},
 		onReady() {
-			this.$refs.loading.open()
+			if(this.isLoadImage == false){
+				this.$refs.loading.open()
+			}
 		},
 		methods:{
 			getNewsDetail(id,token){
 				getNewsDetail(id,token).then(res => {
 					this.$refs.loading.close()
+					this.isLoadImage = true
 					this.html = res.data.data
 				})
 			},
 			//分享
 			shareInfo(){
 				let shareInfo={
-					href:"https://uniapp.dcloud.io",
+					href:"http://jn.51kdd.com/index.html#/",
 					title:this.html.title,
 					desc:this.html.title,
 					imgUrl:this.html.image[0]
@@ -98,6 +102,9 @@
 						},
 						fail:(err)=>{
 							console.log("fail:" + JSON.stringify(err));
+							uni.hideLoading()
+						},
+						complete:() =>  {
 							uni.hideLoading()
 						}
 					};

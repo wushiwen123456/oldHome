@@ -16,7 +16,7 @@
 					<image class="item-play" src="/static/play/larkcloud_play.png" mode="aspectFill"></image>
 				</swiper-item>
 				<swiper-item @tap="swiperDetail" v-for="(item,index) in swiperList" :key="index">
-					<image @tap="swiperDetail" :src="item.url" mode="widthFix"></image>
+					<image @tap="swiperDetail" :src="item.url" mode="widthFix">z</image>
 				</swiper-item>
 			</swiper>
 			<view class="shopDetails-title-select">
@@ -37,14 +37,14 @@
 		<view class="bg-white padding-left" v-if="Object.keys(itemInfo).length != 0">
 			<view class="flex align-center">
 				<view class="text-red-my text-xxxl text-bold">{{itemInfo.price}}</view>
-				<view class="bg-red text-xs shopDetails-title-package">红包抵0.1元</view>
+				<!-- <view class="bg-red text-xs shopDetails-title-package"></view> -->
 			</view>
 			<view class="shopDetails-title-original">原价￥{{itemInfo.oldPrice}}</view>
 			<view>
 				<view class="flex align-center justify-between margin-right-sm">
 					<view class="flex align-center margin-top-xs margin-bottom-xs">
 						<!-- <view class="cu-tag bg-red-my shopDetails-title-height" v-if="">店铺红包满149减10</view> -->
-						<view class="cu-tag bg-red-my shopDetails-title-height" @click="isClick">购买得积分</view>
+						<view v-if="itemInfo.count != 0" class="cu-tag bg-red-my shopDetails-title-height" @click="isClick">购买可得{{itemInfo.count}}积分</view>
 					</view>
 					<view @tap="outloginClick" class="flex align-center">
 						<view class="text-gray text-sm">领券</view>
@@ -124,20 +124,20 @@
 		
 		<!-- 店铺介绍 -->
 		<view class="bg-white margin-top-xs shop-deleat-all" v-if="Object.keys(itemInfo).length != 0">
-			<view class="flex align-center justify-between margin-bottom-sm">
+			<view class="flex align-center justify-between">
 				<view class="flex">
 					<image class="shop-introduce-img" :src="storeInfo.info.storeLogo" ></image>
-					<view class="margin-left-sm flex flex-direction justify-between">
+					<view class="margin-left-sm flex align-center">
 						<view class="shop-detal-name">{{storeInfo.info.storeName}}</view>
-						<view class="flex align-center text-xs shop-experience">
+						<!-- <view class="flex align-center text-xs shop-experience">
 							<view>综合体验</view>
 							<tui-rate :current="storeInfo.info.totalFen*1" normal="#ccc" active="#FF5400" :size="10"></tui-rate>
-						</view>
+						</view> -->
 					</view>
 				</view>
 				<view @tap="shopClick(1)" class="select-dianpu">进入店铺</view>
 			</view>
-			<view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
+			<!-- <view style="color: #A0A0A0;"  class="flex align-center justify-between text-xs">
 				<view class="flex align-center flex-sub ">
 					<view>物流评分</view>
 					<view class="padding-left-xs padding-right-xs">{{storeInfo.info.expressageFen}}</view>
@@ -153,7 +153,7 @@
 					<view class="padding-left-xs padding-right-xs">{{storeInfo.info.serviceFen}}</view>
 					<view class="shop-pingfen" >平</view>
 				</view>
-			</view>
+			</view> -->
 		</view>
 		<!-- 店铺介绍 end -->
 		
@@ -390,7 +390,7 @@
 				this.$store.commit('keepShopId',option.id)
 				this._getDetailData(option.id)
 			}else{
-				uni.switchTab({
+				uni.switchTab({	
 					url:'../Home/home'
 				})
 			}
@@ -435,7 +435,6 @@
 				.then(res => {
 					this.$refs.loading.close() 
 					this.hasData = true
-					console.log(res)
 					if(res.data.code != 200){
 						// #ifdef APP-PLUS
 						plus.nativeUI.toast('数据错误，请重试')
@@ -453,7 +452,6 @@
 					this.dealSwiper(data)
 					// 获取顶部数据
 					this.itemInfo.desc = data.description
-					console.log(this.itemInfo.desc)
 					this.itemInfo.id = data.id
 					this.itemInfo.price = data.price
 					this.itemInfo.oldPrice = data.ot_price
@@ -575,19 +573,9 @@
 					// #endif
 					return
 				}
-				const data = this.storeInfo.info
-				let shopInfo = {
-					shop_name:data.shop_name,
-					shop_logo:data.storeLogo,
-					shop_id:data.storeId,
-					product_score:data.produceFen,
-					expressage_score:data.expressageFen,
-					service_score:data.serviceFen,
-					zong:data.totalFen
-				}
-				shopInfo = JSON.stringify(shopInfo)
+				const id = this.storeInfo.info.storeId
 				uni.navigateTo({
-					url:'informtion/informtion?shopInfo=' + shopInfo
+					url:`informtion/informtion?id=${id}`
 				})
 			},
 
@@ -701,10 +689,10 @@
 			swiperDetail(){
 				let arr = this.swiperList
 				arr = arr.map(x => x.url)
-				console.log(arr)
-				// #ifdef APP-PLUS
-				plus.nativeUI.previewImage(arr)
-				// #endif
+				uni.previewImage({
+					urls:arr,
+					indicator:'none',
+				})
 			},
 			// 点击分类图片预览
 			openImage(){

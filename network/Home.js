@@ -102,3 +102,12 @@ export function pubDetailData(data,token){
 		}
 	})
 }
+
+// 获取信息列表
+export function read_notice(){
+	return http({
+		url:'http://jn.51kdd.com/ebapi/public_api/benefit',
+		header:{
+		}
+	})
+}

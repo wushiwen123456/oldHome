@@ -1,0 +1,217 @@
+<template>
+	<view class="mask">
+		<view :style="{width:windowWidth + 'px'}" class="content">
+			<view>
+				<image class="updata-image-title" :style="{width:windowWidth + 'px'}" src="/static/update/updata.png"></image>
+				<view class="updata-all-bg">
+					<view class="updata-title-all">
+						<view></view>
+						<view>发现新版本</view>
+						<image class="updata-image-close" @click.stop="close"  src="/static/update/updataclose.png"></image>
+					</view>
+					<view v-if="modalName">
+						<view class="updata-text">是否进行更新？</view>
+						<view class="updata-title-all updata-bottom-all" >
+							<image @tap="updataClick" src="/static/update/toUpdata.png" class="button_bottom" mode=""></image>
+							<image @click.stop="close" src="/static/update/wait.png" class="button_bottom" mode=""></image>
+						</view> 
+					</view>
+					<view v-else >
+						<view class="updata-text">正在更新，请不要退出</view>
+						<view class="updata-bg">
+							<image class="updata-bg-image" src="/static/update/login.gif" ></image>
+							<view>{{loadingPlan}}%</view>
+						</view>
+					</view>
+				</view>
+			</view>
+			<!-- <view class="cu-modal" :class=" modalName ?'show':''">
+				<view class="cu-dialog">
+					<view class="padding-xl">
+						<view class="install-button">
+							<view class="download-plan">{{loadingPlan}}%</view>
+							<view class="cu-progress round " style="height: 100%; background: none;">
+								<view class="bg-red light" :style="[{ width:loadingPlan + '%'}]" ></view>
+							</view>
+						</view>
+						<view class="download-plan-txt">正在下载，请不要退出</view>
+					</view>
+				</view>
+			</view> -->
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				modalName:true,
+				windowWidth:0,//手机屏幕可用宽度
+				loadingPlan:0,
+				url:''
+			}
+		},
+		onLoad(e) {
+			var that = this
+			that.url = e.url
+			uni.getSystemInfo({
+			    success: function (res) {
+					let width = res.windowWidth
+					width = width * 0.8
+					that.windowWidth = width
+					// this.windowWidth = res.windowWidth * 0.8
+					console.log('nVue宽度为：')
+					console.log(width); 
+				}
+			});
+		},
+		methods: {
+			onClick(e) {
+				uni.showToast({
+					title: "点击蒙层关闭"
+				})
+				// #ifdef APP-NVUE
+				e.stopPropagation()
+				// #endif
+			},
+			close() {
+				uni.navigateBack()
+			},
+			
+			//安装
+			installbutton(path){
+				 plus.runtime.install(path, {  
+					force: true  
+				}, function () {   
+					console.log("加载完成！");  
+					uni.navigateBack({  
+						delta: 1,  
+					});  
+				}, function (e) {  
+			
+					console.log(JSON.stringify(e));
+			
+				}); 
+			},
+			//点击下载
+			updataClick(){
+				var that = this
+				that.modalName = false
+				console.log(that.url + '++++++++++++++++++++++++++')
+				const downloadTask = uni.downloadFile({
+					url: that.url, //仅为示例，并非真实的资源
+					success: (res) => {
+						console.log('下载完成')
+						console.log('接口请求返回的res:');
+						console.log(res);
+						if (res.statusCode === 200) {
+							console.log(res.tempFilePath);
+							const str = res.tempFilePath.replace(//g,'/u0005')
+							console.log(str)
+							uni.saveFile({
+								tempFilePath:str,
+								success: function (res) {
+									console.log('下载接口请求返回的res:' + res);
+									that.installbutton(res.savedFilePath);  
+								},
+								fail:(err) => {
+									console.log(err)
+								}
+							});
+						}
+					},
+					fail: (fail) =>{
+						console.log('接口请求返回的fail:');
+						console.log(fail);
+					},
+				})
+				
+				let begin = new Date().getTime()
+				let gap = 2000
+				downloadTask.onProgressUpdate((res) => {
+					let now = new Date().getTime()
+					// console.log(res)
+					if (now - begin > gap || res.progress == 100){
+						that.loadingPlan = res.progress
+					}
+				})
+			},
+		}
+	}
+</script>
+
+<style>
+	.mask {
+		position: fixed;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		justify-content: center;
+		align-items: center;
+		background-color: rgba(0, 0, 0, 0.4);
+	}
+	.content {
+		
+	}
+	.updata-image-title{
+		height: 260upx;
+	}
+	.updata-image-close{
+		width: 60upx;
+		height: 60upx;
+	}
+	.updata-all-bg{
+		background-color: #FFF;
+		padding: 0 40upx;
+	}
+	.updata-button{
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		align-items: center;
+		justify-content: center;
+		width:200upx;
+		height:80upx;
+		background-color: #1678CB;
+		box-shadow:0px 8px 16px 0px rgba(22,120,203,0.24);
+		border-radius:40px;
+	}
+	.updata-button-left{
+		background-color: #FFFFFF;
+	}
+	.updata-button-right{
+		color:#FFFFFF;
+	}
+	.updata-title-all{
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.updata-text{
+		align-items: center;
+		justify-content: center;
+		margin-top: 60upx;
+	}
+	.updata-bottom-all{
+		margin: 50upx 0;
+		padding: 0 20upx;
+	}
+	.updata-bg{
+		align-items: center;
+		margin-bottom: 50upx;
+	}
+	.updata-bg-image{
+		width: 200upx;
+		height: 200upx;
+	}
+	.button_bottom{
+		width: 200upx;
+		height: 80upx;
+		/* box-shadow:0 8px 16px 0px rgba(22,120,203,0.24) */
+	}
+</style>

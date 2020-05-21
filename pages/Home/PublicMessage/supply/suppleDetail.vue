@@ -37,7 +37,8 @@
 				data:'一、【薪资待遇】：\n1、短期工：140-160/天可申请长白班，包吃住；按天计算工资，做满时间，可结现。\n2、场施工：试用期工资3500-3800，一个月转正后3800元-5680元。\n二、招聘要求：\n1、年龄16-48周岁，男女不限\n2、学历不限，身体健康、服从工作安排',
 				token:'',
 				info:{},
-				type:''
+				type:'',
+				_isLoading:false
 			}
 		},
 		onLoad(option) {
@@ -50,12 +51,15 @@
 			uni.setNavigationBarTitle({
 				title:this.type == 1 ? '供应详情' : '需求详情'
 			})
-			this.$refs.loading.open()
+			if(this._isLoading == false){
+				this.$refs.loading.open()
+			}
 		},
 		methods:{
 			gongDetail(id,token){
 				gongDetail(id,token).then(res => {
 					this.$refs.loading.close()
+					this._isLoading = true
 					if(res.data.code == 200){
 						this.info = res.data.data
 					}else{
